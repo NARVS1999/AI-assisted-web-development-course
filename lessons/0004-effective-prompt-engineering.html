@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0004: Effective Prompt Engineering for Coding</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0004: Effective Prompt Engineering for Coding</h1>
+      <p><em>Matutong magsulat ng malinaw at epektibong prompts para sa AI coding assistants.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makapagsulat ng specific at context-rich prompts na nagre-resulta sa mas accurate at useful na AI-generated code.
+      </div>
+
+      <!-- ======== Section 1: The Power of Clear Prompts ======== -->
+      <h2>Bakit Mahalaga ang Magandang Prompt?</h2>
+
+      <p>Ang AI ay walang konteksto maliban sa ibibigay mo. Kung vague ang prompt mo, vague din ang sagot. Ang specific at well-structured na prompt ay nagre-resulta sa:</p>
+
+      <ul>
+        <li>Mas accurate na code na umaayon sa iyong intent</li>
+        <li>Mas kaunting iterations at refinements</li>
+        <li>Mas consistent na output na follow sa coding standards</li>
+        <li>Mas mabilis na development workflow</li>
+      </ul>
+
+      <blockquote>
+        "Mas specific ang prompt mo, mas accurate ang output ng AI."
+      </blockquote>
+
+      <!-- ======== Section 2: Context Setting ======== -->
+      <h2>Context Setting: Ang Tatlong Sangkap ng Magandang Prompt</h2>
+
+      <p>Bawat prompt ay dapat may tatlong pangunahing sangkap:</p>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>Tech Stack</strong> — Anong teknolohiya ang gagamitin?</p>
+          <p><em>"Using Laravel 11 with Inertia.js and Vue 3..."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>Goal</strong> — Ano ang gusto mong mangyari?</p>
+          <p><em>"Create a controller that handles CRUD operations for blog posts..."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>Constraints</strong> — Ano ang mga limits o requirements?</p>
+          <p><em>"...with validation rules, pagination, and authorization checks. Huwag gumamit ng admin panel package."</em></p>
+        </div>
+      </div>
+
+      <h3>Halimbawa: Bago vs Pagkatapos</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Vague Prompt (Mali)</th>
+            <th>Specific Prompt (Tama)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>"Gawa ka ng controller"</code></td>
+            <td><code>"Create a Laravel controller for managing blog posts with index, create, store, show, edit, update, and destroy methods. Use Form Request for validation. Return JSON responses for an API."</code></td>
+          </tr>
+          <tr>
+            <td><code>"May error sa code ko"</code></td>
+            <td><code>"I'm getting 'Call to undefined method App\Models\User::posts()' in Laravel. Here's my User model code: [code]. Baka hindi tama ang relationship definition ko?"</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- ======== Section 3: Iterative Prompting ======== -->
+      <h2>Iterative Prompting: Refine at Clarify</h2>
+
+      <p>Ang unang sagot ng AI ay bihirang perpekto. Gamitin ang iterative prompting para i-refine ito:</p>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>Initial Prompt</strong> — Ibigay ang pangunahing task</p>
+          <p><em>"Create a login form in React"</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>Review Output</strong> — Suriin kung ano ang kulang o mali</p>
+          <p><em>"Kailangan ko rin ng error handling at loading state"</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>Refine</strong> — Magbigay ng specific feedback</p>
+          <p><em>"Pwede bang i-add ang form validation? Dapat naka-display ang error messages sa ilalim ng bawat field."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <p><strong>Clarify</strong> — Magtanong kung hindi sigurado</p>
+          <p><em>"Bakit mo ginamit ang useState instead of useReducer dito?"</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">5</div>
+        <div class="step-content">
+          <p><strong>Finalize</strong> — Ulitin hanggang makuha ang gusto mong output</p>
+        </div>
+      </div>
+
+      <!-- ======== Section 4: Prompting Patterns ======== -->
+      <h2>Mga Pattern ng Prompting</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Pattern</th>
+            <th>Kailan Gagamitin</th>
+            <th>Halimbawa</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Instruction Prompt</strong></td>
+            <td>Simpleng task na may malinaw na instructions</td>
+            <td>"Write a PHP function that validates an email address"</td>
+          </tr>
+          <tr>
+            <td><strong>Chain-of-Thought</strong></td>
+            <td>Complex logic na dapat i-explain step-by-step</td>
+            <td>"Explain step-by-step how to implement Laravel authentication with Sanctum"</td>
+          </tr>
+          <tr>
+            <td><strong>Role Prompting</strong></td>
+            <td>Specific perspective o expertise ang kailangan</td>
+            <td>"Act as a Laravel security expert. Review this code for vulnerabilities."</td>
+          </tr>
+          <tr>
+            <td><strong>Few-Shot Prompting</strong></td>
+            <td>Gusto mong gayahin ng AI ang isang pattern</td>
+            <td>"Here are 3 examples of API controllers I like. Create a 4th one following the same pattern."</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Magdagdag ng "Do not use X" o "Must use Y" para sa constraints. Halimbawa: "Do not use any external packages" o "Must use TypeScript strict mode."
+      </div>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang tatlong pangunahing sangkap ng isang magandang prompt?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Greeting, tanong, at thank you</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Tech stack, goal, at constraints</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Title, body, at conclusion</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Bakit mahalaga ang iterative prompting?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Dahil gusto lang nating pahabain ang conversation</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Dahil hindi nakakaintindi ang AI ng Taglish</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Dahil ang unang sagot ng AI ay bihirang perpekto at kailangan i-refine</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Alin sa mga ito ang halimbawa ng magandang prompt?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> "Gawa ka ng website"</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> "Help me with my code"</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> "Create a Laravel 11 API controller for products with validation rules, pagination, and JSON responses. Do not use any admin panel."</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: 3 Prompts ng Increasing Specificity</h3>
+        <p>Pumili ng isang web development task (hal. "Gumawa ng password reset feature") at sumulat ng 3 prompts:</p>
+        <ol>
+          <li><strong>Vague Prompt</strong> — 1 sentence lang, walang konteksto</li>
+          <li><strong>Moderate Prompt</strong> — May tech stack at konting context</li>
+          <li><strong>Specific Prompt</strong> — May tech stack, goal, constraints, at examples</li>
+        </ol>
+        <p>I-test ang bawat prompt sa AI coding assistant at i-compare ang output. I-save ang lahat sa <code>prompt-comparison.txt</code>.</p>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang magandang prompt ay may tatlong sangkap: tech stack, goal, at constraints.</li>
+        <li>Ang iterative prompting ay ang proseso ng pag-refine ng prompt hanggang makuha ang tamang output.</li>
+        <li>Gumamit ng patterns tulad ng chain-of-thought, role prompting, at few-shot para sa specific na needs.</li>
+        <li>Iwasan ang vague instructions — specific prompts = specific at accurate na output.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Anthropic Prompt Engineering Guide</strong> — Official guide para sa prompt engineering. <a href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'c', q3: 'c' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phase 7: Deployment Cheatsheet</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Phase 7: Deployment, DevOps & Maintenance — Cheatsheet</h1>
+      <p><em>Isang mabilis na reference para sa deployment, database management, at maintenance ng Laravel + Next.js app.</em></p>
+
+      <!-- ======== Pre-Deployment Checklist ======== -->
+      <h2>Pre-Deployment Checklist</h2>
+
+      <table>
+        <tr>
+          <th>Category</th>
+          <th>Item</th>
+          <th>Status</th>
+        </tr>
+        <tr>
+          <td rowspan="4">Environment</td>
+          <td><code>APP_ENV=production</code> at <code>APP_DEBUG=false</code></td>
+          <td>&#9744;</td>
+        </tr>
+        <tr>
+          <td>Naka-set ang database credentials at SSL</td>
+          <td>&#9744;</td>
+        </tr>
+        <tr>
+          <td>Naka-configure ang mail driver (SMTP)</td>
+          <td>&#9744;</td>
+        </tr>
+        <tr>
+          <td>Naka-generate ang <code>APP_KEY</code></td>
+          <td>&#9744;</td>
+        </tr>
+        <tr>
+          <td rowspan="3">Assets</td>
+          <td>Na-compile ang assets (<code>npm run build</code>)</td>
+          <td>&#9744;</td>
+        </tr>
+        <tr>
+          <td>Naka-optimize ang images at fonts</td>
+          <td>&#9744;</td>
+        </tr>
+        <tr>
+          <td>Naka-enable ang gzip/brotli compression</td>
+          <td>&#9744;</td>
+        </tr>
+        <tr>
+          <td rowspan="4">Database</td>
+          <td>Na-backup ang database bago mag-migrate</td>
+          <td>&#9744;</td>
+        </tr>
+        <tr>
+          <td>Na-run ang migrations sa staging environment</td>
+          <td>&#9744;</td>
+        </tr>
+        <tr>
+          <td>May rollback plan kung mag-fail</td>
+          <td>&#9744;</td>
+        </tr>
+        <tr>
+          <td>Naka-setup ang automated backups (cron)</td>
+          <td>&#9744;</td>
+        </tr>
+        <tr>
+          <td rowspan="3">Security</td>
+          <td>SSL certificate naka-install at nagre-renew</td>
+          <td>&#9744;</td>
+        </tr>
+        <tr>
+          <td>Naka-lock down ang .env file permissions</td>
+          <td>&#9744;</td>
+        </tr>
+        <tr>
+          <td>Naka-disable ang directory listing sa Nginx</td>
+          <td>&#9744;</td>
+        </tr>
+        <tr>
+          <td rowspan="3">Monitoring</td>
+          <td>Naka-setup ang uptime monitoring (UptimeRobot)</td>
+          <td>&#9744;</td>
+        </tr>
+        <tr>
+          <td>Naka-configure ang error logging (Laravel Pulse / Sentry)</td>
+          <td>&#9744;</td>
+        </tr>
+        <tr>
+          <td>May alerts para sa downtime at errors</td>
+          <td>&#9744;</td>
+        </tr>
+      </table>
+
+      <!-- ======== Laravel Server Requirements ======== -->
+      <h2>Laravel Server Requirements</h2>
+
+      <table>
+        <tr>
+          <th>Requirement</th>
+          <th>Version</th>
+          <th>Notes</th>
+        </tr>
+        <tr>
+          <td>PHP</td>
+          <td>8.1 - 8.3</td>
+          <td>Recommended: PHP 8.2</td>
+        </tr>
+        <tr>
+          <td>MySQL</td>
+          <td>5.7+ / 8.0+</td>
+          <td>Recommended: MySQL 8.0</td>
+        </tr>
+        <tr>
+          <td>Web Server</td>
+          <td>Nginx / Apache</td>
+          <td>Nginx recommended for performance</td>
+        </tr>
+        <tr>
+          <td>PHP Extensions</td>
+          <td>BCMath, Ctype, Fileinfo, JSON, Mbstring, OpenSSL, PDO, Tokenizer, XML, cURL, GD</td>
+          <td>I-install lahat bago mag-deploy</td>
+        </tr>
+        <tr>
+          <td>Composer</td>
+          <td>2.x</td>
+          <td>Package manager para sa PHP</td>
+        </tr>
+        <tr>
+          <td>Node.js</td>
+          <td>18+ / 20+</td>
+          <td>Para sa asset compilation</td>
+        </tr>
+        <tr>
+          <td>Redis</td>
+          <td>6+ / 7+</td>
+          <td>Recommended para sa cache at queues</td>
+        </tr>
+      </table>
+
+      <pre><code># I-install ang PHP extensions sa Ubuntu
+sudo apt install php8.2-fpm php8.2-mysql php8.2-xml \
+  php8.2-mbstring php8.2-curl php8.2-bcmath \
+  php8.2-gd php8.2-redis -y</code></pre>
+
+      <!-- ======== Nginx Configuration Template ======== -->
+      <h2>Nginx Configuration Template (Laravel)</h2>
+
+      <pre><code>server {
+    listen 80;
+    server_name example.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name example.com;
+
+    root /var/www/myapp/public;
+    index index.php;
+
+    ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
+    add_header X-XSS-Protection "1; mode=block";
+
+    charset utf-8;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    error_page 404 /index.php;
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+        fastcgi_read_timeout 300;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+
+    # Cache static assets
+    location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff|woff2|ttf|svg)$ {
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+}</code></pre>
+
+      <!-- ======== Vercel Deployment Steps ======== -->
+      <h2>Vercel Deployment Steps (Next.js)</h2>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p>Mag-sign up sa <a href="https://vercel.com" target="_blank">vercel.com</a> gamit ang GitHub account.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p>I-click ang "Add New Project" at piliin ang repository.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p>I-set ang <strong>Environment Variables</strong> sa Vercel dashboard (Settings > Environment Variables).</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <p>I-click ang "Deploy". Awtomatikong magbu-build at magde-deploy ang Vercel.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">5</div>
+        <div class="step-content">
+          <p>Para sa custom domain: Settings > Domains > i-add ang domain at i-update ang DNS.</p>
+        </div>
+      </div>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Sa bawat push sa main branch, auto-deploy ang Vercel. Sa bawat branch, may preview deployment na may unique URL.
+      </div>
+
+      <pre><code># next.config.js — recommended production settings
+const nextConfig = {
+  output: "standalone", // Para sa Docker deployment
+  compress: true,
+  poweredByHeader: false,
+  reactStrictMode: true,
+  images: {
+    formats: ["image/avif", "image/webp"],
+    remotePatterns: [
+      { protocol: "https", hostname: "**" }
+    ]
+  }
+};
+
+module.exports = nextConfig;</code></pre>
+
+      <!-- ======== Docker Basics for Next.js ======== -->
+      <h2>Docker Basics para sa Next.js</h2>
+
+      <pre><code># Dockerfile — multi-stage build
+FROM node:20-alpine AS base
+
+# Dependencies
+FROM base AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --only=production
+
+# Build
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN npm run build
+
+# Production runner
+FROM base AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+EXPOSE 3000
+ENV PORT=3000
+CMD ["node", "server.js"]</code></pre>
+
+      <pre><code># docker-compose.yml
+version: "3.8"
+services:
+  nextjs:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3</code></pre>
+
+      <div class="tip">
+        <strong>Docker Commands</strong>
+        <pre><code># Build image
+docker build -t my-nextjs-app .
+
+# Run container
+docker run -p 3000:3000 --env-file .env.production my-nextjs-app
+
+# Using docker-compose
+docker-compose up -d
+docker-compose logs -f</code></pre>
+      </div>
+
+      <!-- ======== MySQL Backup Strategies ======== -->
+      <h2>MySQL Backup Strategies</h2>
+
+      <table>
+        <tr>
+          <th>Strategy</th>
+          <th>Frequency</th>
+          <th>Retention</th>
+          <th>Storage</th>
+        </tr>
+        <tr>
+          <td>Daily full backup</td>
+          <td>Araw-araw</td>
+          <td>7-30 days</td>
+          <td>Local disk + S3</td>
+        </tr>
+        <tr>
+          <td>Weekly full backup</td>
+          <td>Linggo-linggo</td>
+          <td>1-3 months</td>
+          <td>Remote server</td>
+        </tr>
+        <tr>
+          <td>Monthly archive</td>
+          <td>Buwan-buwan</td>
+          <td>1 year+</td>
+          <td>Cold storage (Glacier)</td>
+        </tr>
+      </table>
+
+      <pre><code>#!/bin/bash
+# Automated MySQL backup script
+DB_USER="root"
+DB_PASS="password"
+DB_NAME="myapp_db"
+BACKUP_DIR="/var/backups/mysql"
+RETENTION_DAYS=7
+DATE=$(date +%F)
+
+mkdir -p "$BACKUP_DIR"
+
+# Backup at compress
+mysqldump -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" | \
+  gzip > "$BACKUP_DIR/${DB_NAME}_${DATE}.sql.gz"
+
+# I-delete ang luma sa 7 araw
+find "$BACKUP_DIR" -name "*.sql.gz" -mtime +$RETENTION_DAYS -delete
+
+# I-log
+echo "[$(date)] Backup completed: ${DB_NAME}_${DATE}.sql.gz" >> "$BACKUP_DIR/backup.log"
+
+# Upload sa S3 (optional)
+# aws s3 cp "$BACKUP_DIR/${DB_NAME}_${DATE}.sql.gz" s3://myapp-backups/</code></pre>
+
+      <pre><code># Cron job — every day at 2 AM
+0 2 * * * /usr/local/bin/backup-mysql.sh</code></pre>
+
+      <!-- ======== Monitoring Tools Comparison ======== -->
+      <h2>Monitoring Tools Comparison</h2>
+
+      <table>
+        <tr>
+          <th>Tool</th>
+          <th>Use Case</th>
+          <th>Free Tier</th>
+          <th>Setup Difficulty</th>
+        </tr>
+        <tr>
+          <td><strong>UptimeRobot</strong></td>
+          <td>Uptime monitoring, alerts</td>
+          <td>50 monitors, 5-min checks</td>
+          <td>Easy (5 min)</td>
+        </tr>
+        <tr>
+          <td><strong>Laravel Pulse</strong></td>
+          <td>Laravel app performance (slow queries, jobs, requests)</td>
+          <td>Libre (open source)</td>
+          <td>Easy (composer install)</td>
+        </tr>
+        <tr>
+          <td><strong>Better Stack</strong></td>
+          <td>Uptime + status page</td>
+          <td>3 users, 10 status pages</td>
+          <td>Easy</td>
+        </tr>
+        <tr>
+          <td><strong>Sentry</strong></td>
+          <td>Error tracking at performance</td>
+          <td>5k events/month</td>
+          <td>Medium</td>
+        </tr>
+        <tr>
+          <td><strong>Datadog</strong></td>
+          <td>Full observability (logs, metrics, traces)</td>
+          <td>Limited free tier</td>
+          <td>Complex</td>
+        </tr>
+        <tr>
+          <td><strong>Laravel Horizon</strong></td>
+          <td>Queue monitoring at management</td>
+          <td>Libre (part of Laravel)</td>
+          <td>Easy</td>
+        </tr>
+      </table>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Gamitin ang pre-deployment checklist para hindi makalimot ng mahahalagang steps.</li>
+        <li>I-configure ang Nginx na may SSL, security headers, at static asset caching.</li>
+        <li>Para sa Next.js, Vercel ang pinakamadali; Docker naman para sa self-hosting.</li>
+        <li>I-setup ang automated MySQL backups na may retention policy.</li>
+        <li>Gamitin ang monitoring tools (UptimeRobot, Laravel Pulse, Sentry) para bantayan ang app.</li>
+        <li>Regular na mag-update ng dependencies at mag-improve base sa user feedback.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the Phase 7 lessons or ask for clarification.
+      </div>
+
+      <!-- Prev / Next — auto-populated by lesson-nav.js -->
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Scripts — order matters -->
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = {};
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

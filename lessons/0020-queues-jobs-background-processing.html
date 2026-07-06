@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0020: Queues, Jobs & Background Processing</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0020: Queues, Jobs & Background Processing</h1>
+      <p><em>Kapag may task na mabagal (e.g., mag-email sa 1000 users), ilagay sa queue para hindi maghintay si user.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Matutunan ang queues at jobs sa Laravel para mag-offload ng slow tasks sa background.
+      </div>
+
+      <h2>What are Queues?</h2>
+      <p>Ang queue ay pila ng tasks na dapat gawin sa background. Sa halip na antayin ng user ang completion ng isang mabagal na task (tulad ng pag-send ng email), ida-dispatch mo ito bilang job at babalik agad ang response sa user.</p>
+
+      <blockquote>"Kapag may task na mabagal (e.g., mag-email sa 1000 users), ilagay sa queue para hindi maghintay si user."</blockquote>
+
+      <h2>Creating Jobs</h2>
+      <pre><code>php artisan make:job SendWelcomeEmail</code></pre>
+
+      <p>Ang job ay nasa <code>app/Jobs/SendWelcomeEmail.php</code>:</p>
+      <pre><code>class SendWelcomeEmail implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    public function __construct(public User $user) {}
+
+    public function handle(): void
+    {
+        Mail::to($this->user->email)->send(new WelcomeMail($this->user));
+    }
+}</code></pre>
+
+      <h2>Dispatching Jobs</h2>
+      <pre><code>// Sa controller
+use App\Jobs\SendWelcomeEmail;
+
+public function register(Request $request)
+{
+    $user = User::create($request->validated());
+
+    // Dispatch job sa queue
+    SendWelcomeEmail::dispatch($user);
+
+    return response()->json(['message' => 'User created!'], 201);
+}</code></pre>
+
+      <h2>Running the Queue Worker</h2>
+      <pre><code>php artisan queue:work</code></pre>
+      <p>Ito ang magpo-process ng mga nasa queue. Para sa production, gumamit ng supervisor para automatic na mag-restart ang worker.</p>
+
+      <h2>Failed Jobs</h2>
+      <p>Kapag nag-fail ang isang job (e.g., down ang email server), automatic itong ilalagay sa <code>failed_jobs</code> table.</p>
+      <pre><code>php artisan queue:failed     // Tingnan ang failed jobs
+php artisan queue:retry all  // I-retry lahat ng failed
+php artisan queue:flush      // Alisin lahat ng failed</code></pre>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        I-set up ang <code>failed_jobs</code> table sa migration. I-run ang <code>php artisan queue:failed-table</code> para i-publish ang migration.
+      </div>
+
+      <h2>Job Chaining & Delays</h2>
+      <pre><code>// Mag-chain ng jobs
+ProcessPodcast::withChain([
+    new OptimizePodcast,
+    new ReleasePodcast,
+])->dispatch();
+
+// Delay ng 5 minuto
+SendWelcomeEmail::dispatch($user)->delay(now()->addMinutes(5));</code></pre>
+
+      <h2>Using AI for Jobs</h2>
+      <p>I-prompt si AI: "Create a SendWelcomeEmail job in Laravel that sends a welcome email after user registration. Include the dispatch logic in the controller."</p>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Anong Artisan command ang gumagawa ng job class?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> php artisan make:queue</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> php artisan make:job</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> php artisan make:task</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Paano mo ida-dispatch ang isang job?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Job::run()</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Job::dispatch()</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> dispatch(Job::class)</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Saan naka-store ang mga failed jobs?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Sa storage/logs folder</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Sa isang JSON file</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Sa failed_jobs database table</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: SendWelcomeEmail Job</h3>
+        <p>Gamit ang AI, ipagawa ang isang <code>SendWelcomeEmail</code> job na nagse-send ng welcome email pagkatapos mag-register ang user. I-dispatch ito sa registration controller. I-prompt si AI ng ganito: "Create a SendWelcomeEmail job in Laravel. Dispatch it after user registration in the RegisterController. The job should send a welcome email to the new user."</p>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang queues ay nag-o-offload ng slow tasks sa background para hindi maghintay ang user</li>
+        <li>Gamitin ang <code>php artisan make:job</code> para gumawa ng job class</li>
+        <li>I-dispatch ang job gamit ang <code>Job::dispatch()</code></li>
+        <li>Ang <code>php artisan queue:work</code> ay nagpo-process ng queue</li>
+        <li>Ang failed jobs ay naka-store sa <code>failed_jobs</code> table para ma-retry</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation (Queues)</strong> — Official guide para sa queues at job processing. <a href="https://laravel.com/docs/queues" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'c' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

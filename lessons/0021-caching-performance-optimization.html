@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0021: Caching & Performance Optimization</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0021: Caching & Performance Optimization</h1>
+      <p><em>Kung paulit-ulit ang query na hindi nagbabago, i-cache mo — instant load sa susunod.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Matutunan ang caching sa Laravel, paggamit ng Redis/Memcached, at kung paano mag-apply ng rate limiting.
+      </div>
+
+      <h2>Why Cache?</h2>
+      <p>Kung may query kang paulit-ulit na ginagawa at hindi naman madalas magbago ang data, i-cache mo ito. Sa halip na mag-query sa database every time, i-store ang result sa cache at i-serve iyon.</p>
+
+      <blockquote>"Kung paulit-ulit ang query na hindi nagbabago, i-cache mo — instant load sa susunod."</blockquote>
+
+      <h2>Cache Drivers</h2>
+      <table>
+        <tr><th>Driver</th><th>Pros</th><th>Cons</th></tr>
+        <tr><td>file</td><td>Simple, no setup</td><td>Mabagal, hindi scalable</td></tr>
+        <tr><td>database</td><td>Simple, persistent</td><td>Mabagal, extra DB load</td></tr>
+        <tr><td>Redis</td><td>Napakabilis, scalable, supports queues</td><td>Kailangan ng Redis server</td></tr>
+        <tr><td>Memcached</td><td>Napakabilis, distributed</td><td>No persistence, limited features</td></tr>
+      </table>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Sa development, gamitin ang <code>file</code> driver. Sa production, gamitin ang <code>redis</code> o <code>memcached</code>.
+      </div>
+
+      <h2>Caching Queries</h2>
+      <pre><code>// I-cache ang query result for 60 minutes
+$products = Cache::remember('products.all', 60, function () {
+    return Product::with('category')->get();
+});
+
+// Check kung naka-cache
+if (Cache::has('products.all')) {
+    // Naka-cache na ito
+}
+
+// I-clear ang cache
+Cache::forget('products.all');
+// o
+Cache::flush();</code></pre>
+
+      <h2>View Caching</h2>
+      <pre><code>// Compile views for faster rendering
+php artisan view:cache</code></pre>
+
+      <h2>Config Caching</h2>
+      <pre><code>// I-combine lahat ng config into one file
+php artisan config:cache</code></pre>
+
+      <div class="warning">
+        <strong>Warning</strong>
+        Pagkatapos mag-run ng <code>php artisan config:cache</code>, hindi na babasahin ng Laravel ang individual config files. I-run ulit ito kapag may binago ka sa config.
+      </div>
+
+      <h2>Rate Limiting APIs</h2>
+      <p>Ang rate limiting ay pumipigil sa abuse ng API. Gamit ang throttle middleware, pwede mong i-limit kung ilang requests ang pwedeng gawin sa isang timeframe.</p>
+      <pre><code>// Sa routes/api.php
+Route::middleware('throttle:60,1')->group(function () {
+    Route::apiResource('products', ProductController::class);
+});
+
+// Custom rate limiter sa AppServiceProvider
+RateLimiter::for('api', function (Request $request) {
+    return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+});</code></pre>
+
+      <h2>Using AI for Caching Strategies</h2>
+      <p>I-prompt si AI: "Suggest a caching strategy for a product listing API in Laravel. The products rarely change but are queried frequently. Include cache invalidation when a product is updated."</p>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Alin sa mga sumusunod ang pinakamabilis na cache driver?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> file</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> database</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> redis</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Anong Laravel facade ang ginagamit para sa caching?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Cache</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Storage</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Session</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Anong middleware ang ginagamit para mag-limit ng API requests?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> auth</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> throttle</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> cors</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: Caching Strategy for Product Listing API</h3>
+        <p>Gamit ang AI, humingi ng caching strategy suggestion para sa isang product listing API. I-prompt si AI ng ganito: "Suggest a caching strategy for a product listing API in Laravel. Products are queried frequently but rarely change. Show how to implement cache invalidation when a product is updated or deleted."</p>
+        <p>Pagkatapos, i-implement ang suggestion gamit ang <code>Cache::remember()</code> at invalidate sa Product observer.</p>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang caching ay nag-i-store ng frequently accessed data para iwas-database query</li>
+        <li>Ang Redis ang pinakamabilis na cache driver</li>
+        <li>Gamitin ang <code>Cache::remember()</code> para mag-cache ng queries</li>
+        <li>Ang <code>php artisan config:cache</code> at <code>view:cache</code> ay nagbo-boost ng performance</li>
+        <li>Ang throttle middleware ay nagli-limit ng API requests para iwas abuse</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation (Cache)</strong> — Official guide para sa caching strategies at performance optimization. <a href="https://laravel.com/docs/cache" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'c', q2: 'a', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

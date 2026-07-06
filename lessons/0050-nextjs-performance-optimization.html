@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0050: Next.js Performance Optimization</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0050: Next.js Performance Optimization</h1>
+      <p><em>Next.js may built-in na performance features — pero kailangan mo pa ring maging mindful sa bundle size.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Matutunan ang bundle analysis, code splitting, lazy loading, image/font optimization, at best practices para sa Server vs Client Components.
+      </div>
+
+      <h2>Bundle Analysis gamit ang @next/bundle-analyzer</h2>
+      <p>Alamin kung ano ang laman ng iyong JavaScript bundle. I-install at i-configure ang bundle analyzer:</p>
+      <pre><code>npm install @next/bundle-analyzer
+// next.config.js
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+module.exports = withBundleAnalyzer({});</code></pre>
+      <p>I-run para makita ang visual report:</p>
+      <pre><code>ANALYZE=true npm run build</code></pre>
+      <p>Sa report, makikita mo kung aling packages ang malalaki at kung saan puwedeng mag-code split.</p>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        I-paste ang bundle分析 report kay AI: "Here's my Next.js bundle analysis report. Which packages are bloated? How can I reduce the bundle size?"
+      </div>
+
+      <h2>Code Splitting at Lazy Loading</h2>
+      <p>Hatiin ang code para hindi lahat ng JavaScript ay i-download nang sabay. Gamitin ang <code>dynamic</code> import para sa lazy loading:</p>
+      <pre><code>// Before: na-load agad kahit hindi pa kailangan
+import HeavyChart from '@/components/HeavyChart';
+
+// After: i-load lang kapag kailangan na
+import dynamic from 'next/dynamic';
+
+const HeavyChart = dynamic(() => import('@/components/HeavyChart'), {
+  loading: () => &lt;p&gt;Loading chart...&lt;/p&gt;,
+  ssr: false, // kung client-side lang
+});</code></pre>
+
+      <h2>Image at Font Optimization</h2>
+      <p>Next.js Image component ay automatic na nagne-optimize ng images (lazy loading, responsive sizes, WebP):</p>
+      <pre><code>import Image from 'next/image';
+
+&lt;Image
+  src="/products/laptop.jpg"
+  alt="Gaming Laptop"
+  width={800}
+  height={600}
+  priority={false} // true lang para sa above-the-fold images
+  placeholder="blur" // para sa loading effect
+/&gt;</code></pre>
+      <p>Font optimization gamit ang next/font:</p>
+      <pre><code>import { Inter } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'] });
+
+// Apply sa layout
+&lt;html className={inter.className}&gt;</code></pre>
+
+      <div class="info">
+        <strong>Key Insight</strong>
+        Ang <code>next/image</code> at <code>next/font</code> ay automatic na nag-o-optimize — gamitin lagi ang mga ito imbes na regular &lt;img&gt; at @import fonts.
+      </div>
+
+      <h2>Server Components vs Client Components</h2>
+      <p>Sa Next.js App Router, ang default ay Server Components. Sila ay nagre-render sa server, walang JavaScript sa browser. Gamitin ang <code>'use client'</code> kung kailangan ng interactivity:</p>
+      <pre><code>// Server Component (default) — magaan, walang JS sa browser
+// Puwede mag-fetch ng data, mag-access ng database, at mag-render ng static UI
+
+// Client Component ('use client') — may JS, may state, may effects
+'use client';
+import { useState } from 'react';
+export default function Counter() {
+  const [count, setCount] = useState(0);
+  return &lt;button onClick={() =&gt; setCount(c + 1)}&gt;{count}&lt;/button&gt;;
+}</code></pre>
+      <p>Best practice: Ilagay ang <code>'use client'</code> sa pinakamababang possible level. Huwag gawing client component ang buong page kung isang button lang ang kailangan ng interactivity.</p>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang gamit ng @next/bundle-analyzer?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Mag-analyze ng database queries</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Visualize kung ano ang laman ng JavaScript bundle at kung gaano kalaki</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Mag-check ng image dimensions</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Kailan mo dapat gamitin ang <code>'use client'</code> sa isang component?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Para sa lahat ng components</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Kapag kailangan ng interactivity — useState, useEffect, event handlers</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Kapag may image sa component</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Ano ang tamang paraan para mag-load ng images sa Next.js?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Regular &lt;img&gt; tag</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> &lt;Image&gt; component mula sa next/image</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> CSS background-image</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: AI Analyzes Bundle Size at Nag-Suggest ng Code Splitting</h3>
+        <p>Gamit ang bundle analyzer at AI, optimize ang iyong Next.js app:</p>
+        <ol>
+          <li>I-setup ang @next/bundle-analyzer sa iyong project</li>
+          <li>I-run ang <code>ANALYZE=true npm run build</code> at kuhanin ang bundle report</li>
+          <li>I-paste ang bundle report details (or describe kung ano ang nakita mo) kay AI</li>
+          <li>I-prompt: "Here's my Next.js bundle analysis. The report shows [x] is taking 200KB. How can I reduce bundle size with code splitting and lazy loading?"</li>
+          <li>I-apply ang suggestions ni AI at i-run ulit ang bundle analysis para makita ang improvement</li>
+        </ol>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Gamitin ang @next/bundle-analyzer para makita kung ano ang laman ng bundle</li>
+        <li>Code splitting + lazy loading = dynamic import para sa heavy components</li>
+        <li>next/image at next/font ay built-in optimizations — gamitin lagi</li>
+        <li>Server Components (default) = minimal JS; Client Components = kapag may interactivity lang</li>
+        <li>Ilagay ang 'use client' sa pinakamababang possible level</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Next.js Documentation (Optimizing)</strong> — Official guide para sa performance optimization sa Next.js. <a href="https://nextjs.org/docs/app/building-your-application/optimizing" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

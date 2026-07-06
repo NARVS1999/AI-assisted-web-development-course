@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0026: Styling with Tailwind CSS (AI-Assisted)</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0026: Styling gamit ang Tailwind CSS (AI-Assisted)</h1>
+      <p><em>Matutong mag-install at gumamit ng Tailwind CSS sa Next.js, at gamitin ang AI para mag-generate ng magagandang UI designs.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makapag-setup ng Tailwind CSS sa Next.js at makagawa ng responsive, magandang UI gamit ang utility classes at AI assistance.
+      </div>
+
+      <!-- ======== Section 1: Installing Tailwind CSS sa Next.js ======== -->
+      <h2>Installing Tailwind CSS sa Next.js</h2>
+
+      <p>Ang pinakamadaling paraan para i-install ang Tailwind CSS sa Next.js ay gamit ang <code>create-next-app</code> — may option na ito para isama ang Tailwind:</p>
+
+      <pre><code>npx create-next-app@latest my-app --typescript --tailwind --app</code></pre>
+
+      <p>Kung may existing project ka na, puwede mong i-install manually:</p>
+
+      <pre><code>npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p</code></pre>
+
+      <p>I-configure ang <code>tailwind.config.ts</code> para i-scan ang mga file:</p>
+
+      <pre><code>import type { Config } from 'tailwindcss';
+const config: Config = {
+  content: [
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  theme: { extend: {} },
+  plugins: [],
+};
+export default config;</code></pre>
+
+      <p>Palitan ang <code>app/globals.css</code> ng Tailwind directives:</p>
+
+      <pre><code>@tailwind base;
+@tailwind components;
+@tailwind utilities;</code></pre>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Gamitin ang AI para mag-setup: <em>"I have a Next.js 14 project. Give me the exact commands and files to add Tailwind CSS to my project."</em>
+      </div>
+
+      <!-- ======== Section 2: Utility-First Classes ======== -->
+      <h2>Utility-First Classes</h2>
+
+      <p>Ang Tailwind ay <strong>utility-first</strong> — gumagamit ka ng maliliit na class names para i-style ang elements:</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Examples</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Spacing</td>
+            <td><code>p-4</code>, <code>m-2</code>, <code>px-6</code>, <code>py-3</code></td>
+            <td>Padding at margin (0.25rem increments)</td>
+          </tr>
+          <tr>
+            <td>Colors</td>
+            <td><code>text-blue-600</code>, <code>bg-gray-100</code></td>
+            <td>Text at background colors (50–900 shades)</td>
+          </tr>
+          <tr>
+            <td>Typography</td>
+            <td><code>text-lg</code>, <code>font-bold</code>, <code>leading-relaxed</code></td>
+            <td>Font size, weight, line height</td>
+          </tr>
+          <tr>
+            <td>Flex</td>
+            <td><code>flex</code>, <code>items-center</code>, <code>justify-between</code></td>
+            <td>Flexbox layout</td>
+          </tr>
+          <tr>
+            <td>Grid</td>
+            <td><code>grid</code>, <code>grid-cols-3</code>, <code>gap-4</code></td>
+            <td>CSS Grid layout</td>
+          </tr>
+          <tr>
+            <td>Borders</td>
+            <td><code>border</code>, <code>rounded-lg</code>, <code>shadow-md</code></td>
+            <td>Borders, rounding, shadows</td>
+          </tr>
+          <tr>
+            <td>Width/Height</td>
+            <td><code>w-full</code>, <code>h-64</code>, <code>max-w-4xl</code></td>
+            <td>Sizing classes</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>Halimbawa ng isang card component gamit ang Tailwind utilities:</p>
+
+      <pre><code>export default function Card({ title, children }) {
+  return (
+    &lt;div className="bg-white rounded-xl shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow"&gt;
+      &lt;h3 className="text-xl font-semibold text-gray-800 mb-2"&gt;{title}&lt;/h3&gt;
+      &lt;div className="text-gray-600 leading-relaxed"&gt;{children}&lt;/div&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <!-- ======== Section 3: Responsive Design ======== -->
+      <h2>Responsive Design: sm:, md:, lg:, xl:</h2>
+
+      <p>Ang Tailwind ay may <strong>responsive prefixes</strong> para i-control ang layout sa iba't ibang screen sizes:</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Prefix</th>
+            <th>Min Width</th>
+            <th>Target</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>sm:</code></td>
+            <td>640px</td>
+            <td>Tablet (portrait)</td>
+          </tr>
+          <tr>
+            <td><code>md:</code></td>
+            <td>768px</td>
+            <td>Tablet (landscape)</td>
+          </tr>
+          <tr>
+            <td><code>lg:</code></td>
+            <td>1024px</td>
+            <td>Desktop</td>
+          </tr>
+          <tr>
+            <td><code>xl:</code></td>
+            <td>1280px</td>
+            <td>Large desktop</td>
+          </tr>
+          <tr>
+            <td><code>2xl:</code></td>
+            <td>1536px</td>
+            <td>Extra large</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>Halimbawa ng responsive grid — 1 column sa mobile, 2 sa tablet, 3 sa desktop:</p>
+
+      <pre><code>&lt;div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"&gt;
+  &lt;div className="bg-white p-6 rounded-lg shadow"&gt;Card 1&lt;/div&gt;
+  &lt;div className="bg-white p-6 rounded-lg shadow"&gt;Card 2&lt;/div&gt;
+  &lt;div className="bg-white p-6 rounded-lg shadow"&gt;Card 3&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+
+      <!-- ======== Section 4: Using AI to Generate Styled Components ======== -->
+      <h2>Using AI para Mag-generate ng Styled Components</h2>
+
+      <p>Isa sa pinakamalakas na gamit ng AI sa frontend ay ang pag-generate ng UI designs. Sa halip na magsulat ka ng maraming Tailwind classes, ilarawan mo lang ang gusto mo:</p>
+
+      <blockquote>
+        "Gumawa ka ng card component na may shadow, rounded corners, at hover effect. May image sa taas, title sa gitna, at button sa baba."
+      </blockquote>
+
+      <p>Mga prompt tip para sa mas magandang resulta:</p>
+      <ul>
+        <li><strong>Maging specific sa design:</strong> "Gumawa ng blue gradient button na may white text at rounded corners."</li>
+        <li><strong>Gamitin ang visual references:</strong> "Gaya ng Stripe dashboard card" o "Parang shadcn/ui style."</li>
+        <li><strong>Request responsive variant:</strong> "Gawin itong responsive — sa mobile, stack vertically; sa desktop, side-by-side."</li>
+        <li><strong>Request hover/active states:</strong> "May hover effect na nagdi-dark ng background at nag-i-increase ng shadow."</li>
+      </ul>
+
+      <div class="info">
+        <strong>Note</strong>
+        Maraming AI tools (Claude, ChatGPT, Cursor) ang kaya na ring mag-generate ng UI mula sa screenshots o mockups. I-upload ang design reference mo at hilingin ang katumbas na Tailwind code.
+      </div>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Anong Tailwind class ang gagamitin mo para magdagdag ng padding sa lahat ng side (1rem / 16px)?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> <code>p-4</code></label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> <code>px-4</code></label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> <code>m-4</code></label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Paano mo gagawing 3 columns sa desktop at 1 column sa mobile ang isang grid?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> <code>grid grid-cols-3</code></label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> <code>grid grid-cols-1 lg:grid-cols-3</code></label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> <code>grid grid-cols-3 md:grid-cols-1</code></label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Ano ang ibig sabihin ng "utility-first" sa Tailwind CSS?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Gumagamit ng pre-built component classes tulad ng Bootstrap</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Gumagamit ng maliliit, single-purpose classes na pinagsasama-sama para i-style ang elements</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Kailangan mong magsulat ng sarili mong CSS para sa lahat ng utility</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: Responsive Navbar at Hero Section</h3>
+        <p>Gamit ang AI, gumawa ng:</p>
+        <ul>
+          <li><strong>Responsive Navbar</strong> — may logo, navigation links (Home, About, Products, Contact), at hamburger menu sa mobile.</li>
+          <li><strong>Hero Section</strong> — may heading, subtext, CTA button, at background image o gradient. Dapat centered sa desktop at stacked sa mobile.</li>
+        </ul>
+        <p><em>Prompt tip: "Create a responsive navbar component in React with Tailwind CSS. It should have a logo on the left, navigation links on the right, and a hamburger menu for mobile. Also create a hero section with a heading, description, and call-to-action button. Use a gradient background. Both should be mobile-first responsive."</em></p>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang Tailwind ay utility-first CSS framework — pinagsama-samang utility classes (e.g., <code>p-4</code>, <code>text-lg</code>, <code>flex</code>) ang bumubuo sa design.</li>
+        <li>Gamitin ang responsive prefixes (<code>sm:</code>, <code>md:</code>, <code>lg:</code>, <code>xl:</code>) para i-control ang layout sa iba't ibang screen sizes.</li>
+        <li>Maganda ang AI sa pag-generate ng UI designs — ilarawan lang ang itsura ng gusto mo at gagawa siya ng Tailwind code.</li>
+        <li>Maging specific sa prompts: design style, colors, layout, responsive behavior.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Tailwind CSS Documentation</strong> — Official guide para sa utility-first CSS framework. <a href="https://tailwindcss.com/docs" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'a', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

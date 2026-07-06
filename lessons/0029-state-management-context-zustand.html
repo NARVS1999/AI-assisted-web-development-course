@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0029: State Management (Context API & Zustand)</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0029: State Management — Context API at Zustand</h1>
+      <p><em>Alamin ang dalawang approach sa global state management sa React/Next.js: React Context API at Zustand library.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makapag-setup ng global state management gamit ang Context API para sa simpleng cases at Zustand para sa complex state, gamit ang AI assistance.
+      </div>
+
+      <!-- ======== Section 1: React Context API ======== -->
+      <h2>React Context API</h2>
+
+      <p>Ang <strong>Context API</strong> ay built-in na feature ng React para mag-share ng data sa component tree nang hindi na kailangang mag-pass ng props nang manu-mano (prop drilling).</p>
+
+      <pre><code>'use client';
+import { createContext, useContext, useState, ReactNode } from 'react';
+
+// 1. Create Context
+interface AuthContextType {
+  user: { name: string; email: string } | null;
+  login: (email: string, password: string) => void;
+  logout: () => void;
+}
+
+const AuthContext = createContext&lt;AuthContextType | undefined&gt;(undefined);
+
+// 2. Create Provider
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState(null);
+
+  const login = async (email: string, password: string) => {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    setUser(data.user);
+  };
+
+  const logout = () => setUser(null);
+
+  return (
+    &lt;AuthContext.Provider value={{ user, login, logout }}&gt;
+      {children}
+    &lt;/AuthContext.Provider&gt;
+  );
+}
+
+// 3. Custom hook for easy access
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  return context;
+}</code></pre>
+
+      <p>I-wrap ang app sa provider sa <code>layout.tsx</code>:</p>
+
+      <pre><code>// app/layout.tsx
+import { AuthProvider } from '@/context/AuthContext';
+
+export default function RootLayout({ children }) {
+  return (
+    &lt;html&gt;
+      &lt;body&gt;
+        &lt;AuthProvider&gt;{children}&lt;/AuthProvider&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+  );
+}</code></pre>
+
+      <p>At gamitin sa any component:</p>
+
+      <pre><code>'use client';
+import { useAuth } from '@/context/AuthContext';
+
+export default function UserProfile() {
+  const { user, logout } = useAuth();
+
+  if (!user) return &lt;p&gt;Please log in&lt;/p&gt;;
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Welcome, {user.name}!&lt;/p&gt;
+      &lt;button onClick={logout}&gt;Logout&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Kung simpleng global state lang (e.g., user auth, theme), Context API sapat na. Kung complex (e.g., cart, multi-step forms), Zustand ang mas malinis.
+      </div>
+
+      <!-- ======== Section 2: Zustand ======== -->
+      <h2>Zustand: Lightweight State Management</h2>
+
+      <p>Ang <strong>Zustand</strong> ay isang lightweight state management library para sa React. Mas simple kaysa Redux at hindi na kailangan ng Provider wrapper.</p>
+
+      <p>I-install muna:</p>
+      <pre><code>npm install zustand</code></pre>
+
+      <p>Gumawa ng store:</p>
+
+      <pre><code>// store/cart.ts
+import { create } from 'zustand';
+
+interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+interface CartStore {
+  items: CartItem[];
+  addItem: (item: CartItem) => void;
+  removeItem: (id: number) => void;
+  clearCart: () => void;
+  total: () => number;
+}
+
+export const useCartStore = create&lt;CartStore&gt;((set, get) =&gt; ({
+  items: [],
+
+  addItem: (item) =&gt; set((state) =&gt; {
+    const existing = state.items.find(i =&gt; i.id === item.id);
+    if (existing) {
+      return {
+        items: state.items.map(i =&gt;
+          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+        ),
+      };
+    }
+    return { items: [...state.items, { ...item, quantity: 1 }] };
+  }),
+
+  removeItem: (id) =&gt; set((state) =&gt; ({
+    items: state.items.filter(i =&gt; i.id !== id),
+  })),
+
+  clearCart: () =&gt; set({ items: [] }),
+
+  total: () =&gt; get().items.reduce((sum, i) =&gt; sum + i.price * i.quantity, 0),
+}));</code></pre>
+
+      <p>Gamitin sa component:</p>
+
+      <pre><code>'use client';
+import { useCartStore } from '@/store/cart';
+
+export default function Cart() {
+  const { items, removeItem, clearCart, total } = useCartStore();
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Shopping Cart&lt;/h2&gt;
+      {items.length === 0 && &lt;p&gt;Cart is empty&lt;/p&gt;}
+      {items.map(item =&gt; (
+        &lt;div key={item.id} className="flex justify-between"&gt;
+          &lt;span&gt;{item.name} x{item.quantity}&lt;/span&gt;
+          &lt;span&gt;&#8369;{(item.price * item.quantity).toFixed(2)}&lt;/span&gt;
+          &lt;button onClick={() =&gt; removeItem(item.id)}&gt;Remove&lt;/button&gt;
+        &lt;/div&gt;
+      ))}
+      &lt;p&gt;Total: &#8369;{total().toFixed(2)}&lt;/p&gt;
+      {items.length &gt; 0 && &lt;button onClick={clearCart}&gt;Clear Cart&lt;/button&gt;}
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <!-- ======== Section 3: Context API vs Zustand ======== -->
+      <h2>Context API vs Zustand — When to Use What</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Factor</th>
+            <th>Context API</th>
+            <th>Zustand</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Complexity</td>
+            <td>Simple, walang dependencies</td>
+            <td>Kailangan ng <code>npm install zustand</code></td>
+          </tr>
+          <tr>
+            <td>Boilerplate</td>
+            <td>Medyo maraming code (Context + Provider + hook)</td>
+            <td>Kaunting code — store lang, walang Provider</td>
+          </tr>
+          <tr>
+            <td>Performance</td>
+            <td>Nagre-render lahat ng consumers pag nagbago ang value</td>
+            <td>Selective re-rendering — component lang na may specific state ang magre-render</td>
+          </tr>
+          <tr>
+            <td>Best for</td>
+            <td>Auth, theme, language — mabagal magbago</td>
+            <td>Cart, forms, real-time data — madalas magbago at complex</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <blockquote>
+        "Rule of thumb: Context API for simple auth/theme state. Zustand for complex global state like shopping cart, real-time data, o multi-step forms."
+      </blockquote>
+
+      <!-- ======== Section 4: Using AI to Set Up State Management ======== -->
+      <h2>Using AI para Mag-setup ng State Management</h2>
+
+      <p>Ang AI ay mahusay sa pag-generate ng Context at Zustand stores. Narito ang sample prompts:</p>
+
+      <p><strong>Para sa Context API:</strong></p>
+      <blockquote>
+        "Create a React Context for user authentication with TypeScript. Include user state, login function (email/password → fetch API), logout function, and loading state. Export AuthProvider and useAuth hook."
+      </blockquote>
+
+      <p><strong>Para sa Zustand:</strong></p>
+      <blockquote>
+        "Create a Zustand store for a shopping cart. Include items array, addItem, removeItem, updateQuantity, clearCart, and total. Items have id, name, price, and quantity. Use TypeScript."
+      </blockquote>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang pinakamalaking disadvantage ng React Context API kumpara sa Zustand?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Hindi supported sa Next.js</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Nagre-render lahat ng consumers kapag nagbago ang value — hindi selective ang updates</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Mas maraming features ang Zustand</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Gaano karaming Provider wrappers ang kailangan mo para gumamit ng Zustand?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Isa — sa root layout</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Isa — per page na gumagamit nito</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Wala — hindi kailangan ng Provider ang Zustand</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Kailan mo dapat gamitin ang Context API sa halip na Zustand?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Kapag kailangan ng complex state na madalas magbago (e.g., cart)</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Kapag simpleng global state lang tulad ng auth o theme — no need for extra dependencies</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Kapag gusto mong maiwasan ang TypeScript</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: Cart State Store with Zustand</h3>
+        <p>Gamit ang AI, mag-setup ng Zustand store para sa shopping cart:</p>
+        <ul>
+          <li>Gumawa ng Zustand store na may <code>items</code> (CartItem[]), <code>addItem</code>, <code>removeItem</code>, <code>updateQuantity</code>, <code>clearCart</code>, at <code>total</code>.</li>
+          <li>Gumawa ng Cart component na nagdi-display ng items at total.</li>
+          <li>Gumawa ng "Add to Cart" button component.</li>
+          <li>I-integrate ang store sa layout para magamit sa buong app.</li>
+        </ul>
+        <p><em>Prompt tip: "Create a Zustand cart store with TypeScript. Items have id, name, price, quantity, and image. Include addItem, removeItem, updateQuantity, clearCart, and a computed total. Then create a CartDrawer component that shows cart items and total, and an AddToCartButton component." I-save sa <code>store/cart.ts</code> at <code>components/CartDrawer.tsx</code>.</em></p>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang <strong>Context API</strong> ay built-in sa React — maganda para sa simpleng global state (auth, theme) pero puwedeng mag-cause ng unnecessary re-renders.</li>
+        <li>Ang <strong>Zustand</strong> ay lightweight library — walang Provider, selective re-renders, at mas malinis para sa complex state.</li>
+        <li>Gamitin ang Context para sa "madalang magbago" na state; Zustand para sa "madalas magbago" at complex state.</li>
+        <li>Parehong mahusay ang AI sa pag-generate ng Context at Zustand code — specify lang ang state shape at actions.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>React Documentation (Managing State)</strong> — Official guide para sa state management patterns sa React. <a href="https://react.dev/learn/managing-state" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'c', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

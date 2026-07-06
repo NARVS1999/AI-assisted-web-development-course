@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0058: Capstone Project 2: E-Commerce Platform</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0058: Capstone Project 2: E-Commerce Platform</h1>
+      <p><em>E-commerce na may admin panel — dito mo marerealize ang power ng AI-assisted development.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Maplano at ma-scaffold ang isang full-featured e-commerce platform na may product listing, cart, checkout, order tracking, admin dashboard, at payment integration gamit si AI.
+      </div>
+
+      <h2>Ano ang gagawin natin?</h2>
+      <p>Sa lesson na ito, gagawa ka ng isang e-commerce platform na may product catalog, shopping cart, checkout process, order tracking, admin dashboard, at payment integration (PayMongo o Stripe). Ito ang pangalawang capstone project mo at mas complex kaysa sa task management.</p>
+
+      <h2>Features Overview</h2>
+      <ul>
+        <li><strong>Product Listing</strong> — Catalog with categories, search, filter, pagination</li>
+        <li><strong>Shopping Cart</strong> — Add/remove items, update quantities, persistent cart</li>
+        <li><strong>Checkout</strong> — Address form, order summary, payment gateway</li>
+        <li><strong>Order Tracking</strong> — Order status, history, email notifications</li>
+        <li><strong>Admin Dashboard</strong> — Manage products, orders, users, analytics</li>
+        <li><strong>Payment Integration</strong> — PayMongo (PH) or Stripe (global)</li>
+      </ul>
+
+      <h2>Tech Stack</h2>
+      <table>
+        <tr><th>Layer</th><th>Technology</th></tr>
+        <tr><td>Backend API</td><td>Laravel 11 (RESTful API)</td></tr>
+        <tr><td>Frontend</td><td>Next.js 14 (App Router)</td></tr>
+        <tr><td>Database</td><td>MySQL</td></tr>
+        <tr><td>Caching</td><td>Redis</td></tr>
+        <tr><td>Payment</td><td>PayMongo / Stripe</td></tr>
+        <tr><td>Auth</td><td>Laravel Sanctum</td></tr>
+        <tr><td>Queue</td><td>Laravel Queues (email, order processing)</td></tr>
+      </table>
+
+      <h2>AI Role: Complex Query Generation, UI Component Creation, Payment Integration</h2>
+      <p>Sa e-commerce project na ito, si AI ang tutulong sa:</p>
+      <ul>
+        <li><strong>Complex Query Generation</strong> — Magpagawa kay AI ng mga advanced Eloquent queries para sa product filtering, search, sorting, at aggregation</li>
+        <li><strong>UI Component Creation</strong> — I-prompt si AI para gumawa ng mga reusable React components: ProductCard, CartDrawer, CheckoutForm, OrderTimeline</li>
+        <li><strong>Payment Integration</strong> — Magpagawa kay AI ng buong payment flow gamit ang PayMongo o Stripe</li>
+      </ul>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Ang e-commerce ay may maraming moving parts. Gamitin si AI para i-generate ang boilerplate ng bawat feature — focus ka sa integration at testing.
+      </div>
+
+      <h2>Database Schema Overview</h2>
+      <pre><code>users
+  id, name, email, password, role (customer/admin)
+
+categories
+  id, name, slug, description, parent_id
+
+products
+  id, category_id, name, slug, description, price, stock,
+  images (json), is_active
+
+carts
+  id, user_id, session_id, created_at
+
+cart_items
+  id, cart_id, product_id, quantity, price
+
+orders
+  id, user_id, order_number, status, total_amount,
+  shipping_address, payment_method, payment_status
+
+order_items
+  id, order_id, product_id, quantity, price
+
+payments
+  id, order_id, gateway, transaction_id, amount, status
+</code></pre>
+
+      <h2>Step-by-Step: AI Prompts</h2>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>Setup at Database Design</strong></p>
+          <p>Prompt AI: <em>"Generate Laravel 11 migrations and models for an e-commerce platform: categories, products, carts, cart_items, orders, order_items, and payments tables with all foreign keys and relationships."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>Product Catalog API</strong></p>
+          <p>Prompt AI: <em>"Create a ProductController with index, show, search methods. Include filtering by category, price range, sorting, and pagination. Use API resources for transformation."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>Cart Functionality</strong></p>
+          <p>Prompt AI: <em>"Generate CartController with add, remove, update quantity, and get cart methods. Support both authenticated user carts and guest session-based carts."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <p><strong>Checkout & Order Processing</strong></p>
+          <p>Prompt AI: <em>"Create a checkout flow: OrderController with placeOrder, order history, and order detail methods. Include address validation, stock deduction, and order number generation."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">5</div>
+        <div class="step-content">
+          <p><strong>Payment Integration</strong></p>
+          <p>Prompt AI: <em>"Generate a PaymentService that integrates with Stripe/PayMongo for processing payments. Include webhook handling for payment confirmation, refund, and failed payments."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">6</div>
+        <div class="step-content">
+          <p><strong>Admin Dashboard</strong></p>
+          <p>Prompt AI: <em>"Create admin controllers and Next.js pages for managing products, categories, orders, and users. Include role-based access (admin only) and dashboard analytics (total sales, orders count, etc.)."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">7</div>
+        <div class="step-content">
+          <p><strong>Next.js Frontend</strong></p>
+          <p>Prompt AI: <em>"Generate a Next.js 14 e-commerce frontend with product listing page, product detail page, shopping cart (persistent + drawer UI), checkout form, order tracking page, and admin dashboard."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">8</div>
+        <div class="step-content">
+          <p><strong>Caching with Redis</strong></p>
+          <p>Prompt AI: <em>"Implement Redis caching for product catalog, category listings, and dashboard analytics in Laravel. Include cache invalidation on product updates."</em></p>
+        </div>
+      </div>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Alin sa mga sumusunod ang pinaka-appropriate na database schema para sa product-category relationship sa e-commerce?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Single table na may category column</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Many-to-Many na category_product pivot table</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> One-to-Many: categories table at products table na may category_id foreign key</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Bakit mahalaga ang Redis caching sa e-commerce platform?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Para mabilis ma-load ang product catalog at dashboard analytics nang hindi paulit-ulit na nag-query sa database</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Para mag-store ng user passwords</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Para mag-handle ng WebSocket connections</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Paano pinakamahusay na gamitin si AI para sa payment integration?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> I-prompt si AI na gumawa ng buong PaymentService na may webhook handling, kasama na ang Stripe/PayMongo SDK setup</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Manu-manong isulat ang lahat ng payment code</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Gamitin ang AI para lang mag-debug ng payment errors</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Capstone Project 2: E-Commerce Platform</h3>
+        <p>Gamit ang AI prompts sa itaas, i-scaffold ang isang e-commerce platform. Siguraduhing kasama ang lahat ng features: products, cart, checkout, orders, admin dashboard, at payment integration.</p>
+        <p><strong>Deliverables:</strong></p>
+        <ul>
+          <li>Laravel API na may product catalog, cart, orders, payments, at admin endpoints</li>
+          <li>Next.js frontend na may product pages, cart, checkout, order tracking, admin dashboard</li>
+          <li>Redis caching para sa product catalog at analytics</li>
+          <li>Working payment integration (PayMongo o Stripe)</li>
+          <li>Pest tests para sa critical paths (cart, checkout, orders)</li>
+        </ul>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang e-commerce platform ay may product catalog, cart, checkout, orders, admin dashboard, at payment integration</li>
+        <li>Tech stack: Laravel + Next.js + MySQL + Redis + Stripe/PayMongo</li>
+        <li>Gamitin si AI para sa complex queries, UI components, at payment flow</li>
+        <li>Mahalaga ang database schema design para sa e-commerce relationships</li>
+        <li>Redis caching ay kritikal para sa performance ng product catalog at analytics</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation (Billing)</strong> — Official guide para sa payment processing at subscriptions. <a href="https://laravel.com/docs/billing" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>PayMongo API</strong> — Philippine payment gateway API documentation. <a href="https://developers.paymongo.com" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'c', q2: 'a', q3: 'a' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

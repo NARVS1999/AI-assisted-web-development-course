@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phase 3: Next.js Frontend Development — Cheatsheet</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+  <style>
+    .cheatsheet h2 { margin-top: 1.5rem; }
+    .cheatsheet h3 { margin-top: 1rem; font-size: 1rem; }
+    .cheatsheet table { font-size: 0.85rem; }
+    .cheatsheet code { font-size: 0.8rem; }
+    .cheatsheet pre { font-size: 0.8rem; padding: 0.75rem; }
+    .taglish { color: var(--accent); font-style: italic; }
+  </style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container cheatsheet">
+
+      <h1>Phase 3: Next.js Frontend Development — Cheatsheet</h1>
+      <p><em>Mabilisang reference para sa Next.js App Router, React, Tailwind CSS, at iba pang topics sa Phase 3.</em></p>
+
+      <!-- ===== App Router Conventions ===== -->
+      <h2>1. App Router File Conventions</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>File</th>
+            <th>Purpose</th>
+            <th>Client/Server</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>page.tsx</code></td>
+            <td>UI para sa specific route</td>
+            <td>Server (default)</td>
+          </tr>
+          <tr>
+            <td><code>layout.tsx</code></td>
+            <td>Wrapper na nagpe-preserve ng state sa navigation</td>
+            <td>Server (default)</td>
+          </tr>
+          <tr>
+            <td><code>loading.tsx</code></td>
+            <td>UI habang naglo-load ang page (Suspense)</td>
+            <td>Server (default)</td>
+          </tr>
+          <tr>
+            <td><code>error.tsx</code></td>
+            <td>Error boundary para sa runtime errors</td>
+            <td>Client (required <code>'use client'</code>)</td>
+          </tr>
+          <tr>
+            <td><code>not-found.tsx</code></td>
+            <td>404 page</td>
+            <td>Server (default)</td>
+          </tr>
+          <tr>
+            <td><code>route.ts</code></td>
+            <td>API route</td>
+            <td>Server</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Folder Structure = URL Structure</h3>
+      <pre><code>app/
+  page.tsx              -> /
+  about/page.tsx        -> /about
+  products/page.tsx     -> /products
+  products/[id]/page.tsx  -> /products/1
+  blog/[...slug]/page.tsx -> /blog/2024/tech/post-1</code></pre>
+
+      <p class="taglish">Tip: Ang folder structure mo ang nagde-define ng URLs.</p>
+
+      <h3>Layout Example</h3>
+      <pre><code>// app/layout.tsx
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    &lt;html lang="en"&gt;
+      &lt;body&gt;
+        &lt;nav&gt;...&lt;/nav&gt;
+        &lt;main&gt;{children}&lt;/main&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+  );
+}</code></pre>
+
+      <!-- ===== Server vs Client ===== -->
+      <h2>2. Server Components vs Client Components</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Server Component</th>
+            <th>Client Component</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Directive</td>
+            <td>Default (no directive needed)</td>
+            <td><code>'use client'</code> at top of file</td>
+          </tr>
+          <tr>
+            <td>Renders on</td>
+            <td>Server</td>
+            <td>Browser</td>
+          </tr>
+          <tr>
+            <td>React Hooks</td>
+            <td>Not allowed</td>
+            <td>Allowed (useState, useEffect, etc.)</td>
+          </tr>
+          <tr>
+            <td>Event Listeners</td>
+            <td>Not allowed</td>
+            <td>Allowed (onClick, onSubmit, etc.)</td>
+          </tr>
+          <tr>
+            <td>Browser APIs</td>
+            <td>Not allowed</td>
+            <td>Allowed (localStorage, etc.)</td>
+          </tr>
+          <tr>
+            <td>Data Fetching</td>
+            <td>Direct (async/await)</td>
+            <td>useEffect or SWR/React Query</td>
+          </tr>
+          <tr>
+            <td>Bundle Size</td>
+            <td>Smaller (no JS sent)</td>
+            <td>Larger (includes component JS)</td>
+          </tr>
+          <tr>
+            <td>Database Access</td>
+            <td>Direct (server-side)</td>
+            <td>Via API only</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="taglish">Rule of thumb: Kung walang interactivity, Server Component. Kung may hooks/events, Client Component.</p>
+
+      <!-- ===== Tailwind CSS ===== -->
+      <h2>3. Tailwind CSS Quick Reference</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Examples</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Spacing</td>
+            <td><code>p-4</code> (padding 1rem), <code>m-2</code> (margin 0.5rem), <code>px-6</code>, <code>py-3</code></td>
+          </tr>
+          <tr>
+            <td>Colors</td>
+            <td><code>text-blue-600</code>, <code>bg-gray-100</code>, <code>border-red-500</code></td>
+          </tr>
+          <tr>
+            <td>Typography</td>
+            <td><code>text-lg</code>, <code>text-2xl</code>, <code>font-bold</code>, <code>leading-relaxed</code></td>
+          </tr>
+          <tr>
+            <td>Flexbox</td>
+            <td><code>flex</code>, <code>items-center</code>, <code>justify-between</code>, <code>flex-col</code></td>
+          </tr>
+          <tr>
+            <td>Grid</td>
+            <td><code>grid</code>, <code>grid-cols-3</code>, <code>gap-4</code>, <code>col-span-2</code></td>
+          </tr>
+          <tr>
+            <td>Borders</td>
+            <td><code>border</code>, <code>rounded-lg</code>, <code>shadow-md</code>, <code>border-gray-200</code></td>
+          </tr>
+          <tr>
+            <td>Sizing</td>
+            <td><code>w-full</code>, <code>h-64</code>, <code>max-w-4xl</code>, <code>min-h-screen</code></td>
+          </tr>
+          <tr>
+            <td>Responsive</td>
+            <td><code>sm:</code> (640px), <code>md:</code> (768px), <code>lg:</code> (1024px), <code>xl:</code> (1280px)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>Halimbawa: <code>grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6</code> — responsive grid 1/2/3 columns.</p>
+
+      <!-- ===== Data Fetching ===== -->
+      <h2>4. Data Fetching Patterns</h2>
+
+      <h3>Server Component (default)</h3>
+      <pre><code>export default async function Page() {
+  const data = await fetch('https://api.example.com/data');
+  const products = await data.json();
+  return &lt;div&gt;{/* render products */}&lt;/div&gt;;
+}</code></pre>
+
+      <h3>Client Component (useEffect)</h3>
+      <pre><code>'use client';
+export default function Page() {
+  const [data, setData] = useState(null);
+  useEffect(() => {
+    fetch('/api/data').then(res => res.json()).then(setData);
+  }, []);
+  // ...
+}</code></pre>
+
+      <h3>Caching Strategies</h3>
+      <pre><code>// Static (default) — fetched at build time
+fetch(url);
+
+// Dynamic — fresh every request
+fetch(url, { cache: 'no-store' });
+
+// ISR — revalidate every 60s
+fetch(url, { next: { revalidate: 60 } });</code></pre>
+
+      <h3>SWR (Client-side with caching)</h3>
+      <pre><code>import useSWR from 'swr';
+const { data, error, isLoading } = useSWR('/api/products', fetcher);</code></pre>
+
+      <!-- ===== Server Actions ===== -->
+      <h2>5. Server Actions Syntax</h2>
+
+      <pre><code>'use server';
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
+
+const schema = z.object({
+  name: z.string().min(2),
+  email: z.string().email(),
+});
+
+export async function submitForm(prevState: any, formData: FormData) {
+  const validated = schema.safeParse({
+    name: formData.get('name'),
+    email: formData.get('email'),
+  });
+  if (!validated.success) {
+    return { errors: validated.error.flatten().fieldErrors };
+  }
+  // save to database...
+  revalidatePath('/contact');
+  return { success: true };
+}</code></pre>
+
+      <h3>Form Component</h3>
+      <pre><code>'use client';
+import { useActionState } from 'react';
+import { submitForm } from '@/app/actions';
+
+export default function Form() {
+  const [state, formAction, pending] = useActionState(submitForm, null);
+  return (
+    &lt;form action={formAction}&gt;
+      &lt;input name="name" /&gt;
+      {state?.errors?.name && &lt;p&gt;{state.errors.name[0]}&lt;/p&gt;}
+      &lt;button type="submit" disabled={pending}&gt;Submit&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}</code></pre>
+
+      <!-- ===== State Management ===== -->
+      <h2>6. State Management Options</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Context API</th>
+            <th>Zustand</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Setup</td>
+            <td>Built-in (Context + Provider + hook)</td>
+            <td><code>npm install zustand</code></td>
+          </tr>
+          <tr>
+            <td>Provider needed</td>
+            <td>Yes</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td>Re-renders</td>
+            <td>All consumers</td>
+            <td>Selective</td>
+          </tr>
+          <tr>
+            <td>Best for</td>
+            <td>Auth, theme, language</td>
+            <td>Cart, complex forms, real-time data</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Zustand Store Example</h3>
+      <pre><code>import { create } from 'zustand';
+
+export const useStore = create((set) => ({
+  count: 0,
+  increment: () => set((state) => ({ count: state.count + 1 })),
+  decrement: () => set((state) => ({ count: state.count - 1 })),
+}));
+
+// Use in component:
+// const { count, increment } = useStore();</code></pre>
+
+      <!-- ===== next/image & next/font ===== -->
+      <h2>7. next/image at next/font</h2>
+
+      <h3>next/image</h3>
+      <pre><code>import Image from 'next/image';
+
+// Local image
+&lt;Image src={myImage} alt="desc" width={400} height={300} priority /&gt;
+
+// Remote image (requires remotePatterns in next.config)
+&lt;Image src="https://..." alt="desc" fill className="object-cover" sizes="50vw" /&gt;</code></pre>
+
+      <p><strong>next.config.ts:</strong></p>
+      <pre><code>const nextConfig = {
+  images: {
+    remotePatterns: [{ protocol: 'https', hostname: 'images.unsplash.com' }],
+  },
+};</code></pre>
+
+      <h3>next/font</h3>
+      <pre><code>import { Inter } from 'next/font/google';
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+
+// Sa layout:
+&lt;html className={inter.variable}&gt;
+// Sa CSS:
+// body { font-family: var(--font-inter); }</code></pre>
+
+      <h3>Metadata API (SEO)</h3>
+      <pre><code>// Static
+export const metadata = { title: 'Home', description: '...' };
+
+// Dynamic
+export async function generateMetadata({ params }) {
+  const post = await getPost(params.id);
+  return { title: post.title, description: post.excerpt };
+}</code></pre>
+
+      <!-- ===== Common AI Prompts ===== -->
+      <h2>8. Common AI Prompts for Phase 3</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Sample Prompt</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Scaffold App</td>
+            <td>"Generate Next.js 14 App Router pages for Home, About, Products with shared layout and navbar."</td>
+          </tr>
+          <tr>
+            <td>Component</td>
+            <td>"Create ProductCard component with title, price, image props using Tailwind CSS."</td>
+          </tr>
+          <tr>
+            <td>Data Fetching</td>
+            <td>"Server Component page fetching products from API, dynamic rendering, responsive grid."</td>
+          </tr>
+          <tr>
+            <td>Server Action</td>
+            <td>"Contact form with Server Actions, Zod validation, useActionState, useFormStatus."</td>
+          </tr>
+          <tr>
+            <td>Zustand Store</td>
+            <td>"Zustand cart store with addItem, removeItem, updateQuantity, total, and TypeScript."</td>
+          </tr>
+          <tr>
+            <td>Auth</td>
+            <td>"Login form with Server Action, middleware protecting /dashboard, SessionProvider context."</td>
+          </tr>
+          <tr>
+            <td>Error Handling</td>
+            <td>"Generate error.tsx, loading.tsx, not-found.tsx with Tailwind CSS skeletons."</td>
+          </tr>
+          <tr>
+            <td>SEO</td>
+            <td>"SEO metadata for e-commerce: Open Graph, Twitter card, generateMetadata for products."</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="info">
+        <strong>Pro Tip</strong>
+        I-specify lagi ang "Next.js 14 App Router", "TypeScript", at "Tailwind CSS" sa prompts para makuha ang tamang code.
+      </div>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

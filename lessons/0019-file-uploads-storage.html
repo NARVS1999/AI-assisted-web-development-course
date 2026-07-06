@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0019: File Uploads & Storage (AI-Assisted)</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0019: File Uploads & Storage (AI-Assisted)</h1>
+      <p><em>Kapag mag-a-upload ng image, huwag i-store sa database ang file mismo — ang path lang, ang file sa storage.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Matutunan ang file upload handling sa Laravel, gamitin ang Storage facade, at gumamit ng AI para mag-generate ng upload logic.
+      </div>
+
+      <h2>File Uploads Best Practice</h2>
+      <p>Huwag i-store ang actual file sa database. Ang database ay para sa metadata at file path. Ang file mismo ay nasa storage disk (local, public, o S3).</p>
+
+      <div class="warning">
+        <strong>Important</strong>
+        "Kapag mag-a-upload ng image, huwag i-store sa database ang file mismo — ang path lang, ang file sa storage."
+      </div>
+
+      <h2>Storage Facade</h2>
+      <p>Ang <code>Storage</code> facade ay nagbibigay ng unified interface para sa iba't ibang storage drivers:</p>
+
+      <table>
+        <tr><th>Driver</th><th>Use Case</th></tr>
+        <tr><td>local</td><td>Storage sa <code>storage/app</code> — hindi accessible publicly</td></tr>
+        <tr><td>public</td><td>Storage sa <code>storage/app/public</code> — accessible via symlink</td></tr>
+        <tr><td>s3</td><td>Amazon S3 cloud storage para sa production</td></tr>
+      </table>
+
+      <h2>Handling File Uploads</h2>
+      <pre><code>// Sa controller
+public function store(Request $request)
+{
+    $request->validate([
+        'avatar' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+    ]);
+
+    $path = $request->file('avatar')->store('avatars', 'public');
+
+    // Save $path sa database
+    $user = auth()->user();
+    $user->avatar = $path;
+    $user->save();
+
+    return back();
+}</code></pre>
+
+      <h2>Retrieving Files</h2>
+      <pre><code>// Kunin ang URL ng file
+$url = Storage::url($user->avatar);
+
+// Download
+return Storage::download($user->avatar);
+
+// Delete
+Storage::delete($user->avatar);</code></pre>
+
+      <h2>File Validation</h2>
+      <pre><code>'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+'document' => 'required|mimes:pdf,doc,docx|max:10240',</code></pre>
+      <p>Ang <code>max</code> ay nasa kilobytes (2048 = 2MB).</p>
+
+      <h2>Image Optimization</h2>
+      <p>Para sa image optimization, puwede kang gumamit ng Intervention Image package. I-prompt si AI: "Add image optimization to this upload function — resize to 300x300 and convert to WebP format."</p>
+
+      <h2>Using AI for Upload Logic</h2>
+      <p>I-prompt si AI: "Generate an avatar upload function in Laravel with validation for image type and max 2MB. Store in public disk and return the path."</p>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Saan mo dapat i-store ang uploaded file?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Diretso sa database bilang BLOB</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Sa storage disk, at ang path lang ang i-save sa database</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Sa public_html folder</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Anong Laravel facade ang ginagamit para sa file storage operations?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> File</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Storage</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Upload</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Anong validation rule ang ginagamit para i-check na ang file ay isang image?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> file</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> image</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> mimes</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: Avatar Upload Feature</h3>
+        <p>Gamit ang AI, ipagawa ang isang avatar upload feature na may validation (image file at max 2MB). Dapat i-store ang file sa public disk at ang path ay i-save sa users table. I-prompt si AI ng ganito: "Create an avatar upload function in Laravel with image validation (max 2MB). Store in public/avatars directory and save the path to the user model."</p>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Huwag i-store ang files sa database — ang path lang, ang file ay nasa storage</li>
+        <li>Ang Storage facade ay sumusuporta sa local, public, at S3 drivers</li>
+        <li>Gamitin ang <code>$request->file()</code> para i-access ang uploaded file</li>
+        <li>Ang <code>store()</code> method ay nagse-save ng file at nagre-return ng path</li>
+        <li>Ang validation rules tulad ng image, mimes, at max ay mahalaga para sa security</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation (File Storage)</strong> — Official guide para sa file uploads at cloud storage integration. <a href="https://laravel.com/docs/filesystem" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

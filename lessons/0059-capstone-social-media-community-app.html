@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0059: Capstone Project 3: Social Media / Community App</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0059: Capstone Project 3: Social Media / Community App</h1>
+      <p><em>Sarili mong social network — mas simple sa Facebook pero with core features.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Maplano at ma-scaffold ang isang social media application na may posts, comments, likes, follows, notifications, at real-time chat gamit si AI.
+      </div>
+
+      <h2>Ano ang gagawin natin?</h2>
+      <p>Sa lesson na ito, gagawa ka ng sarili mong social network. Magkakaroon ito ng posts, comments, likes, follows, notifications, at real-time chat. Mas simple ito kaysa Facebook pero may core features na makikita mo sa mga modernong social media apps.</p>
+
+      <h2>Features Overview</h2>
+      <ul>
+        <li><strong>Posts</strong> — Create, edit, delete posts with images</li>
+        <li><strong>Comments</strong> — Nested comments sa posts</li>
+        <li><strong>Likes</strong> — Like/unlike posts at comments</li>
+        <li><strong>Follows</strong> — Follow/unfollow users, feed generation</li>
+        <li><strong>Notifications</strong> — Real-time notifications for likes, comments, follows</li>
+        <li><strong>Chat</strong> — Real-time messaging between users</li>
+      </ul>
+
+      <h2>Tech Stack</h2>
+      <table>
+        <tr><th>Layer</th><th>Technology</th></tr>
+        <tr><td>Backend API</td><td>Laravel 11 (RESTful API)</td></tr>
+        <tr><td>Frontend</td><td>Next.js 14 (App Router)</td></tr>
+        <tr><td>Database</td><td>MySQL</td></tr>
+        <tr><td>Real-Time</td><td>Pusher / Laravel Reverb</td></tr>
+        <tr><td>File Uploads</td><td>Laravel Storage (images, attachments)</td></tr>
+        <tr><td>Auth</td><td>Laravel Sanctum</td></tr>
+      </table>
+
+      <h2>AI Role: Real-Time Features, Complex Relationships, UI/UX</h2>
+      <p>Sa social media app na ito, si AI ang tutulong sa:</p>
+      <ul>
+        <li><strong>Real-Time Features</strong> — Magpagawa kay AI ng notification system at chat gamit ang Pusher o Reverb</li>
+        <li><strong>Complex Relationships</strong> — I-prompt si AI para sa mga Eloquent relationships: posts with comments, likes (polymorphic), follows (many-to-many self-referencing)</li>
+        <li><strong>UI/UX</strong> — Magpagawa kay AI ng modern social media UI gamit ang Tailwind CSS at React components</li>
+      </ul>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Ang social media app ay may pinaka-complex na database relationships. Gamitin si AI para i-design ang schema at relationships — ito ang magiging backbone ng app mo.
+      </div>
+
+      <h2>Database Relationships</h2>
+      <pre><code>users
+  id, name, email, username, avatar, bio
+
+posts
+  id, user_id, content, image, created_at
+
+comments
+  id, user_id, post_id, parent_id (for nested), content
+
+likes (polymorphic)
+  id, user_id, likeable_id, likeable_type (Post, Comment)
+
+follows
+  id, follower_id, followee_id
+
+notifications
+  id, user_id, type, data (json), read_at
+
+messages
+  id, sender_id, receiver_id, content, read_at
+
+conversations
+  id, created_at
+
+conversation_user (pivot)
+  conversation_id, user_id</code></pre>
+
+      <div class="info">
+        <strong>Key Concept</strong>
+        Ang likes table ay gumagamit ng Polymorphic Relationship para magamit sa parehong Posts at Comments. Si AI ang bahala sa syntax nito.
+      </div>
+
+      <h2>Step-by-Step: AI Prompts</h2>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>Database Migrations & Models</strong></p>
+          <p>Prompt AI: <em>"Generate Laravel 11 migrations and models for a social media app: users (with username, avatar, bio), posts, comments (with nested replies via parent_id), likes (polymorphic), follows (self-referencing many-to-many), notifications, and messages with conversations."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>Post & Feed API</strong></p>
+          <p>Prompt AI: <em>"Create PostController with CRUD, feed generation (posts from followed users), and image upload. Include API resources with comments count and likes count."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>Comments with Nested Replies</strong></p>
+          <p>Prompt AI: <em>"Generate CommentController with CRUD and nested replies support. Comments should have parent_id for threading. Include eager loading for efficiency."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <p><strong>Likes (Polymorphic)</strong></p>
+          <p>Prompt AI: <em>"Create a LikeController with toggle like functionality using polymorphic relationships. Support liking both posts and comments. Return updated likes count."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">5</div>
+        <div class="step-content">
+          <p><strong>Follow System</strong></p>
+          <p>Prompt AI: <em>"Generate FollowController with follow/unfollow methods using a many-to-many self-referencing relationship on users table. Include follower/following counts."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">6</div>
+        <div class="step-content">
+          <p><strong>Real-Time Notifications</strong></p>
+          <p>Prompt AI: <em>"Set up Laravel database notifications and broadcast them via Pusher/Reverb for likes, comments, and follows. Include a NotificationsController for listing and marking as read."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">7</div>
+        <div class="step-content">
+          <p><strong>Real-Time Chat</strong></p>
+          <p>Prompt AI: <em>"Create a chat system with conversations, messages, and real-time delivery via WebSockets. Include typing indicators and read receipts."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">8</div>
+        <div class="step-content">
+          <p><strong>Next.js Frontend</strong></p>
+          <p>Prompt AI: <em>"Generate a Next.js 14 social media frontend with: feed page, post creation, user profiles, follow buttons, comments with replies, like toggles, notifications dropdown, and chat UI."</em></p>
+        </div>
+      </div>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Anong Eloquent relationship ang pinaka-appropriate para sa likes system na gumagana sa parehong posts at comments?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> One-to-Many (hasMany)</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Polymorphic (morphMany / morphTo)</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Many-to-Many (belongsToMany)</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Paano mo i-implement ang "feed" na nagpapakita ng posts mula sa mga user na sinusundan mo?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> I-query lahat ng posts at i-filter manually</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Gumamit ng database view</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Use Eloquent: Post::whereIn('user_id', auth()->user()->following()->pluck('followee_id'))->latest()->paginate()</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Anong approach ang pinaka-efficient para sa nested comments (replies to replies)?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Gumamit ng parent_id column at eager loading with recursion para i-load ang hierarchy</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Separate table para sa replies</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Store lahat ng comments sa isang JSON column</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Capstone Project 3: Social Media / Community App</h3>
+        <p>Gamit ang AI prompts sa itaas, i-scaffold ang isang social media application. Siguraduhing kasama ang lahat ng features: posts, comments (nested), likes (polymorphic), follows, notifications, at real-time chat.</p>
+        <p><strong>Deliverables:</strong></p>
+        <ul>
+          <li>Laravel API na may posts, comments, likes, follows, notifications, at chat endpoints</li>
+          <li>Next.js frontend na may feed, profiles, notifications, at chat UI</li>
+          <li>Real-time features via Pusher or Reverb</li>
+          <li>Polymorphic likes system na gumagana sa posts at comments</li>
+          <li>Pest tests para sa mga relationships at controllers</li>
+        </ul>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang social media app ay may posts, comments (nested), likes (polymorphic), follows, notifications, at chat</li>
+        <li>Tech stack: Laravel + Next.js + MySQL + Pusher/Reverb</li>
+        <li>Ang Polymorphic relationship ay ginagamit para sa likes na gumagana sa multiple models</li>
+        <li>Ang feed ay ginagawa sa pamamagitan ng querying posts mula sa followed users</li>
+        <li>Real-time notifications at chat ay nangangailangan ng WebSockets</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Reverb Documentation</strong> — Official guide para sa realtime features gamit ang WebSockets. <a href="https://laravel.com/docs/reverb" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'c', q3: 'a' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

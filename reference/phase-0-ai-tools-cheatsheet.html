@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phase 0: AI Tools Cheatsheet</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+  <style>
+    .cheatsheet { max-width: 800px; margin: 0 auto; padding: 2rem; }
+    .cheatsheet h1 { text-align: center; margin-bottom: 0.25rem; }
+    .cheatsheet .subtitle { text-align: center; font-family: var(--font-sans); color: var(--muted); margin-bottom: 2rem; }
+    .cheatsheet section { margin-bottom: 2.5rem; }
+    .cheatsheet section h2 { margin-top: 0; }
+    .cmd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 600px) { .cmd-grid { grid-template-columns: 1fr; } }
+    .cmd-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; background: var(--code-bg); }
+    .cmd-card h3 { margin-top: 0; font-size: 0.95rem; margin-bottom: 0.75rem; color: var(--accent); }
+    .cmd-card code { display: block; margin-bottom: 0.4rem; font-size: 0.82rem; }
+    .glossary-list dt { font-weight: 600; font-family: var(--font-sans); margin-top: 1rem; color: var(--accent-dark); }
+    .glossary-list dd { margin-left: 0; margin-bottom: 0.5rem; font-size: 0.95rem; }
+    .template-box { background: var(--code-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.6; }
+    .checklist { list-style: none; padding: 0; }
+    .checklist li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-family: var(--font-sans); }
+    .checklist li::before { content: "[ ] "; font-family: var(--font-mono); color: var(--muted); }
+    .section-label { font-family: var(--font-sans); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.75rem; }
+  </style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="cheatsheet">
+
+  <h1>&#9881; Phase 0: AI Tools Cheatsheet</h1>
+  <p class="subtitle">Quick reference for AI-Assisted Web Development Course</p>
+
+  <!-- ===== Quick Command Reference ===== -->
+  <section>
+    <h2>Quick Command Reference</h2>
+
+    <div class="cmd-grid">
+      <div class="cmd-card">
+        <h3>Claude Code CLI</h3>
+        <code>npm install -g @anthropic-ai/claude-code</code>
+        <code>claude login</code>
+        <code>claude "your prompt"</code>
+        <code>claude -p "one-shot prompt"</code>
+        <code>claude (interactive mode)</code>
+        <code>claude --version</code>
+        <code>claude config</code>
+      </div>
+
+      <div class="cmd-card">
+        <h3>OpenCode CLI</h3>
+        <code>npm install -g @opencode/cli</code>
+        <code>opencode config set API_KEY "..."</code>
+        <code>opencode "your prompt"</code>
+        <code>opencode (interactive mode)</code>
+        <code>opencode --version</code>
+        <code>opencode --help</code>
+        <code>opencode config</code>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Prompt Engineering Template ===== -->
+  <section>
+    <h2>Prompt Engineering Template</h2>
+    <div class="section-label">Gamitin ang template na ito para sa lahat ng prompts</div>
+    <div class="template-box">
+      <span class="token comment"># Tech Stack</span><br>
+      <span class="token keyword">Using:</span> [Laravel 11 / Next.js 14 / MySQL 8 / Tailwind CSS]<br><br>
+
+      <span class="token comment"># Goal</span><br>
+      <span class="token keyword">Create</span> a [type of code] that [does what]<br><br>
+
+      <span class="token comment"># Constraints</span><br>
+      <span class="token punctuation">-</span> Do NOT use [packages/patterns to avoid]<br>
+      <span class="token punctuation">-</span> MUST use [required patterns/features]<br>
+      <span class="token punctuation">-</span> Follow [coding standards/conventions]<br><br>
+
+      <span class="token comment"># Example (optional)</span><br>
+      <span class="token keyword">Here is</span> an example of the expected output:<br>
+      [code snippet]
+    </div>
+  </section>
+
+  <!-- ===== AI Workflow Checklist ===== -->
+  <section>
+    <h2>AI Workflow Checklist</h2>
+    <div class="section-label">Prompt &rarr; Review &rarr; Test &rarr; Refactor</div>
+
+    <ul class="checklist">
+      <li><strong>Prompt</strong> — Sumulat ng specific prompt na may tech stack, goal, at constraints</li>
+      <li><strong>Review</strong> — Basahin ang bawat linya. Suriin ang syntax, logic, security, at best practices</li>
+      <li><strong>Test</strong> — I-run ang code. I-test ang happy path at edge cases</li>
+      <li><strong>Refactor</strong> — I-optimize, i-document, at i-clean up ang code</li>
+      <li><strong>Security Check</strong> — Walang SQL injection, XSS, o hardcoded secrets?</li>
+      <li><strong>Performance Check</strong> — Walang N+1 queries, efficient loops, unnecessary queries?</li>
+      <li><strong>Documentation</strong> — May comments ba para sa non-obvious logic? Na-update ba ang README?</li>
+    </ul>
+  </section>
+
+  <!-- ===== Key Terms Glossary ===== -->
+  <section>
+    <h2>Key Terms Glossary</h2>
+    <div class="section-label">Phase 0 Terminology</div>
+
+    <dl class="glossary-list">
+      <dt>AI Coding Assistant</dt>
+      <dd>Tool na gumagamit ng LLM para tumulong sa pagsulat, pag-review, at pag-debug ng code (Claude Code, OpenCode, Copilot, Cursor).</dd>
+
+      <dt>Claude Code CLI</dt>
+      <dd>Anthropic's official command-line AI coding assistant. May subscription fee, proprietary, optimized para sa Anthropic models.</dd>
+
+      <dt>OpenCode CLI</dt>
+      <dd>Open-source na alternative kay Claude Code CLI. Libre, community-driven, at model-agnostic (pwedeng Anthropic, OpenAI, atbp.).</dd>
+
+      <dt>Prompt Engineering</dt>
+      <dd>Ang sining ng pagsulat ng malinaw at specific na instructions para sa AI para makuha ang desired output.</dd>
+
+      <dt>Iterative Prompting</dt>
+      <dd>Proseso ng pag-refine at pag-clarify ng prompts hanggang makuha ang tamang resulta mula sa AI.</dd>
+
+      <dt>Chain-of-Thought Prompting</dt>
+      <dd>Pattern ng prompting kung saan hinihingi ang AI na mag-explain step-by-step ng kanyang reasoning.</dd>
+
+      <dt>Few-Shot Prompting</dt>
+      <dd>Pattern ng prompting kung saan nagbibigay ka ng examples para gayahin ng AI.</dd>
+
+      <dt>Human Review</dt>
+      <dd>Ang proseso ng pag-verify ng AI-generated code ng isang tao bago ito i-deploy o i-commit.</dd>
+
+      <dt>Pair Programming (AI-assisted)</dt>
+      <dd>Mindset kung saan ang AI ay itinuturing bilang isang pair programmer na nagma-make ng suggestions, pero ikaw ang may final say.</dd>
+    </dl>
+  </section>
+
+  <div class="info" style="margin-top: 2rem;">
+    <strong>Course Reference</strong>
+    Balik sa <a href="../index.html">Course Home</a> o pumunta sa <a href="../lessons/0001-intro-ai-assisted-development.html">Lesson 0001</a> para magsimula.
+  </div>
+
+</div>
+
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0037: Real-Time Features (WebSockets with Laravel Reverb)</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0037: Real-Time Features (WebSockets with Laravel Reverb)</h1>
+      <p><em>Hindi na kailangan mag-refresh ng page — kapag may bagong data, automatic lalabas sa UI.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Maunawaan ang WebSockets, mai-setup ang Laravel Reverb, at makagawa ng real-time notification system.
+      </div>
+
+      <h2>Ano ang WebSockets?</h2>
+      <p>Ang <strong>WebSockets</strong> ay isang protocol na nagbibigay ng two-way communication sa pagitan ng client at server. Hindi tulad ng REST na request-response lang, ang WebSocket ay nagbibigay ng real-time data flow — automatic nag-a-update ang UI kapag may bagong data.</p>
+
+      <table>
+        <tr><th>Feature</th><th>REST</th><th>WebSocket</th></tr>
+        <tr><td>Communication</td><td>Request-Response</td><td>Two-way, persistent</td></tr>
+        <tr><td>Real-time</td><td>&#10007; Need polling</td><td>&#10003; Automatic</td></tr>
+        <tr><td>Connection</td><td>Short-lived</td><td>Persistent</td></tr>
+        <tr><td>Use Case</td><td>CRUD APIs</td><td>Chat, notifications, live updates</td></tr>
+      </table>
+
+      <h2>Laravel Reverb Setup</h2>
+      <p>Ang <strong>Laravel Reverb</strong> ay isang first-party WebSocket server para sa Laravel. Gamitin ito para sa real-time broadcasting.</p>
+
+      <pre><code># Install Reverb
+composer require laravel/reverb
+
+# Publish config at install
+php artisan reverb:install
+
+# Start Reverb server
+php artisan reverb:start</code></pre>
+
+      <pre><code>// config/broadcasting.php
+'connections' => [
+    'reverb' => [
+        'driver' => 'reverb',
+        'key' => env('REVERB_APP_KEY'),
+        'secret' => env('REVERB_APP_SECRET'),
+        'app_id' => env('REVERB_APP_ID'),
+        'options' => [
+            'host' => env('REVERB_HOST', '0.0.0.0'),
+            'port' => env('REVERB_PORT', 8080),
+        ],
+    ],
+],</code></pre>
+
+      <h2>Real-Time Notifications</h2>
+      <p>Gumawa ng event na ibo-broadcast kapag may bagong order.</p>
+
+      <pre><code>// app/Events/NewOrder.php
+class NewOrder implements ShouldBroadcast
+{
+    use Dispatchable, InteractsWithSockets, SerializesModels;
+
+    public function __construct(public Order $order) {}
+
+    public function broadcastOn(): array
+    {
+        return [
+            new PrivateChannel('orders'),
+        ];
+    }
+
+    public function broadcastAs(): string
+    {
+        return 'new-order';
+    }
+}</code></pre>
+
+      <pre><code>// I-trigger ang event kapag may bagong order
+event(new NewOrder($order));</code></pre>
+
+      <h2>Frontend: Listening to Events (Laravel Echo)</h2>
+      <p>Sa Next.js, gamitin ang <strong>Laravel Echo</strong> para makinig sa WebSocket events.</p>
+
+      <pre><code>npm install laravel-echo pusher-js</code></pre>
+
+      <pre><code>// lib/echo.ts
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
+
+const echo = new Echo({
+  broadcaster: 'reverb',
+  key: process.env.NEXT_PUBLIC_REVERB_APP_KEY,
+  wsHost: process.env.NEXT_PUBLIC_REVERB_HOST,
+  wsPort: process.env.NEXT_PUBLIC_REVERB_PORT,
+  forceTLS: false,
+  enabledTransports: ['ws', 'wss'],
+});
+
+export default echo;</code></pre>
+
+      <pre><code>'use client';
+import { useEffect, useState } from 'react';
+import echo from '@/lib/echo';
+import { toast } from 'react-hot-toast';
+
+export default function OrderNotifications() {
+  const [orders, setOrders] = useState([]);
+
+  useEffect(() => {
+    echo.private('orders').listen('.new-order', (e) => {
+      setOrders(prev => [e.order, ...prev]);
+      toast.success(`New order: ${e.order.id}`);
+    });
+
+    return () => echo.leave('orders');
+  }, []);
+
+  return (
+    &lt;div&gt;
+      &lt;h3&gt;Recent Orders&lt;/h3&gt;
+      {orders.map(order => (
+        &lt;div key={order.id}&gt;Order #{order.id}&lt;/div&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <div class="warning">
+        <strong>Warning</strong>
+        Siguraduhing naka-setup ang <code>.env</code> variables para sa Reverb sa both Laravel at Next.js. Iba-iba ang port ng Reverb (default 8080) sa Laravel (8000).
+      </div>
+
+      <h2>Using AI para mag-Setup ng Broadcasting</h2>
+      <p>I-prompt si AI para sa Reverb setup:</p>
+      <blockquote>"Generate the complete setup for Laravel Reverb with a real-time notification system. Include: Reverb installation steps, NewOrder event class, Laravel Echo configuration for Next.js, and a React component that listens for new orders and shows a toast notification."</blockquote>
+
+      <div class="info">
+        <strong>Key Insight</strong>
+        Ang WebSockets ay hindi kapalit ng REST — complementary sila. Gamitin ang REST para sa CRUD at WebSockets para sa real-time features.
+      </div>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang pinagkaiba ng WebSocket sa REST?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> WebSocket ay one-way communication lang</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> WebSocket ay persistent two-way communication, REST ay request-response</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Parehas lang sila</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Anong Laravel package ang ginagamit para sa WebSocket server?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Laravel Horizon</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Laravel Reverb</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Laravel Telescope</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Anong frontend library ang ginagamit para makinig sa Laravel WebSocket events?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Axios</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Laravel Echo</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> React Query</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: Real-Time Notification System gamit ang AI</h3>
+        <p>Gamit ang AI, mag-setup ng real-time notification system para sa new orders:</p>
+        <ol>
+          <li>Install at i-configure ang Laravel Reverb sa backend</li>
+          <li>I-prompt si AI: "Create a real-time notification system for new orders using Laravel Reverb and Laravel Echo. Generate the NewOrder event, Echo configuration, and React notification component."</li>
+          <li>Mag-setup ng Laravel Echo sa Next.js frontend</li>
+          <li>Gumawa ng component na nagdi-display ng real-time notifications</li>
+          <li>I-test sa pamamagitan ng pag-trigger ng event mula sa Laravel tinker o API</li>
+        </ol>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang WebSockets ay two-way persistent connection para sa real-time data</li>
+        <li>Laravel Reverb ay ang WebSocket server ng Laravel</li>
+        <li>Gumamit ng Laravel Echo sa frontend para makinig sa broadcast events</li>
+        <li>REST at WebSockets are complementary — gamitin pareho kung kinakailangan</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Reverb Documentation</strong> — Official guide para sa realtime WebSocket broadcasting. <a href="https://laravel.com/docs/reverb" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

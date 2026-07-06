@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0015: Eloquent ORM: Models & Relationships</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0015: Eloquent ORM: Models & Relationships</h1>
+      <p><em>Ang Eloquent ay para kang may personal assistant na nagsasalin ng SQL queries to PHP objects.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Matutunan ang Eloquent ORM, mag-create ng models, at mag-define ng relationships sa pagitan ng database tables.
+      </div>
+
+      <h2>Eloquent Models</h2>
+      <p>Ang model ay ang bridge sa pagitan ng database table at ng iyong PHP code. Gamit ang Artisan, puwede kang gumawa ng model:</p>
+      <pre><code>php artisan make:model Post
+php artisan make:model Post -m  // may migration na kasama</code></pre>
+      <p>Sa Eloquent, ang <code>Post::all()</code> ay katumbas ng <code>SELECT * FROM posts</code>. Pero sa halip na array, makakakuha ka ng collection ng PHP objects.</p>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        "Ang Eloquent ay para kang may personal assistant na nagsasalin ng SQL queries to PHP objects."
+      </div>
+
+      <h2>Basic CRUD with Eloquent</h2>
+      <pre><code>// Create
+$post = Post::create(['title' => 'Hello', 'body' => 'Content']);
+
+// Read
+$post = Post::find(1);
+$posts = Post::where('active', true)->get();
+
+// Update
+$post->update(['title' => 'Updated Title']);
+
+// Delete
+$post->delete();</code></pre>
+
+      <h2>Relationships</h2>
+      <p>Ang pinakamadalas gamitin na relationships:</p>
+
+      <h3>One-to-Many (hasMany / belongsTo)</h3>
+      <pre><code>class User extends Model {
+    public function posts() {
+        return $this->hasMany(Post::class);
+    }
+}
+
+class Post extends Model {
+    public function user() {
+        return $this->belongsTo(User::class);
+    }
+}</code></pre>
+
+      <h3>Many-to-Many (belongsToMany)</h3>
+      <pre><code>class User extends Model {
+    public function roles() {
+        return $this->belongsToMany(Role::class);
+    }
+}</code></pre>
+
+      <h3>One-to-One (hasOne)</h3>
+      <pre><code>class User extends Model {
+    public function profile() {
+        return $this->hasOne(Profile::class);
+    }
+}</code></pre>
+
+      <h2>The N+1 Problem</h2>
+      <p>Kapag nag-loop ka sa users at nag-access ng posts sa bawat user, magge-generate ng maraming queries.</p>
+      <pre><code>// N+1 problem — 1 query for users + N queries for posts
+$users = User::all();
+foreach ($users as $user) {
+    echo $user->posts->count();
+}</code></pre>
+      <p>Solusyon: Eager loading gamit ang <code>with()</code>.</p>
+      <pre><code>$users = User::with('posts')->get(); // 2 queries lang</code></pre>
+
+      <div class="warning">
+        <strong>Warning</strong>
+        Laging gamitin ang <code>with()</code> para ma-avoid ang N+1 problem. Huwag hayaang mag-loop ng query sa bawat iteration.
+      </div>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Anong relationship ang gagamitin mo kung ang isang User ay may maraming Posts?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> hasOne</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> hasMany</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> belongsToMany</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Ano ang N+1 problem?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Kapag nag-fail ang query dahil sa syntax error</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Kapag nag-ge-generate ng maraming SQL queries dahil sa lazy loading ng relationships</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Kapag may conflict sa database migration</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Anong Eloquent method ang ginagamit para i-define na ang isang Post ay pag-aari ng isang User?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> hasMany()</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> belongsTo()</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> hasOne()</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: Post Model with Relationships</h3>
+        <p>Gamit ang AI, ipagawa ang isang <code>Post</code> model na may <code>belongsTo(User)</code> at <code>hasMany(Comment)</code> relationships. I-prompt si AI ng ganito: "Create a Post model in Laravel with belongsTo(User) and hasMany(Comment) relationships. Include the migration files."</p>
+        <p>Pagkatapos, i-verify sa pamamagitan ng pag-test ng <code>php artisan tinker</code> at pag-check kung gumagana ang <code>$post->user</code> at <code>$post->comments</code>.</p>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang Eloquent ORM ay nag-a-abstract ng SQL queries into PHP objects</li>
+        <li>Gamitin ang <code>php artisan make:model</code> para gumawa ng model</li>
+        <li>Ang <code>hasMany</code> at <code>belongsTo</code> ay magkasalungat na relationship</li>
+        <li>Ang <code>belongsToMany</code> ay para sa many-to-many relationships</li>
+        <li>Iwasan ang N+1 problem sa pamamagitan ng eager loading gamit ang <code>with()</code></li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation (Eloquent ORM)</strong> — Official guide para sa Eloquent models, relationships, at querying. <a href="https://laravel.com/docs/eloquent" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

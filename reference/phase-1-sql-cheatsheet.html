@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phase 1 SQL Cheatsheet</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Phase 1: MySQL &amp; Laravel Database Cheatsheet</h1>
+      <p><em>Mabilisang reference para sa MySQL data types, SQL commands, JOINs, normalization, indexes, at Laravel migration/seeder commands.</em></p>
+
+      <!-- ======== 1. MySQL Data Types ======== -->
+      <h2>1. MySQL Data Types Quick Reference</h2>
+
+      <table>
+        <tr>
+          <th>Category</th>
+          <th>Data Type</th>
+          <th>Description</th>
+          <th>Example</th>
+        </tr>
+        <tr>
+          <td rowspan="3">Numeric</td>
+          <td><code>INT</code></td>
+          <td>Integer (-2B to 2B)</td>
+          <td><code>age INT</code></td>
+        </tr>
+        <tr>
+          <td><code>BIGINT</code></td>
+          <td>Malaking integer</td>
+          <td><code>id BIGINT</code></td>
+        </tr>
+        <tr>
+          <td><code>DECIMAL(p,s)</code></td>
+          <td>Exact decimal (pera)</td>
+          <td><code>price DECIMAL(10,2)</code></td>
+        </tr>
+        <tr>
+          <td rowspan="4">String</td>
+          <td><code>VARCHAR(n)</code></td>
+          <td>Variable string (max n)</td>
+          <td><code>name VARCHAR(100)</code></td>
+        </tr>
+        <tr>
+          <td><code>TEXT</code></td>
+          <td>Mahabang text (64KB)</td>
+          <td><code>content TEXT</code></td>
+        </tr>
+        <tr>
+          <td><code>LONGTEXT</code></td>
+          <td>Sobrang haba (4GB)</td>
+          <td><code>body LONGTEXT</code></td>
+        </tr>
+        <tr>
+          <td><code>ENUM('a','b')</code></td>
+          <td>Sa mga choices lang</td>
+          <td><code>status ENUM('active','inactive')</code></td>
+        </tr>
+        <tr>
+          <td rowspan="3">Date/Time</td>
+          <td><code>DATE</code></td>
+          <td>YYYY-MM-DD</td>
+          <td><code>birthdate DATE</code></td>
+        </tr>
+        <tr>
+          <td><code>DATETIME</code></td>
+          <td>YYYY-MM-DD HH:MM:SS</td>
+          <td><code>created_at DATETIME</code></td>
+        </tr>
+        <tr>
+          <td><code>TIMESTAMP</code></td>
+          <td>DATETIME + timezone</td>
+          <td><code>updated_at TIMESTAMP</code></td>
+        </tr>
+        <tr>
+          <td>Boolean</td>
+          <td><code>BOOLEAN</code></td>
+          <td>TINYINT(1): 0/1</td>
+          <td><code>is_active BOOLEAN</code></td>
+        </tr>
+      </table>
+
+      <!-- ======== 2. SQL Commands ======== -->
+      <h2>2. Common SQL Commands</h2>
+
+      <h3>DDL (Data Definition Language)</h3>
+      <pre><code>-- CREATE DATABASE
+CREATE DATABASE database_name;
+USE database_name;
+
+-- CREATE TABLE
+CREATE TABLE table_name (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    column_name VARCHAR(100) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ALTER TABLE
+ALTER TABLE table_name ADD COLUMN column_name VARCHAR(50);
+ALTER TABLE table_name MODIFY COLUMN column_name NEW_TYPE;
+ALTER TABLE table_name DROP COLUMN column_name;
+ALTER TABLE table_name RENAME COLUMN old_name TO new_name;
+
+-- DROP TABLE
+DROP TABLE IF EXISTS table_name;</code></pre>
+
+      <h3>DML (Data Manipulation Language)</h3>
+      <pre><code>-- INSERT
+INSERT INTO table_name (col1, col2) VALUES ('val1', 'val2');
+INSERT INTO table_name (col1, col2) VALUES ('a', 1), ('b', 2), ('c', 3);
+
+-- SELECT
+SELECT col1, col2 FROM table_name;
+SELECT * FROM table_name WHERE condition;
+SELECT DISTINCT col FROM table_name;
+SELECT * FROM table_name ORDER BY col DESC LIMIT 10;
+
+-- UPDATE
+UPDATE table_name SET col1 = 'new_value' WHERE id = 1;
+
+-- DELETE
+DELETE FROM table_name WHERE id = 1;</code></pre>
+
+      <h3>Filtering &amp; Sorting</h3>
+      <pre><code>WHERE col = value
+WHERE col IN (1, 2, 3)
+WHERE col BETWEEN 10 AND 20
+WHERE col LIKE '%pattern%'
+WHERE col IS NULL / IS NOT NULL
+WHERE condition1 AND/OR condition2
+ORDER BY col ASC|DESC
+LIMIT offset, count</code></pre>
+
+      <!-- ======== 3. JOIN Types ======== -->
+      <h2>3. JOIN Types</h2>
+
+      <table>
+        <tr>
+          <th>JOIN Type</th>
+          <th>Result</th>
+          <th>Use Case</th>
+        </tr>
+        <tr>
+          <td><code>INNER JOIN</code></td>
+          <td>Records na may match sa <strong>both</strong> tables</td>
+          <td>Orders na may customer (excl. walang order)</td>
+        </tr>
+        <tr>
+          <td><code>LEFT JOIN</code></td>
+          <td><strong>Lahat</strong> ng left table, kahit walang match sa right</td>
+          <td>Customers at orders nila (incl. walang order)</td>
+        </tr>
+        <tr>
+          <td><code>RIGHT JOIN</code></td>
+          <td><strong>Lahat</strong> ng right table, kahit walang match sa left</td>
+          <td>Bihira gamitin; kabaliktaran ng LEFT JOIN</td>
+        </tr>
+      </table>
+
+      <pre><code>-- INNER JOIN
+SELECT * FROM table_a
+INNER JOIN table_b ON table_a.id = table_b.foreign_id;
+
+-- LEFT JOIN
+SELECT * FROM table_a
+LEFT JOIN table_b ON table_a.id = table_b.foreign_id;
+
+-- Multiple JOINs
+SELECT *
+FROM customers c
+INNER JOIN orders o ON c.id = o.customer_id
+INNER JOIN order_items oi ON o.id = oi.order_id;</code></pre>
+
+      <h3>Aggregate Functions + GROUP BY</h3>
+      <pre><code>-- Functions
+COUNT(*), SUM(col), AVG(col), MAX(col), MIN(col)
+
+-- GROUP BY with HAVING
+SELECT customer_id, COUNT(*) AS order_count, SUM(total) AS total_spent
+FROM orders
+GROUP BY customer_id
+HAVING order_count >= 2
+ORDER BY total_spent DESC;</code></pre>
+
+      <!-- ======== 4. Normalization ======== -->
+      <h2>4. Normalization Forms Summary</h2>
+
+      <table>
+        <tr>
+          <th>Form</th>
+          <th>Requirement</th>
+          <th>Example Violation</th>
+        </tr>
+        <tr>
+          <td><strong>1NF</strong></td>
+          <td>Atomic columns (isang value per cell) + may PK</td>
+          <td>Column na may "Math,Science,English"</td>
+        </tr>
+        <tr>
+          <td><strong>2NF</strong></td>
+          <td>Nasa 1NF + walang partial dependency</td>
+          <td>Product name sa order_items (depende lang sa product_id)</td>
+        </tr>
+        <tr>
+          <td><strong>3NF</strong></td>
+          <td>Nasa 2NF + walang transitive dependency</td>
+          <td>Customer name sa orders (depende sa customer_id, hindi sa order_id)</td>
+        </tr>
+      </table>
+
+      <!-- ======== 5. Indexes ======== -->
+      <h2>5. Index Types &amp; When to Use</h2>
+
+      <table>
+        <tr>
+          <th>Index Type</th>
+          <th>When to Use</th>
+          <th>Syntax</th>
+        </tr>
+        <tr>
+          <td>Single-column</td>
+          <td>Column sa WHERE</td>
+          <td><code>CREATE INDEX idx_name ON table(col);</code></td>
+        </tr>
+        <tr>
+          <td>Composite</td>
+          <td>Multiple columns sa WHERE/JOIN</td>
+          <td><code>CREATE INDEX idx_name ON table(col1, col2);</code></td>
+        </tr>
+        <tr>
+          <td>UNIQUE</td>
+          <td>Kapag unique ang values</td>
+          <td><code>CREATE UNIQUE INDEX idx_name ON table(col);</code></td>
+        </tr>
+        <tr>
+          <td>FULLTEXT</td>
+          <td>Full-text search</td>
+          <td><code>CREATE FULLTEXT INDEX idx_name ON table(col);</code></td>
+        </tr>
+      </table>
+
+      <div class="tip">
+        <strong>Best Practice</strong>
+        I-index ang columns na madalas gamitin sa <code>WHERE</code>, <code>JOIN</code>, at <code>ORDER BY</code>. Iwasang mag-index ng columns na kakaunti ang unique values (e.g., boolean, gender).
+      </div>
+
+      <h3>EXPLAIN Statement</h3>
+      <pre><code>EXPLAIN SELECT * FROM users WHERE email = 'test@example.com';
+-- Check: type (avoid ALL), key (should not be NULL), rows (lower is better)</code></pre>
+
+      <!-- ======== 6. Laravel Commands ======== -->
+      <h2>6. Laravel Migration &amp; Seeder Commands</h2>
+
+      <table>
+        <tr>
+          <th>Command</th>
+          <th>Description</th>
+        </tr>
+        <tr>
+          <td><code>php artisan make:migration create_table</code></td>
+          <td>Gumawa ng migration file</td>
+        </tr>
+        <tr>
+          <td><code>php artisan migrate</code></td>
+          <td>I-run ang pending migrations</td>
+        </tr>
+        <tr>
+          <td><code>php artisan migrate:rollback</code></td>
+          <td>I-undo ang last batch</td>
+        </tr>
+        <tr>
+          <td><code>php artisan migrate:fresh</code></td>
+          <td>Drop all tables at migrate ulit</td>
+        </tr>
+        <tr>
+          <td><code>php artisan migrate:status</code></td>
+          <td>Tingnan kung ano ang na-run na</td>
+        </tr>
+        <tr>
+          <td><code>php artisan make:seeder NameSeeder</code></td>
+          <td>Gumawa ng seeder class</td>
+        </tr>
+        <tr>
+          <td><code>php artisan make:factory NameFactory</code></td>
+          <td>Gumawa ng factory class</td>
+        </tr>
+        <tr>
+          <td><code>php artisan db:seed</code></td>
+          <td>I-run lahat ng seeders</td>
+        </tr>
+        <tr>
+          <td><code>php artisan db:seed --class=SeederName</code></td>
+          <td>I-run ang specific seeder</td>
+        </tr>
+      </table>
+
+      <h3>Common Schema Builder Methods</h3>
+      <pre><code>$table->id();                   // BIGINT AUTO_INCREMENT PK
+$table->string('col', 100);    // VARCHAR(100)
+$table->text('col');           // TEXT
+$table->integer('col');        // INT
+$table->decimal('col', 10, 2); // DECIMAL(10,2)
+$table->boolean('col');        // TINYINT(1)
+$table->date('col');           // DATE
+$table->dateTime('col');       // DATETIME
+$table->foreignId('col')-&gt;constrained(); // FK
+$table->timestamps();          // created_at + updated_at
+$table->softDeletes();         // deleted_at</code></pre>
+
+      <h3>Factory at Seeder Patterns</h3>
+      <pre><code>// Factory
+User::factory()-&gt;count(50)-&gt;create();
+User::factory()-&gt;admin()-&gt;create();
+
+// Seeder
+$this-&gt;call([
+    UserSeeder::class,
+    ProductSeeder::class,
+]);</code></pre>
+
+      <!-- ======== Summary ======== -->
+      <h2>AI Prompts for Database Tasks</h2>
+
+      <div class="info">
+        <strong>Mabilisang Prompt Templates</strong>
+        <ul>
+          <li>"Generate a MySQL CREATE TABLE statement for a [table] with [columns]."</li>
+          <li>"Write a query that [describe desired output]."</li>
+          <li>"Design a normalized database schema for [app type]."</li>
+          <li>"What indexes should I add for this query: [SQL]?"</li>
+          <li>"Generate a Laravel migration for [table] with [columns]."</li>
+          <li>"Create a Laravel factory for [model] with realistic data."</li>
+        </ul>
+      </div>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

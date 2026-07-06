@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0038: Error Handling & API Response Standardization</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0038: Error Handling & API Response Standardization</h1>
+      <p><em>Lahat ng API response mo dapat may iisang format — para predictable ang error handling sa frontend.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makagawa ng standardized API response format sa Laravel at mag-implement ng consistent error handling sa Next.js frontend.
+      </div>
+
+      <h2>Standardized API Response Structure</h2>
+      <p>Ang consistent na response format ay mahalaga para predictable ang behavior ng frontend. Lahat ng API response ay dapat sumunod sa iisang pattern.</p>
+
+      <pre><code>// Standard Response Format
+{
+    "success": true|false,
+    "message": "Human-readable message",
+    "data": { ... },          // actual data (nullable)
+    "errors": { ... },        // validation errors (nullable)
+    "meta": {
+        "current_page": 1,
+        "last_page": 10,
+        "per_page": 15,
+        "total": 150
+    }
+}</code></pre>
+
+      <h2>Laravel API Response Helper</h2>
+      <p>Gumawa ng helper class para sa standardized responses.</p>
+
+      <pre><code>// app/Helpers/ApiResponse.php
+class ApiResponse
+{
+    public static function success($data = null,
+        string $message = 'Success', int $code = 200)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'data'    => $data,
+            'errors'  => null,
+        ], $code);
+    }
+
+    public static function error(string $message = 'Error',
+        int $code = 400, $errors = null)
+    {
+        return response()->json([
+            'success' => false,
+            'message' => $message,
+            'data'    => null,
+            'errors'  => $errors,
+        ], $code);
+    }
+
+    public static function validationError($errors,
+        string $message = 'Validation failed')
+    {
+        return self::error($message, 422, $errors);
+    }
+
+    public static function notFound(string $message = 'Resource not found')
+    {
+        return self::error($message, 404);
+    }
+}</code></pre>
+
+      <h2>Error Codes at Messages</h2>
+      <table>
+        <tr><th>HTTP Code</th><th>Meaning</th><th>Example</th></tr>
+        <tr><td>200</td><td>OK</td><td>Successful GET, PUT, PATCH</td></tr>
+        <tr><td>201</td><td>Created</td><td>Successful POST</td></tr>
+        <tr><td>400</td><td>Bad Request</td><td>Invalid input</td></tr>
+        <tr><td>401</td><td>Unauthorized</td><td>Not authenticated</td></tr>
+        <tr><td>403</td><td>Forbidden</td><td>Not authorized</td></tr>
+        <tr><td>404</td><td>Not Found</td><td>Resource doesn't exist</td></tr>
+        <tr><td>422</td><td>Unprocessable Entity</td><td>Validation errors</td></tr>
+        <tr><td>500</td><td>Server Error</td><td>Internal server error</td></tr>
+      </table>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Palaging gumamit ng tamang HTTP status codes — ito ang universal language ng API error handling.
+      </div>
+
+      <h2>Frontend Error Handling</h2>
+      <p>Sa Next.js, gumawa ng centralized error handler na gumagamit ng standardized response format.</p>
+
+      <pre><code>// lib/error-handler.ts
+import { toast } from 'react-hot-toast';
+
+interface ApiError {
+  success: boolean;
+  message: string;
+  errors?: Record&lt;string, string[]&gt;;
+}
+
+export function handleApiError(error: any): void {
+  if (error.response) {
+    const data: ApiError = error.response.data;
+    const status = error.response.status;
+
+    switch (status) {
+      case 422:
+        // Validation errors — inline or modal
+        if (data.errors) {
+          Object.values(data.errors).forEach((msgs) => {
+            toast.error(msgs[0]);
+          });
+        }
+        break;
+      case 401:
+        toast.error('Please login first');
+        // Redirect to login
+        break;
+      case 403:
+        toast.error('You do not have permission');
+        break;
+      case 404:
+        toast.error('Resource not found');
+        break;
+      default:
+        toast.error(data.message || 'Something went wrong');
+    }
+  } else if (error.request) {
+    toast.error('Network error — please check your connection');
+  } else {
+    toast.error('An unexpected error occurred');
+  }
+}</code></pre>
+
+      <h2>Inline vs Toast vs Modal Errors</h2>
+      <ul>
+        <li><strong>Inline errors</strong> — para sa form validation, sa tabi mismo ng input field</li>
+        <li><strong>Toast notifications</strong> — para sa general success/error messages</li>
+        <li><strong>Modal errors</strong> — para sa critical errors na nangangailangan ng user action</li>
+      </ul>
+
+      <pre><code>// Inline error example
+&lt;div&gt;
+  &lt;input name="email" /&gt;
+  {errors.email && (
+    &lt;p className="text-red-500 text-sm"&gt;{errors.email[0]}&lt;/p&gt;
+  )}
+&lt;/div&gt;</code></pre>
+
+      <h2>Using AI para gumawa ng Error Handling Utilities</h2>
+      <p>I-prompt si AI para sa kumpletong error handling setup:</p>
+      <blockquote>"Create a standardized API response helper for Laravel (success, error, validationError, notFound methods). Also create a frontend error handler for Next.js that handles 401, 403, 404, 422 errors with toast notifications and inline form errors."</blockquote>
+
+      <div class="info">
+        <strong>Key Insight</strong>
+        Ang standardized API response ay nagpapadali sa frontend development — isang beses mo lang isusulat ang error handling logic, at gagana na sa lahat ng endpoints.
+      </div>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang tamang HTTP status code para sa validation errors?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> 400 Bad Request</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> 422 Unprocessable Entity</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> 500 Internal Server Error</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Bakit mahalaga ang standardized API response format?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Para mas maraming code</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Para predictable ang error handling sa frontend at iisang pattern lang ang susundin</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Para hindi na kailangan ng error handling</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Anong uri ng error display ang pinaka-appropriate para sa form validation?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Toast notification</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Modal dialog</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Inline error sa tabi ng input field</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: Standardized API Response at Frontend Error Handler</h3>
+        <p>Gamit ang AI, gumawa ng dalawang utilities:</p>
+        <ol>
+          <li><strong>Backend:</strong> Laravel <code>ApiResponse</code> helper — i-prompt si AI: "Generate a Laravel ApiResponse helper class with success(), error(), validationError(), and notFound() static methods following a standardized JSON format."</li>
+          <li><strong>Frontend:</strong> Next.js error handler — i-prompt si AI: "Generate a centralized error handler for Next.js that processes standardized API errors and shows appropriate toast, inline, or modal error messages based on HTTP status code."</li>
+          <li>I-update ang API controller methods para gamitin ang bagong response helper</li>
+          <li>I-integrate ang error handler sa Axios interceptor</li>
+        </ol>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Gumamit ng standardized API response format: { success, message, data, errors }</li>
+        <li>Laging gumamit ng tamang HTTP status codes</li>
+        <li>Handle errors sa frontend based sa response format</li>
+        <li>Gumamit ng tamang error display: inline (form), toast (general), modal (critical)</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation (Error Handling)</strong> — Official guide para sa API error handling at response standards. <a href="https://laravel.com/docs/errors" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'c' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

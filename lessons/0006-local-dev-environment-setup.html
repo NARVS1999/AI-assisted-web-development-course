@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0006: Local Dev Environment Setup (Laravel + Next.js + MySQL)</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0006: Local Dev Environment Setup (Laravel + Next.js + MySQL)</h1>
+      <p><em>I-set up ang iyong local development environment para sa full-stack web development.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makapag-set up ng working Laravel backend at Next.js frontend na may MySQL database sa local machine.
+      </div>
+
+      <!-- ======== Section 1: Installing Prerequisites ======== -->
+      <h2>Installing Prerequisites</h2>
+
+      <p>Bago tayo mag-set up ng Laravel at Next.js, kailangan munang i-install ang mga sumusunod:</p>
+
+      <h3>PHP at Composer</h3>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>I-install ang PHP 8.2+</strong></p>
+          <p>I-download mula sa <a href="https://php.net" target="_blank">php.net</a> o gumamit ng package manager:</p>
+          <pre><code># Windows: https://windows.php.net/download/
+# macOS: brew install php
+# Linux: sudo apt install php8.2-cli php8.2-mbstring php8.2-xml php8.2-mysql</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>I-install ang Composer</strong></p>
+          <p>I-download mula sa <a href="https://getcomposer.org" target="_blank">getcomposer.org</a></p>
+          <pre><code># I-verify
+php -v
+composer --version</code></pre>
+        </div>
+      </div>
+
+      <h3>Node.js at npm</h3>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>I-install ang Node.js 18+</strong></p>
+          <p>I-download mula sa <a href="https://nodejs.org" target="_blank">nodejs.org</a> (LTS version)</p>
+          <pre><code># I-verify
+node --version
+npm --version</code></pre>
+        </div>
+      </div>
+
+      <!-- ======== Section 2: Setting Up Laravel ======== -->
+      <h2>Setting Up Laravel Project</h2>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>Gumawa ng bagong Laravel project</strong></p>
+          <pre><code>composer create-project laravel/laravel backend-api
+cd backend-api</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>I-configure ang .env file</strong></p>
+          <pre><code>DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=course_platform
+DB_USERNAME=root
+DB_PASSWORD=</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>I-run ang development server</strong></p>
+          <pre><code>php artisan serve
+# Laravel development server started: http://127.0.0.1:8000</code></pre>
+        </div>
+      </div>
+
+      <!-- ======== Section 3: Setting Up Next.js ======== -->
+      <h2>Setting Up Next.js Project</h2>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>Gumawa ng bagong Next.js project</strong></p>
+          <pre><code>npx create-next-app@latest frontend-app
+# Piliin: TypeScript (Yes), ESLint (Yes), Tailwind CSS (Yes)
+# App Router (Yes), import alias (default)</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>I-run ang development server</strong></p>
+          <pre><code>cd frontend-app
+npm run dev
+# Next.js development server started: http://localhost:3000</code></pre>
+        </div>
+      </div>
+
+      <blockquote>
+        "Magkahiwalay ang backend (Laravel sa port 8000) at frontend (Next.js sa port 3000)."
+      </blockquote>
+
+      <!-- ======== Section 4: MySQL Setup ======== -->
+      <h2>MySQL Installation</h2>
+
+      <p>May dalawang common na paraan para mag-set up ng MySQL sa local development:</p>
+
+      <h3>Option A: XAMPP / Laragon (Windows)</h3>
+      <ul>
+        <li><strong>XAMPP</strong> — I-download mula sa <a href="https://www.apachefriends.org" target="_blank">apachefriends.org</a>. May kasamang Apache, MySQL, PHP, at phpMyAdmin.</li>
+        <li><strong>Laragon</strong> — I-download mula sa <a href="https://laragon.org" target="_blank">laragon.org</a>. Mas moderno at portable, may integrated tools.</li>
+      </ul>
+
+      <h3>Option B: Docker</h3>
+      <pre><code># Gamit ang official MySQL image
+docker run --name course-mysql -e MYSQL_ROOT_PASSWORD=root \
+  -e MYSQL_DATABASE=course_platform -p 3306:3306 -d mysql:8</code></pre>
+
+      <div class="tip">
+        <strong>Recommendation</strong>
+        Para sa kursong ito, recommend namin ang <strong>Laragon</strong> sa Windows at <strong>Docker</strong> sa macOS/Linux. Pero kahit anong option ay ok.
+      </div>
+
+      <!-- ======== Section 5: Project Structure ======== -->
+      <h2>Project Structure Overview</h2>
+
+      <p>Para sa buong course, ganito ang magiging structure ng iyong projects:</p>
+
+      <pre><code>ai-web-dev-course/
+├── backend-api/          # Laravel project
+│   ├── app/
+│   ├── config/
+│   ├── database/
+│   ├── routes/
+│   └── ...
+├── frontend-app/         # Next.js project
+│   ├── app/
+│   ├── components/
+│   ├── lib/
+│   └── ...
+└── README.md</code></pre>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Tech Stack</th>
+            <th>Port</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Backend API</td>
+            <td>Laravel 11 + PHP 8.2+</td>
+            <td>8000</td>
+          </tr>
+          <tr>
+            <td>Frontend</td>
+            <td>Next.js 14 + TypeScript + Tailwind CSS</td>
+            <td>3000</td>
+          </tr>
+          <tr>
+            <td>Database</td>
+            <td>MySQL 8</td>
+            <td>3306</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Anong command ang gagamitin para gumawa ng bagong Laravel project?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> <code>npm create laravel project</code></label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> <code>composer create-project laravel/laravel backend-api</code></label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> <code>php artisan new project</code></label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Sa anong port tumatakbo ang Laravel development server bilang default?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> 8000</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> 3000</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> 8080</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Anong tool ang recommended para sa Windows para madaling mag-set up ng MySQL?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> WAMP</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Docker Desktop</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Laragon</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: Scaffold Laravel at Next.js Projects</h3>
+        <p>Gawin ang sumusunod para ma-set up ang iyong development environment:</p>
+        <ol>
+          <li>I-verify na naka-install ang PHP 8.2+, Composer, Node.js 18+, at npm</li>
+          <li>Gumawa ng Laravel project: <code>composer create-project laravel/laravel backend-api</code></li>
+          <li>Gumawa ng Next.js project: <code>npx create-next-app@latest frontend-app</code></li>
+          <li>I-run ang Laravel server (<code>php artisan serve</code>) at i-confirm na accessible sa browser</li>
+          <li>I-run ang Next.js server (<code>npm run dev</code>) at i-confirm na accessible sa browser</li>
+          <li>I-set up ang MySQL (XAMPP, Laragon, o Docker) at gumawa ng database na <code>course_platform</code></li>
+        </ol>
+        <p><em>Tandaan: Kung may issues sa installation, i-prompt ang AI for help!</em></p>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>I-install ang PHP 8.2+, Composer, at Node.js 18+ bago mag-set up ng Laravel at Next.js.</li>
+        <li>Ang Laravel ay tumatakbo sa port 8000 (<code>php artisan serve</code>), Next.js sa port 3000 (<code>npm run dev</code>).</li>
+        <li>Gamitin ang Laragon (Windows) o Docker (macOS/Linux) para sa MySQL setup.</li>
+        <li>Ang project structure ay magkahiwalay na backend/ at frontend/ folders.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation</strong> — Official documentation para sa Laravel framework. <a href="https://laravel.com/docs" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Next.js Documentation</strong> — Official documentation para sa Next.js framework. <a href="https://nextjs.org/docs" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'a', q3: 'c' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

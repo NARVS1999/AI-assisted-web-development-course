@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0012: Database Migrations with Laravel</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0012: Database Migrations with Laravel</h1>
+      <p><em>Matutong gumamit ng Laravel migrations para ma-version control ang iyong database schema.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Ma-explain kung ano ang migrations, makagawa ng migration files gamit ang artisan, mag-apply at mag-rollback ng migrations, at magamit ang AI para mag-generate ng migration files.
+      </div>
+
+      <!-- ======== Section 1: What are Migrations? ======== -->
+      <h2>Ano ang Database Migrations?</h2>
+
+      <p>Sa Laravel, hindi ka direktang gumagawa ng table sa phpMyAdmin — migration files ang gamit para version-controlled ang schema.</p>
+
+      <p>Ang migrations ay parang <strong>Git para sa database schema</strong>. Sa halip na manual na gumawa ng tables sa phpMyAdmin, nagsusulat ka ng PHP code na nagdi-describe ng schema, at ito ay naka-commit kasama ng iyong codebase.</p>
+
+      <h3>Bakit Migrations?</h3>
+      <ul>
+        <li><strong>Version control</strong> — nasa Git ang schema changes, kasama ng application code</li>
+        <li><strong>Reproducible</strong> — kahit sino sa team, isang <code>php artisan migrate</code> lang, updated na ang database</li>
+        <li><strong>Rollback</strong> — pwedeng i-undo ang changes kung may mali</li>
+        <li><strong>Deployment</strong> — automated ang schema updates sa production</li>
+      </ul>
+
+      <blockquote>
+        <p>"Sa Laravel, hindi ka direktang gumagawa ng table sa phpMyAdmin — migration files ang gamit para version-controlled ang schema. Isipin mo itong parang 'git para sa database.'"</p>
+      </blockquote>
+
+      <!-- ======== Section 2: Creating Migrations ======== -->
+      <h2>Pag-gawa ng Migration Files</h2>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>Gumawa ng migration</strong></p>
+          <pre><code>php artisan make:migration create_products_table</code></pre>
+          <p>Mage-generate ito ng file sa <code>database/migrations/</code> na may timestamp at pangalan.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>I-edit ang migration file</strong></p>
+          <pre><code>&lt;?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('products', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 200);
+            $table->text('description')->nullable();
+            $table->decimal('price', 10, 2);
+            $table->integer('stock')->default(0);
+            $table->boolean('is_available')->default(true);
+            $table->string('category')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('products');
+    }
+};</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>Run the migration</strong></p>
+          <pre><code>php artisan migrate</code></pre>
+          <p>Ito ang mag-e-execute ng <code>up()</code> method at gagawin ang products table.</p>
+        </div>
+      </div>
+
+      <!-- ======== Section 3: Schema Builder Reference ======== -->
+      <h2>Laravel Schema Builder</h2>
+
+      <p>Ang Schema Builder ay ang Laravel way ng pagsulat ng DDL statements gamit ang PHP.</p>
+
+      <table>
+        <tr>
+          <th>Method</th>
+          <th>MySQL Equivalent</th>
+          <th>Example</th>
+        </tr>
+        <tr>
+          <td><code>$table->id()</code></td>
+          <td>BIGINT AUTO_INCREMENT PRIMARY KEY</td>
+          <td><code>$table->id();</code></td>
+        </tr>
+        <tr>
+          <td><code>$table->string('col', n)</code></td>
+          <td>VARCHAR(n)</td>
+          <td><code>$table->string('name', 100);</code></td>
+        </tr>
+        <tr>
+          <td><code>$table->text('col')</code></td>
+          <td>TEXT</td>
+          <td><code>$table->text('content');</code></td>
+        </tr>
+        <tr>
+          <td><code>$table->integer('col')</code></td>
+          <td>INT</td>
+          <td><code>$table->integer('age');</code></td>
+        </tr>
+        <tr>
+          <td><code>$table->decimal('col', p, s)</code></td>
+          <td>DECIMAL(p, s)</td>
+          <td><code>$table->decimal('price', 10, 2);</code></td>
+        </tr>
+        <tr>
+          <td><code>$table->boolean('col')</code></td>
+          <td>TINYINT(1)</td>
+          <td><code>$table->boolean('is_active');</code></td>
+        </tr>
+        <tr>
+          <td><code>$table->date('col')</code></td>
+          <td>DATE</td>
+          <td><code>$table->date('birthdate');</code></td>
+        </tr>
+        <tr>
+          <td><code>$table->dateTime('col')</code></td>
+          <td>DATETIME</td>
+          <td><code>$table->dateTime('published_at');</code></td>
+        </tr>
+        <tr>
+          <td><code>$table->foreignId('col')</code></td>
+          <td>BIGINT UNSIGNED (for FK)</td>
+          <td><code>$table->foreignId('user_id')->constrained();</code></td>
+        </tr>
+        <tr>
+          <td><code>$table->timestamps()</code></td>
+          <td>created_at at updated_at DATETIME</td>
+          <td><code>$table->timestamps();</code></td>
+        </tr>
+        <tr>
+          <td><code>$table->softDeletes()</code></td>
+          <td>deleted_at DATETIME NULL</td>
+          <td><code>$table->softDeletes();</code></td>
+        </tr>
+      </table>
+
+      <pre><code>// Table modification (ALTER TABLE)
+Schema::table('products', function (Blueprint $table) {
+    $table->string('brand', 100)->after('name');
+    $table->dropColumn('category');
+    $table->renameColumn('stock', 'quantity');
+});
+
+// Foreign key constraints
+Schema::create('orders', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+    $table->decimal('total', 10, 2);
+    $table->timestamps();
+});</code></pre>
+
+      <!-- ======== Section 4: Running and Rolling Back ======== -->
+      <h2>Running at Rolling Back Migrations</h2>
+
+      <pre><code># I-run lahat ng pending migrations
+php artisan migrate
+
+# I-rollback ang last batch
+php artisan migrate:rollback
+
+# I-rollback ang specific number of steps
+php artisan migrate:rollback --step=3
+
+# I-rollback lahat at i-migrate ulit
+php artisan migrate:refresh
+
+# I-drop lahat ng tables at i-migrate ulit
+php artisan migrate:fresh
+
+# Tingnan ang status ng migrations
+php artisan migrate:status</code></pre>
+
+      <div class="tip">
+        <strong>migrate:fresh vs migrate:refresh</strong>
+        <code>migrate:fresh</code> — drop lahat ng tables at i-run lahat ng migrations. <code>migrate:refresh</code> — i-rollback lahat at i-migrate ulit. Sa development, mas gamitin ang <code>migrate:fresh</code> dahil mas mabilis.
+      </div>
+
+      <!-- ======== Section 5: Using AI to Generate Migrations ======== -->
+      <h2>Paggamit ng AI para sa Migration Files</h2>
+
+      <p>Sa halip na isaulo ang Schema Builder methods, i-prompt mo lang si AI:</p>
+
+      <div class="info">
+        <strong>Sample AI Prompts</strong>
+        <ul>
+          <li>"Generate a Laravel migration for a products table with name, description, price, stock, category, and timestamps."</li>
+          <li>"Create a migration to add a 'phone' column to the users table after the email column."</li>
+          <li>"Generate a migration for a posts table with a foreign key to users and support for soft deletes."</li>
+          <li>"Create a migration that adds a unique index to the email column in the users table."</li>
+        </ul>
+      </div>
+
+      <pre><code>// AI-generated migration example:
+// Prompt: "Generate a Laravel migration for a products table with
+// name, description, price, stock, category, and timestamps."
+
+php artisan make:migration create_products_table
+
+// Then ask AI to fill in the up() and down() methods.
+// AI will generate something like:
+
+public function up(): void
+{
+    Schema::create('products', function (Blueprint $table) {
+        $table->id();
+        $table->string('name', 200);
+        $table->text('description')->nullable();
+        $table->decimal('price', 10, 2);
+        $table->integer('stock')->default(0);
+        $table->string('category', 100)->nullable();
+        $table->timestamps();
+    });
+}</code></pre>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Anong Artisan command ang ginagamit para gumawa ng bagong migration file?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> php artisan create:migration</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> php artisan make:migration</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> php artisan generate:migration</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Anong method sa migration ang naglalaman ng mga changes na gagawin sa database?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> create()</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> up()</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> run()</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Anong command ang magdi-drop ng lahat ng tables at magre-run ng lahat ng migrations?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> php artisan migrate:reset</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> php artisan migrate:fresh</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> php artisan migrate:rebuild</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: Create a Products Table Migration</h3>
+        <p>Gamit ang AI assistance, gumawa ng Laravel migration para sa products table:</p>
+        <ol>
+          <li>Mag-setup ng Laravel project (o gamitin ang existing).</li>
+          <li>I-run ang <code>php artisan make:migration create_products_table</code>.</li>
+          <li>I-ask si AI: "Generate the up() and down() methods for a Laravel migration that creates a products table with: id, name (string 200), description (text, nullable), price (decimal 10,2), stock (integer, default 0), category (string 100, nullable), is_available (boolean, default true), and timestamps."</li>
+          <li>I-copy ang AI-generated code sa migration file.</li>
+          <li>I-run ang <code>php artisan migrate</code> at i-verify na nagawa ang products table.</li>
+          <li>I-practice ang rollback: <code>php artisan migrate:rollback</code> at i-verify na na-drop ang table.</li>
+        </ol>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang migrations ay version control para sa database schema — nasa Git ang lahat ng changes.</li>
+        <li>Gumamit ng <code>php artisan make:migration</code> para gumawa ng migration file.</li>
+        <li>ILagay ang schema changes sa <code>up()</code> method at ang reverse sa <code>down()</code> method.</li>
+        <li>Gamitin ang Schema Builder methods: <code>id()</code>, <code>string()</code>, <code>text()</code>, <code>decimal()</code>, <code>foreignId()</code>, atbp.</li>
+        <li>I-prompt si AI para mag-generate ng migration code.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation (Migrations)</strong> — Official guide sa paggawa at pag-manage ng database migrations. <a href="https://laravel.com/docs/migrations" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <!-- Prev / Next — auto-populated by lesson-nav.js -->
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Scripts — order matters -->
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

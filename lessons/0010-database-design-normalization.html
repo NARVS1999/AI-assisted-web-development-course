@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0010: Database Design & Normalization</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0010: Database Design & Normalization</h1>
+      <p><em>Matutong mag-design ng maayos na database schema at i-apply ang normalization para maiwasan ang data redundancy.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makapag-design ng normalized database schema para sa totoong applications, makagamit ng AI para mag-suggest ng table structures, at maintindihan ang 1NF, 2NF, at 3NF.
+      </div>
+
+      <!-- ======== Section 1: Entity-Relationship Diagrams ======== -->
+      <h2>Entity-Relationship Diagrams (ERD)</h2>
+
+      <p>Ang ERD ay parang blueprint ng iyong database. Ipinapakita nito ang entities (tables), attributes (columns), at relationships (foreign keys) sa visual na paraan.</p>
+
+      <h3>Pag-generate ng ERD gamit ang AI</h3>
+      <p>Sa halip na gumuhit manually, i-prompt mo lang si AI:</p>
+
+      <blockquote>
+        <p>"I-design mo ang database schema para sa isang e-commerce app na may users, products, orders, at reviews."</p>
+      </blockquote>
+
+      <p>Ang AI ay magbi-generate ng schema na may:</p>
+      <ul>
+        <li><strong>Users</strong> — id, name, email, password, address, created_at</li>
+        <li><strong>Products</strong> — id, name, description, price, stock, category_id</li>
+        <li><strong>Orders</strong> — id, user_id (FK), order_date, status, total</li>
+        <li><strong>Order_Items</strong> — id, order_id (FK), product_id (FK), quantity, price</li>
+        <li><strong>Reviews</strong> — id, product_id (FK), user_id (FK), rating, comment, created_at</li>
+        <li><strong>Categories</strong> — id, name, slug</li>
+      </ul>
+
+      <div class="tip">
+        <strong>AI Prompt Template</strong>
+        "Design a MySQL database schema for a [app type]. Include tables for [list of entities]. Define primary keys, foreign keys, and relationships."
+      </div>
+
+      <!-- ======== Section 2: Normalization ======== -->
+      <h2>Database Normalization</h2>
+
+      <p>Ang normalization ay proseso ng pag-oorganisa ng data para <strong>mabawasan ang redundancy</strong> at <strong>maiwasan ang anomalies</strong> (insertion, update, deletion anomalies).</p>
+
+      <h3>First Normal Form (1NF)</h3>
+      <p>Mga requirements:</p>
+      <ul>
+        <li>Bawat column ay dapat <strong>atomic</strong> (isang value lang per cell)</li>
+        <li>Bawat row ay dapat <strong>unique</strong> (may primary key)</li>
+      </ul>
+
+      <pre><code>-- Violation ng 1NF: multiple values sa isang column
+CREATE TABLE student_courses (
+    student_id INT,
+    student_name VARCHAR(100),
+    courses VARCHAR(255) -- 'Math,Science,English' — violation!
+);
+
+-- 1NF Compliant: isang course per row
+CREATE TABLE student_courses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT,
+    course_name VARCHAR(100)
+);</code></pre>
+
+      <h3>Second Normal Form (2NF)</h3>
+      <p>Requirements:</p>
+      <ul>
+        <li>Dapat nasa 1NF na</li>
+        <li>Lahat ng non-key columns ay dapat <strong>fully functionally dependent</strong> sa buong primary key (walang partial dependency)</li>
+      </ul>
+
+      <pre><code>-- Violation ng 2NF: partial dependency
+-- Kung ang primary key ay (order_id, product_id):
+CREATE TABLE order_details (
+    order_id INT,
+    product_id INT,
+    product_name VARCHAR(200), -- Depende lang sa product_id, hindi sa buong PK
+    quantity INT,
+    PRIMARY KEY (order_id, product_id)
+);
+
+-- 2NF Compliant: hiwalay ang products table
+CREATE TABLE products (
+    id INT PRIMARY KEY,
+    name VARCHAR(200)
+);
+
+CREATE TABLE order_items (
+    order_id INT,
+    product_id INT,
+    quantity INT,
+    PRIMARY KEY (order_id, product_id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);</code></pre>
+
+      <h3>Third Normal Form (3NF)</h3>
+      <p>Requirements:</p>
+      <ul>
+        <li>Dapat nasa 2NF na</li>
+        <li>Walang <strong>transitive dependency</strong> — ang non-key columns ay hindi dapat dependent sa ibang non-key columns</li>
+      </ul>
+
+      <pre><code>-- Violation ng 3NF: transitive dependency
+CREATE TABLE orders (
+    id INT PRIMARY KEY,
+    customer_id INT,
+    customer_name VARCHAR(100), -- Depende sa customer_id (non-key), hindi sa id (PK)
+    customer_email VARCHAR(100), -- Depende sa customer_id (non-key)
+    order_date DATETIME,
+    total DECIMAL(10,2)
+);
+
+-- 3NF Compliant: hiwalay ang customers table
+CREATE TABLE customers (
+    id INT PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100)
+);
+
+CREATE TABLE orders (
+    id INT PRIMARY KEY,
+    customer_id INT,
+    order_date DATETIME,
+    total DECIMAL(10,2),
+    FOREIGN KEY (customer_id) REFERENCES customers(id)
+);</code></pre>
+
+      <!-- ======== Section 3: Schema Design Patterns ======== -->
+      <h2>Pag-design ng Schema para sa Iba't Ibang Apps</h2>
+
+      <h3>Blog Platform</h3>
+      <pre><code>-- Users, Posts, Comments, Categories
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100) UNIQUE,
+    bio TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    slug VARCHAR(100) UNIQUE
+);
+
+CREATE TABLE posts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    category_id INT,
+    title VARCHAR(255),
+    slug VARCHAR(255) UNIQUE,
+    content TEXT,
+    published_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (category_id) REFERENCES categories(id)
+);
+
+CREATE TABLE comments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    post_id INT NOT NULL,
+    user_id INT NOT NULL,
+    body TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (post_id) REFERENCES posts(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);</code></pre>
+
+      <h3>Task Management App</h3>
+      <pre><code>-- Users, Projects, Tasks, Labels
+CREATE TABLE projects (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(200),
+    description TEXT,
+    user_id INT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE tasks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    project_id INT,
+    title VARCHAR(255),
+    description TEXT,
+    status ENUM('todo', 'in_progress', 'done') DEFAULT 'todo',
+    priority ENUM('low', 'medium', 'high') DEFAULT 'medium',
+    due_date DATE,
+    assigned_to INT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (project_id) REFERENCES projects(id),
+    FOREIGN KEY (assigned_to) REFERENCES users(id)
+);</code></pre>
+
+      <!-- ======== Section 4: Using AI for Schema Design ======== -->
+      <h2>Paggamit ng AI sa Schema Design</h2>
+
+      <p>I-prompt si AI para mag-suggest ng optimal table structures:</p>
+
+      <div class="info">
+        <strong>Effective AI Prompts para sa Database Design</strong>
+        <ul>
+          <li>"Design a normalized MySQL schema for a blog with users, posts, comments, categories, and tags. Include foreign keys and indexes."</li>
+          <li>"I have a denormalized table with [describe structure]. Help me normalize it to 3NF."</li>
+          <li>"Generate an ERD description for a task management app with projects, tasks, and assignees."</li>
+          <li>"What's the best way to model a many-to-many relationship between posts and tags?"</li>
+        </ul>
+      </div>
+
+      <blockquote>
+        <p>"Sabihin mo kay AI: 'I-design mo ang database schema para sa isang [app type] na may [entities].' — at kusa na itong magge-generate ng CREATE TABLE statements, foreign keys, at indexes."</p>
+      </blockquote>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang pangunahing layunin ng database normalization?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Pabilisin ang queries</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Bawasan ang data redundancy at maiwasan ang anomalies</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Gawing mas maraming tables ang database</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Aling normal form ang nagre-require na ang bawat column ay atomic (isang value lang per cell)?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> 1NF</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> 2NF</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> 3NF</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Ano ang tawag kapag ang isang non-key column ay dependent sa ibang non-key column (hindi sa primary key)?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Partial dependency</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Transitive dependency</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Functional dependency</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: Blog Platform Schema Design</h3>
+        <p>Mag-design ng normalized database schema para sa isang blog platform. Dapat may mga sumusunod na entities:</p>
+        <ul>
+          <li><strong>Users</strong> — name, email, avatar, bio</li>
+          <li><strong>Posts</strong> — title, slug, content, published date, status</li>
+          <li><strong>Comments</strong> — body, created date, status (approved/pending)</li>
+          <li><strong>Categories</strong> — name, slug, description</li>
+        </ul>
+        <p><strong>Steps:</strong></p>
+        <ol>
+          <li>I-ask si AI: "Design a normalized MySQL database schema for a blog platform with users, posts, comments, and categories. Include foreign keys and ensure 3NF."</li>
+          <li>I-review ang AI-generated schema at i-check kung nasunod ang normalization rules.</li>
+          <li>Gawin ang CREATE TABLE statements at patakbuhin sa MySQL.</li>
+          <li>Mag-insert ng sample data at i-test ang relationships.</li>
+        </ol>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang ERD ay visual representation ng database structure — pwedeng i-generate gamit ang AI.</li>
+        <li>1NF: Atomic columns at may primary key.</li>
+        <li>2NF: Walang partial dependency (depende sa part lang ng composite key).</li>
+        <li>3NF: Walang transitive dependency (non-key column na dependent sa ibang non-key column).</li>
+        <li>Gamitin ang AI para mag-design at mag-review ng schema — prompt ito ng "Design a normalized schema for..."</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>PlanetScale Blog</strong> — Modern MySQL best practices para sa schema design at database optimization. <a href="https://planetscale.com/blog" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <!-- Prev / Next — auto-populated by lesson-nav.js -->
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Scripts — order matters -->
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'a', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

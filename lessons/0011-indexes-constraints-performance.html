@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0011: Indexes, Constraints & Performance</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0011: Indexes, Constraints & Performance</h1>
+      <p><em>Alamin kung paano pabilisin ang iyong queries gamit ang indexes at maunawaan ang mga constraints para sa data integrity.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makapag-explain kung ano ang indexes at kung kailan ito gagamitin, makapag-apply ng constraints (primary key, foreign key, unique), at makagamit ng EXPLAIN para i-optimize ang queries.
+      </div>
+
+      <!-- ======== Section 1: Database Constraints ======== -->
+      <h2>Database Constraints</h2>
+
+      <p>Ang constraints ay rules na nag-eenforce ng <strong>data integrity</strong> sa iyong database.</p>
+
+      <table>
+        <tr>
+          <th>Constraint</th>
+          <th>Purpose</th>
+          <th>Example</th>
+        </tr>
+        <tr>
+          <td><code>PRIMARY KEY</code></td>
+          <td>Unique identifier ng bawat row</td>
+          <td><code>id INT PRIMARY KEY</code></td>
+        </tr>
+        <tr>
+          <td><code>FOREIGN KEY</code></td>
+          <td>Nag-uugnay ng dalawang tables</td>
+          <td><code>FOREIGN KEY (user_id) REFERENCES users(id)</code></td>
+        </tr>
+        <tr>
+          <td><code>UNIQUE</code></td>
+          <td>Tinitiyak na unique ang value sa column</td>
+          <td><code>email VARCHAR(100) UNIQUE</code></td>
+        </tr>
+        <tr>
+          <td><code>NOT NULL</code></td>
+          <td>Hindi pwedeng walang value</td>
+          <td><code>name VARCHAR(100) NOT NULL</code></td>
+        </tr>
+        <tr>
+          <td><code>DEFAULT</code></td>
+          <td>Default value kapag walang ibinigay</td>
+          <td><code>status VARCHAR(20) DEFAULT 'active'</code></td>
+        </tr>
+        <tr>
+          <td><code>CHECK</code></td>
+          <td>Validates values based sa condition</td>
+          <td><code>CHECK (age >= 18)</code></td>
+        </tr>
+      </table>
+
+      <pre><code>-- Example: Table na may maraming constraints
+CREATE TABLE employees (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    employee_code VARCHAR(20) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    full_name VARCHAR(200) NOT NULL,
+    department_id INT,
+    salary DECIMAL(10, 2) CHECK (salary > 0),
+    status VARCHAR(20) DEFAULT 'active',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (department_id) REFERENCES departments(id)
+);</code></pre>
+
+      <!-- ======== Section 2: Indexes ======== -->
+      <h2>Indexes: Bakit Kailangan?</h2>
+
+      <p>Ang index parang table of contents ng libro — kung wala, isa-isang babasahin ni MySQL bawat pahina (row) para mahanap ang hinahanap mo. Ito ay tinatawag na <strong>full table scan</strong>.</p>
+
+      <h3>Paano Gumagana ang B-Tree Index</h3>
+      <p>Ang default index type sa MySQL ay <strong>B-Tree</strong> (Balanced Tree). Ini-oorganisa nito ang data sa tree structure para ang paghahanap ay logarithmic time (O(log n)) imbes na linear (O(n)).</p>
+
+      <pre><code>-- Walang index: kung may 1M rows, isa-isang titingnan lahat
+SELECT * FROM users WHERE email = 'juan@example.com';
+-- Possible na umabot ng ilang segundo
+
+-- May index: diretso sa tamang location
+CREATE INDEX idx_email ON users(email);
+-- Ngayon, logarithmic search lang — milliseconds lang</code></pre>
+
+      <h3>Types of Indexes</h3>
+      <table>
+        <tr>
+          <th>Index Type</th>
+          <th>Gamit</th>
+          <th>Syntax</th>
+        </tr>
+        <tr>
+          <td>Single-column</td>
+          <td>Isang column lang</td>
+          <td><code>CREATE INDEX idx_name ON table(col);</code></td>
+        </tr>
+        <tr>
+          <td>Composite (Multi-column)</td>
+          <td>Dalawang column o higit pa</td>
+          <td><code>CREATE INDEX idx_name ON table(col1, col2);</code></td>
+        </tr>
+        <tr>
+          <td>UNIQUE index</td>
+          <td>Index + unique constraint</td>
+          <td><code>CREATE UNIQUE INDEX idx_name ON table(col);</code></td>
+        </tr>
+        <tr>
+          <td>FULLTEXT index</td>
+          <td>Full-text search</td>
+          <td><code>CREATE FULLTEXT INDEX idx_name ON table(col);</code></td>
+        </tr>
+      </table>
+
+      <div class="warning">
+        <strong>Index Trade-offs</strong>
+        Ang index ay nagpapabilis ng SELECT queries, pero pinapabagal nito ang INSERT, UPDATE, at DELETE dahil kailangan i-update ang index tuwing may pagbabago. Huwag mag-index ng lahat ng columns — piliin lang ang madalas gamitin sa WHERE, JOIN, at ORDER BY.
+      </div>
+
+      <h3>Kailan Gumamit ng Index?</h3>
+      <ul>
+        <li>Columns na madalas gamitin sa <code>WHERE</code> clause</li>
+        <li>Columns na ginagamit sa <code>JOIN</code> conditions (foreign keys)</li>
+        <li>Columns na ginagamit sa <code>ORDER BY</code></li>
+        <li>Columns na may <code>UNIQUE</code> constraint (automatic may index)</li>
+        <li><strong>Huwag</strong> mag-index ng columns na bihira gamitin o may kakaunting unique values (e.g., boolean, gender)</li>
+      </ul>
+
+      <!-- ======== Section 3: EXPLAIN Statement ======== -->
+      <h2>Query Optimization gamit ang EXPLAIN</h2>
+
+      <p>Ang <code>EXPLAIN</code> ay nagpapakita kung <strong>paano</strong> ini-execute ni MySQL ang iyong query. Ito ang susi sa pag-optimize.</p>
+
+      <pre><code>-- Tingnan kung paano ginagawa ang query
+EXPLAIN SELECT * FROM users WHERE email = 'juan@example.com';
+
+-- Result:
+-- | id | select_type | table | type | possible_keys | key  | rows | Extra       |
+-- |----|-------------|-------|------|---------------|------|------|-------------|
+-- |  1 | SIMPLE      | users | ref  | idx_email     | idx  |    1 | Using where |</code></pre>
+
+      <h3>Pag-Interpret ng EXPLAIN Output</h3>
+      <table>
+        <tr>
+          <th>Column</th>
+          <th>Meaning</th>
+          <th>Magandang Value</th>
+        </tr>
+        <tr>
+          <td><code>type</code></td>
+          <td>Paano naghahanap ng rows</td>
+          <td><code>const</code>, <code>ref</code>, <code>range</code> (masama: <code>ALL</code> = full table scan)</td>
+        </tr>
+        <tr>
+          <td><code>key</code></td>
+          <td>Anong index ang ginamit</td>
+          <td>May pangalan ng index (NULL ay walang index na ginamit)</td>
+        </tr>
+        <tr>
+          <td><code>rows</code></td>
+          <td>Tinantyang bilang ng rows na sinuri</td>
+          <td>Mababang numero</td>
+        </tr>
+        <tr>
+          <td><code>Extra</code></td>
+          <td>Karagdagang impormasyon</td>
+          <td><code>Using index</code> (maganda); <code>Using filesort</code> (pwedeng i-optimize)</td>
+        </tr>
+      </table>
+
+      <pre><code>-- Pag-optimize ng query na may slow EXPLAIN result
+-- Kung ang EXPLAIN ay nagpapakita ng type: ALL (full table scan),
+-- ibig sabihin walang index na ginagamit.
+
+-- Mag-add ng index sa column na ginagamit sa WHERE
+CREATE INDEX idx_orders_customer ON orders(customer_id);
+CREATE INDEX idx_orders_date ON orders(order_date);
+
+-- Pagkatapos, i-check ulit
+EXPLAIN SELECT * FROM orders
+WHERE customer_id = 5
+ORDER BY order_date DESC;</code></pre>
+
+      <!-- ======== Section 4: Using AI for Index Suggestions ======== -->
+      <h2>Paggamit ng AI para Mag-suggest ng Indexes</h2>
+
+      <p>I-prompt si AI na mag-analyze ng iyong queries at mag-suggest ng optimal indexes:</p>
+
+      <div class="info">
+        <strong>Sample AI Prompts</strong>
+        <ul>
+          <li>"Here's my MySQL query: [SQL]. What indexes should I add to optimize it?"</li>
+          <li>"I have a table with 1 million rows. I frequently query by email and status. What indexes do you recommend?"</li>
+          <li>"Analyze this EXPLAIN output and suggest improvements: [EXPLAIN output]"</li>
+          <li>"My query is slow and EXPLAIN shows type: ALL with 500k rows. Help me optimize."</li>
+        </ul>
+      </div>
+
+      <blockquote>
+        <p>"Ang index parang table of contents ng libro — kung wala, isa-isang babasahin ni MySQL bawat pahina (row). Gamitin ang AI para sabihin kung aling columns ang dapat i-index base sa iyong queries."</p>
+      </blockquote>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang tawag sa istraktura ng default index ng MySQL?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Hash Table</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> B-Tree</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Linked List</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Aling EXPLAIN column ang nagpapakita kung ilang rows ang tinantyang susuriin?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> type</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> rows</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> key</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Ano ang disadvantage ng pag-add ng maraming indexes sa isang table?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Walang disadvantage, laging maganda ang index</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Pinapabagal ang INSERT, UPDATE, at DELETE operations</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Gumagamit ng maraming CPU resources sa SELECT</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: Optimize a Slow Query</h3>
+        <p>Gamit ang isang query na may JOIN at ORDER BY, i-optimize ito gamit ang EXPLAIN at AI:</p>
+        <ol>
+          <li>Gumawa ng dalawang tables: <code>customers</code> (id, name, email) at <code>orders</code> (id, customer_id, total, order_date).</li>
+          <li>Mag-insert ng sample data.</li>
+          <li>Patakbuhin ang query na ito: <code>EXPLAIN SELECT c.name, o.total FROM customers c JOIN orders o ON c.id = o.customer_id WHERE o.total > 500 ORDER BY o.order_date DESC;</code></li>
+          <li>I-ask si AI: "Based on this EXPLAIN output, what indexes should I add to optimize this query?"</li>
+          <li>I-add ang suggested indexes at patakbuhin ulit ang EXPLAIN — dapat may improvement.</li>
+        </ol>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Constraints (PRIMARY KEY, FOREIGN KEY, UNIQUE, NOT NULL, CHECK) ay nag-eenforce ng data integrity.</li>
+        <li>Ang index (B-Tree) ay nagpapabilis ng paghahanap — parang table of contents ng libro.</li>
+        <li>Gamitin ang CREATE INDEX sa columns na madalas gamitin sa WHERE, JOIN, at ORDER BY.</li>
+        <li>Ang EXPLAIN ay nagpapakita kung paano ini-execute ang query — i-check ang <code>type</code>, <code>key</code>, at <code>rows</code>.</li>
+        <li>I-prompt si AI para mag-suggest ng indexes base sa iyong queries at EXPLAIN output.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>PlanetScale Blog</strong> — Articles tungkol sa indexing strategies at performance optimization. <a href="https://planetscale.com/blog" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <!-- Prev / Next — auto-populated by lesson-nav.js -->
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Scripts — order matters -->
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

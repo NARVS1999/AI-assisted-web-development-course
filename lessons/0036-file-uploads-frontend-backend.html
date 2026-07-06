@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0036: File Uploads: Frontend to Backend</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0036: File Uploads: Frontend to Backend</h1>
+      <p><em>Paano mag-upload ng files mula sa Next.js papuntang Laravel, na may progress bar at image preview.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makagawa ng file upload system na may FormData, progress indicator, image preview, at server-side validation gamit ang AI assistance.
+      </div>
+
+      <h2>File Upload Basics</h2>
+      <p>Ang file upload ay asynchronous — gumamit ng <strong>FormData</strong> at progress indicator para magandang UX. Ang file ay hindi pwedeng i-send bilang JSON; kailangan ng <code>multipart/form-data</code> format.</p>
+
+      <h2>Frontend: File Input at FormData</h2>
+      <p>Sa Next.js, gumamit ng <code>&lt;input type="file"&gt;</code> at FormData para i-upload ang file.</p>
+
+      <pre><code>'use client';
+import { useState } from 'react';
+import api from '@/lib/api';
+import { toast } from 'react-hot-toast';
+
+export default function AvatarUpload() {
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  const handleFileChange = (e) => {
+    const selected = e.target.files[0];
+    setFile(selected);
+    setPreview(URL.createObjectURL(selected));
+  };
+
+  const handleUpload = async () => {
+    if (!file) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    try {
+      await api.post('/upload/avatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (e) => {
+          setProgress(Math.round((e.loaded * 100) / e.total));
+        },
+      });
+      toast.success('Upload successful!');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+      setProgress(0);
+    }
+  };
+
+  return (
+    &lt;div&gt;
+      &lt;input type="file" accept="image/*" onChange={handleFileChange} /&gt;
+      {preview && &lt;img src={preview} alt="Preview" width={200} /&gt;}
+      {uploading && &lt;progress value={progress} max={100} /&gt;}
+      &lt;button onClick={handleUpload} disabled={uploading}&gt;Upload&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Gamitin ang <code>URL.createObjectURL()</code> para sa image preview — hindi mo kailangan i-upload muna ang file bago makita ng user ang itsura nito.
+      </div>
+
+      <h2>Backend: Laravel File Upload Handling</h2>
+      <p>Sa Laravel, gamitin ang <code>Storage</code> facade para i-save ang uploaded files.</p>
+
+      <pre><code>// app/Http/Controllers/UploadController.php
+public function uploadAvatar(Request $request)
+{
+    $request->validate([
+        'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+    ]);
+
+    $path = $request->file('avatar')->store('avatars', 'public');
+
+    $user = $request->user();
+    $user->avatar_url = Storage::url($path);
+    $user->save();
+
+    return response()->json([
+        'message' => 'Avatar uploaded successfully',
+        'data'    => ['avatar_url' => $user->avatar_url],
+    ]);
+}</code></pre>
+
+      <h2>Progress Bars</h2>
+      <p>Ang Axios ay may <code>onUploadProgress</code> callback na nagbibigay ng real-time upload progress. Puwede itong i-display gamit ang HTML <code>&lt;progress&gt;</code> element o custom progress bar.</p>
+
+      <pre><code>// Axios upload progress
+onUploadProgress: (progressEvent) => {
+  const percent = Math.round(
+    (progressEvent.loaded * 100) / progressEvent.total
+  );
+  setProgress(percent);
+}</code></pre>
+
+      <h2>Image Preview</h2>
+      <p>Bago pa ma-upload ang file, puwede nang ipakita ang preview gamit ang <code>URL.createObjectURL()</code>. Tatandaan: i-release ang object URL para maiwasan ang memory leaks.</p>
+
+      <h2>Using AI para sa Upload Components</h2>
+      <p>I-prompt si AI para sa buong upload system:</p>
+      <blockquote>"Generate a Next.js profile page component with avatar upload functionality. Include: file input with image preview, progress bar during upload, Axios with FormData, and toast notifications. Also generate the Laravel controller for handling the upload with validation."</blockquote>
+
+      <div class="info">
+        <strong>Key Insight</strong>
+        Ang file upload ay nangangailangan ng <code>multipart/form-data</code> — hindi ito pwedeng i-send bilang JSON. Always validate both sa frontend (file type at size) at backend (Laravel validation rules).
+      </div>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Anong content type ang kailangan para sa file upload?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> application/json</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> multipart/form-data</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> text/plain</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Paano gumawa ng image preview bago mag-upload?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> I-upload muna ang file sa server</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Gamitin ang URL.createObjectURL()</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Gumamit ng base64 encoding</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Saan dapat gawin ang file validation — frontend o backend?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Frontend lang</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Backend lang</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Both frontend at backend</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: Profile Page with Avatar Upload gamit ang AI</h3>
+        <p>Gamit ang AI, gumawa ng profile page na may avatar upload:</p>
+        <ol>
+          <li>I-prompt si AI: "Create a Next.js profile page with avatar upload. Include image preview, progress bar, FormData upload to Laravel API, and toast notifications."</li>
+          <li>Gumawa ng Laravel endpoint para sa avatar upload na may validation</li>
+          <li>I-setup ang storage link: <code>php artisan storage:link</code></li>
+          <li>I-test ang upload gamit ang iba't ibang file types at sizes</li>
+        </ol>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Gumamit ng <code>FormData</code> para sa file upload — hindi pwedeng JSON</li>
+        <li>Magdagdag ng progress bar gamit ang Axios <code>onUploadProgress</code></li>
+        <li>Image preview gamit ang <code>URL.createObjectURL()</code></li>
+        <li>I-validate ang files both sa frontend at backend</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation (File Storage)</strong> — Official guide para sa file uploads at storage. <a href="https://laravel.com/docs/filesystem" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'c' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

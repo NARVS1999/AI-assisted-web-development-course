@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0014: Laravel Fundamentals & AI Pair Programming</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0014: Laravel Fundamentals & AI Pair Programming</h1>
+      <p><em>Matutunan ang istruktura ng Laravel project at kung paano gamitin si AI para mag-scaffold ng controllers at routes.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Maunawaan ang folder structure ng Laravel, gamitin ang Artisan CLI, at gumamit ng AI para mabilis na makagawa ng controllers at routes.
+      </div>
+
+      <h2>Laravel Project Structure</h2>
+      <p>Ang Laravel ay may malinis na folder structure. Ang mga pangunahing folders ay: <code>app/</code> (models, controllers), <code>routes/</code> (web.php, api.php), <code>resources/</code> (views), <code>database/</code> (migrations, seeds), at <code>config/</code> (configuration files).</p>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Huwag kabisaduhin lahat ng folders — si AI ang bahala mag-remember. Ang importante, alam mo kung saan pupunta para mag-edit.
+      </div>
+
+      <h2>Artisan CLI</h2>
+      <p>Ang <code>php artisan</code> ay ang command-line tool ng Laravel. Puwede kang gumawa ng controllers, models, migrations, at marami pa.</p>
+      <pre><code>php artisan make:controller ProductController
+php artisan make:model Product
+php artisan make:migration create_products_table
+php artisan serve</code></pre>
+
+      <h2>Routes: web.php vs api.php</h2>
+      <p>Sa <code>routes/web.php</code>, nilalagay ang mga routes na may session at CSRF protection (para sa blade views). Sa <code>routes/api.php</code>, walang session state — stateless at para sa RESTful APIs.</p>
+      <pre><code>// routes/web.php
+Route::get('/products', [ProductController::class, 'index']);
+
+// routes/api.php
+Route::apiResource('/products', ProductController::class);</code></pre>
+
+      <h2>AI Pair Programming sa Laravel</h2>
+      <p>Puwede mong i-prompt si AI para gumawa ng controller at routes nang sabay:</p>
+      <blockquote>"Sabihin mo kay AI: 'Gumawa ka ng API routes at Controller para sa Product CRUD sa Laravel 11.'"</blockquote>
+      <p>Si AI ang magsusulat ng buong controller na may <code>index</code>, <code>store</code>, <code>show</code>, <code>update</code>, at <code>destroy</code> methods, pati na rin ang routes.</p>
+
+      <div class="info">
+        <strong>Key Insight</strong>
+        Sa AI-assisted development, hindi mo kailangan tandaan ang syntax — si AI na bahala. Ang kailangan mo lang ay concepts at magandang prompt.
+      </div>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Anong Artisan command ang ginagamit para gumawa ng controller?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> php artisan make:model</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> php artisan make:controller</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> php artisan create:controller</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Saan mo ilalagay ang API routes?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> routes/web.php</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> routes/api.php</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> routes/console.php</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Ano ang Artisan sa Laravel?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Isang database management tool</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Isang command-line interface (CLI) para sa Laravel</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Isang template engine</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: AI-Scaffolded ProductController</h3>
+        <p>Gamit ang AI, ipagawa ang isang <code>ProductController</code> na may kumpletong CRUD methods at API routes para sa Laravel 11. I-prompt si AI ng ganito: "Create a ProductController with CRUD methods and API routes for a Product model in Laravel 11."</p>
+        <p>Pagkatapos, i-run ang <code>php artisan route:list</code> para makita lahat ng routes na ginawa.</p>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang Laravel ay may organized folder structure na app/, routes/, resources/, database/, config/</li>
+        <li>Ang Artisan CLI (php artisan) ay ginagamit para mag-scaffold ng code</li>
+        <li>Ang web.php ay may session/CSRF; ang api.php ay stateless</li>
+        <li>Gamitin si AI para mabilis na makagawa ng controllers at routes</li>
+        <li>Ang magandang prompt ay susi sa AI-assisted Laravel development</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation</strong> — Official at comprehensive guide para sa lahat ng Laravel topics. <a href="https://laravel.com/docs" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

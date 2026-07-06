@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0028: Forms & Mutations (Server Actions)</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0028: Forms & Mutations (Server Actions)</h1>
+      <p><em>Alamin ang Server Actions sa Next.js 14+ — kung paano mag-handle ng form submissions at data mutations nang direkta sa server.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makagawa ng forms na may Server Actions, validation, at proper feedback gamit ang AI assistance.
+      </div>
+
+      <!-- ======== Section 1: What are Server Actions ======== -->
+      <h2>Ano ang Server Actions?</h2>
+
+      <p>Ang <strong>Server Actions</strong> ay isang feature ng Next.js 14+ na nagpapahintulot sa iyo na mag-process ng form data nang direkta sa server, nang hindi na kailangan ng API endpoint.</p>
+
+      <blockquote>
+        "Ang Server Actions ay bagong feature — puwedeng mag-process ng form data nang direkta sa server."
+      </blockquote>
+
+      <p>Key benefits:</p>
+      <ul>
+        <li>Walang need ng separate API route — diretsong server function ang form handler.</li>
+        <li>Automatic progressive enhancement — gumagana kahit walang JavaScript.</li>
+        <li>Built-in na revalidation ng data.</li>
+        <li>Secure — hindi exposed ang server logic sa browser.</li>
+      </ul>
+
+      <!-- ======== Section 2: Server Actions Syntax ======== -->
+      <h2>Server Actions Syntax</h2>
+
+      <p>May dalawang paraan para gumamit ng Server Actions:</p>
+
+      <h3>1. Inline sa Component File (Client Component)</h3>
+      <pre><code>'use server';
+
+export async function createProduct(formData: FormData) {
+  const name = formData.get('name');
+  const price = formData.get('price');
+
+  // Validate
+  if (!name || !price) {
+    return { error: 'Name and price are required' };
+  }
+
+  // Save to database
+  await db.product.create({ data: { name, price: Number(price) } });
+
+  // Revalidate the products page
+  revalidatePath('/products');
+}</code></pre>
+
+      <h3>2. Separate File (Recommended)</h3>
+      <pre><code>// app/actions/products.ts
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
+
+const productSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  price: z.string().transform(Number).pipe(
+    z.number().positive('Price must be positive')
+  ),
+});
+
+export async function createProduct(prevState: any, formData: FormData) {
+  const validated = productSchema.safeParse({
+    name: formData.get('name'),
+    price: formData.get('price'),
+  });
+
+  if (!validated.success) {
+    return { errors: validated.error.flatten().fieldErrors };
+  }
+
+  await db.product.create({ data: validated.data });
+  revalidatePath('/products');
+  return { success: true };
+}</code></pre>
+
+      <!-- ======== Section 3: Form Handling with Validation ======== -->
+      <h2>Form Handling with Validation</h2>
+
+      <p>Sa Next.js 14+, gumagamit tayo ng <code>useActionState</code> (dating <code>useFormState</code>) at <code>useFormStatus</code> para sa form handling:</p>
+
+      <pre><code>'use client';
+
+import { useActionState } from 'react';
+import { createProduct } from '@/app/actions/products';
+
+export default function ProductForm() {
+  const [state, formAction, pending] = useActionState(createProduct, null);
+
+  return (
+    &lt;form action={formAction} className="space-y-4 max-w-md"&gt;
+      &lt;div&gt;
+        &lt;label htmlFor="name"&gt;Product Name&lt;/label&gt;
+        &lt;input
+          id="name"
+          name="name"
+          className="border rounded p-2 w-full"
+        /&gt;
+        {state?.errors?.name && (
+          &lt;p className="text-red-500 text-sm"&gt;{state.errors.name[0]}&lt;/p&gt;
+        )}
+      &lt;/div&gt;
+
+      &lt;div&gt;
+        &lt;label htmlFor="price"&gt;Price&lt;/label&gt;
+        &lt;input
+          id="price"
+          name="price"
+          type="number"
+          step="0.01"
+          className="border rounded p-2 w-full"
+        /&gt;
+        {state?.errors?.price && (
+          &lt;p className="text-red-500 text-sm"&gt;{state.errors.price[0]}&lt;/p&gt;
+        )}
+      &lt;/div&gt;
+
+      &lt;SubmitButton pending={pending} /&gt;
+
+      {state?.success && (
+        &lt;p className="text-green-600"&gt;Product created successfully!&lt;/p&gt;
+      )}
+    &lt;/form&gt;
+  );
+}</code></pre>
+
+      <p>Ang <code>useFormStatus</code> naman ay para sa submit button loading state:</p>
+
+      <pre><code>'use client';
+import { useFormStatus } from 'react-dom';
+
+function SubmitButton({ pending }: { pending: boolean }) {
+  return (
+    &lt;button
+      type="submit"
+      disabled={pending}
+      className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
+    &gt;
+      {pending ? 'Submitting...' : 'Create Product'}
+    &lt;/button&gt;
+  );
+}</code></pre>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Sa AI prompt, i-specify na gusto mong gumamit ng Server Actions: <em>"Create a contact form with Server Actions, Zod validation, useActionState for form state, and useFormStatus for submit button loading."</em>
+      </div>
+
+      <!-- ======== Section 4: Using AI to Create Form Components ======== -->
+      <h2>Using AI para Gumawa ng Form Components</h2>
+
+      <p>Napakadaling mag-generate ng forms gamit ang AI. Narito ang magandang prompt structure:</p>
+
+      <ul>
+        <li><strong>Anong form?</strong> — contact, login, registration, product creation</li>
+        <li><strong>Anong fields?</strong> — text, email, number, select, checkbox</li>
+        <li><strong>Anong validation?</strong> — required, min/max, email format, custom rules</li>
+        <li><strong>Anong feedback?</strong> — error messages, success message, loading state</li>
+        <li><strong>Anong styling?</strong> — Tailwind classes, design system</li>
+      </ul>
+
+      <p>Halimbawa:</p>
+      <blockquote>
+        "Create a Next.js 14 contact form with Server Actions. Fields: name (required), email (valid email), message (min 10 chars). Use Zod for validation. Use useActionState and useFormStatus. Show errors below each field and a success message on submission. Style with Tailwind CSS."
+      </blockquote>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang <code>'use server'</code> directive sa isang function?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Ginagawa nitong Client Component ang function</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Minamarkahan nito ang function bilang Server Action — maaaring tawagin mula sa client para mag-execute sa server</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Pinapagana nito ang database connection</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Anong hook ang ginagamit para ma-access ang form state (errors, success message) mula sa Server Action?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> <code>useState</code></label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> <code>useActionState</code></label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> <code>useFormStatus</code></label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Ano ang gamit ng <code>revalidatePath('/products')</code> sa isang Server Action?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Ire-route ang user papunta sa /products page</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Ipi-purga ang server cache para ma-refresh ang data ng /products page</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Ide-delete ang products table</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: Contact Form with Server Actions</h3>
+        <p>Gamit ang AI, gumawa ng contact form na may:</p>
+        <ul>
+          <li>Fields: name, email, message (textarea)</li>
+          <li>Validation gamit ang Zod: name required, email valid format, message min 10 characters</li>
+          <li>Server Action para i-process ang form</li>
+          <li><code>useActionState</code> para sa form state at error display</li>
+          <li><code>useFormStatus</code> para sa submit button loading</li>
+          <li>Success message pagkatapos ng submission</li>
+          <li>Tailwind CSS styling — maganda at responsive</li>
+        </ul>
+        <p><em>Prompt tip: "Generate a Next.js 14 contact form with Server Actions. Use Zod for validation (name required, email valid, message min 10 chars). Use useActionState and useFormStatus. The server action should simulate saving to database (console.log). Style with Tailwind CSS." I-save ang files sa <code>app/contact/</code> at <code>app/actions/contact.ts</code>.</em></p>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang <strong>Server Actions</strong> ay nag-aallow ng form processing sa server nang walang API route — gamit ang <code>'use server'</code> directive.</li>
+        <li>Gamitin ang <strong>Zod</strong> para sa schema validation sa Server Action.</li>
+        <li>Gamitin ang <strong>useActionState</strong> para sa form state at <strong>useFormStatus</strong> para sa button loading state.</li>
+        <li>Ang <strong>revalidatePath</strong> ay ginagamit para i-refresh ang cached data pagkatapos ng mutation.</li>
+        <li>Maganda ang AI sa pag-generate ng forms — specify ang fields, validation, at styling.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Next.js Documentation (Server Actions)</strong> — Official guide para sa forms, mutations, at Server Actions. <a href="https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

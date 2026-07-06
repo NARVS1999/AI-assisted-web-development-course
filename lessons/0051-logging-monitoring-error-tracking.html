@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0051: Logging, Monitoring & Error Tracking</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0051: Logging, Monitoring & Error Tracking</h1>
+      <p><em>Kapag nasa production na, hindi mo na pwedeng i-<code>dd()</code> ang errors — kailangan ng proper logging at monitoring.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Matutunan ang Laravel logging, frontend error tracking gamit ang Sentry, health checks, at paggamit ng AI para mag-set up ng monitoring.
+      </div>
+
+      <h2>Laravel Logging (Daily Logs, External Services)</h2>
+      <p>Ang Laravel ay may built-in na logging system gamit ang <code>Log</code> facade. I-configure sa <code>config/logging.php</code>:</p>
+      <pre><code>// logging.php — daily logs
+'channels' => [
+    'stack' => [
+        'driver' => 'stack',
+        'channels' => ['daily', 'sentry'],
+    ],
+    'daily' => [
+        'driver' => 'daily',
+        'path' => storage_path('logs/laravel.log'),
+        'days' => 14, // keep logs for 14 days
+    ],
+],</code></pre>
+      <p>Gamitin sa code:</p>
+      <pre><code>// Instead of dd() or dump()
+Log::info('User registered', ['user_id' => $user->id]);
+Log::error('Payment failed', [
+    'order_id' => $order->id,
+    'error' => $e->getMessage()
+]);</code></pre>
+
+      <div class="tip">
+        <strong>Best Practice</strong>
+        Mag-log laging may context: huwag lang "Error occurred" kundi "Payment failed for order #1234: insufficient funds".
+      </div>
+
+      <h2>Frontend Error Tracking (Sentry)</h2>
+      <p>Ang Sentry ay isang error tracking service para sa frontend at backend. I-set up sa Next.js:</p>
+      <pre><code>npm install @sentry/nextjs
+npx @sentry/wizard -i nextjs</code></pre>
+      <p>Awtomatikong magca-capture ng errors ang Sentry at magse-send ng alert sa iyo:</p>
+      <pre><code>// Manual error reporting
+import * as Sentry from '@sentry/nextjs';
+
+try {
+  // some code
+} catch (error) {
+  Sentry.captureException(error);
+}
+
+// Sa API routes
+export default function handler(req, res) {
+  try {
+    // ...
+  } catch (error) {
+    Sentry.captureException(error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+}</code></pre>
+
+      <div class="info">
+        <strong>Key Insight</strong>
+        Sentry ay libre para sa small teams at personal projects. I-set up na bago mag-deploy sa production — hindi mo na kailangan manghingi ng screenshot sa users para malaman ang error.
+      </div>
+
+      <h2>Health Checks at Monitoring</h2>
+      <p>Gumawa ng health check endpoint para ma-monitor ang status ng iyong app:</p>
+      <pre><code>// routes/api.php
+Route::get('/health', function () {
+    try {
+        DB::connection()->getPdo();
+        return response()->json([
+            'status' => 'healthy',
+            'database' => 'connected',
+            'timestamp' => now()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'unhealthy',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});</code></pre>
+      <p>Para sa monitoring, gumamit ng uptime monitors tulad ng <strong>UptimeRobot</strong> (libre) o <strong>Better Uptime</strong> na nagche-check ng health endpoint every 5 minutes.</p>
+
+      <h2>Using AI to Set Up Monitoring</h2>
+      <p>I-prompt si AI para mag-set up ng monitoring infrastructure:</p>
+      <blockquote>"I need to set up Sentry for my Next.js app and create a health check endpoint in Laravel. How do I configure both? Give me step-by-step instructions."</blockquote>
+      <p>Puwede ring humingi ng troubleshooting help:</p>
+      <blockquote>"My Sentry is not capturing errors from my Next.js API routes. Here's my sentry.config.js. What's wrong?"</blockquote>
+
+      <div class="warning">
+        <strong>Warning</strong>
+        Huwag mag-log ng sensitive data: passwords, credit card numbers, personal information. I-configure ang data scrubbing sa Sentry para i-automate ito.
+      </div>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang dapat gamitin sa Laravel sa halip na dd() sa production?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> echo at var_dump()</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Log::info() at Log::error()</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> print_r()</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Para saan ginagamit ang Sentry sa isang Next.js app?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Pag-optimize ng images</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Error tracking at performance monitoring</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Database management</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Ano ang health check endpoint?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Endpoint na nagbabalik ng health status ng app (database connection, uptime, etc.)</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Endpoint para mag-update ng health records ng users</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Endpoint para mag-check ng password strength</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: Sentry Setup at Health Check Endpoint</h3>
+        <p>Gamit ang AI, mag-set up ng error tracking at health monitoring:</p>
+        <ol>
+          <li>I-set up ang Sentry sa iyong Next.js project. Mag-sign up sa sentry.io, pagkatapos ay i-prompt si AI: "Guide me through setting up @sentry/nextjs in my Next.js project step by step."</li>
+          <li>Gumawa ng health check endpoint sa Laravel na nagche-check ng database connection at nagbabalik ng JSON response</li>
+          <li>I-configure ang Laravel logging na mag-log sa daily files at (optional) sa Sentry</li>
+          <li>I-test na may na-ca-capture na errors ang Sentry — gumawa ng intentional error sa frontend at backend</li>
+        </ol>
+        <p>Ang goal ay magkaroon ka ng visibility sa production errors nang hindi mo na kailangan hulaan kung ano ang problema.</p>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Gamitin ang <code>Log::info()</code> at <code>Log::error()</code> sa Laravel — hindi <code>dd()</code> sa production</li>
+        <li>Sentry para sa frontend at backend error tracking — automatic error alerts</li>
+        <li>Health check endpoint para sa uptime monitoring (e.g., UptimeRobot)</li>
+        <li>Huwag mag-log ng sensitive data — i-configure ang data scrubbing</li>
+        <li>Si AI ay magaling mag-guide sa pag-set up ng monitoring infrastructure</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation (Logging)</strong> — Official guide para sa logging at error tracking configuration. <a href="https://laravel.com/docs/logging" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'a' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

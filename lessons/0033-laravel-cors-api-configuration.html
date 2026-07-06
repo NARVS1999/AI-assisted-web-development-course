@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0033: Laravel CORS & API Configuration</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0033: Laravel CORS & API Configuration</h1>
+      <p><em>Matutunan kung paano i-configure ang CORS sa Laravel at i-setup ang API routing at authentication.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makapag-setup ng CORS sa Laravel, mag-configure ng API versioning, at maunawaan ang Sanctum vs Passport para sa SPA authentication.
+      </div>
+
+      <h2>Ano ang CORS?</h2>
+      <p>Ang <strong>CORS (Cross-Origin Resource Sharing)</strong> ay isang mekanismo na nagpapahintulot sa isang web page na mag-request ng resources mula sa ibang domain. Kapag magkaiba ang domain ng frontend (localhost:3000) at backend (localhost:8000), kailangan ng CORS para payagan ang requests.</p>
+
+      <pre><code>// config/cors.php - Laravel CORS Configuration
+return [
+    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'allowed_methods' => ['*'],
+    'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:3000')],
+    'allowed_headers' => ['*'],
+    'exposed_headers' => [],
+    'max_age' => 0,
+    'supports_credentials' => true,
+];</code></pre>
+
+      <div class="warning">
+        <strong>Warning</strong>
+        Huwag gumamit ng <code>allowed_origins = ['*']</code> sa production — specific origin lang dapat para sa security.
+      </div>
+
+      <h2>API Prefix at Versioning</h2>
+      <p>Sa <code>routes/api.php</code>, automatic may <code>/api</code> prefix ang routes. Para sa versioning, gamitan ng <code>/api/v1/</code> prefix para future-proof ang API mo.</p>
+
+      <pre><code>// routes/api.php
+Route::prefix('v1')->group(function () {
+    Route::apiResource('products', ProductController::class);
+});</code></pre>
+
+      <p>Puwede mo ring i-set ang API prefix sa <code>App\Providers\RouteServiceProvider</code> o sa <code>bootstrap/app.php</code> (Laravel 11).</p>
+
+      <h2>Sanctum vs Passport</h2>
+      <p><strong>Sanctum</strong> — magaan, simple, at recommended para sa SPA authentication at API tokens. <strong>Passport</strong> — OAuth2 server, para sa third-party API clients at complex authorization flows.</p>
+
+      <table>
+        <tr><th>Feature</th><th>Sanctum</th><th>Passport</th></tr>
+        <tr><td>SPA Auth</td><td>&#10003; Simple</td><td>&#10003; OAuth2</td></tr>
+        <tr><td>API Tokens</td><td>&#10003;</td><td>&#10003;</td></tr>
+        <tr><td>Third-party Clients</td><td>&#10007;</td><td>&#10003;</td></tr>
+        <tr><td>Setup Complexity</td><td>Minimal</td><td>Moderate</td></tr>
+      </table>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Para sa course natin, gagamit tayo ng Sanctum dahil SPA authentication lang ang kailangan natin.
+      </div>
+
+      <h2>Using AI para mag-configure ng CORS</h2>
+      <p>Puwede mong i-prompt si AI para gumawa ng CORS configuration:</p>
+      <blockquote>"Gumawa ng CORS config para sa Laravel 11 na tumatanggap ng requests mula sa Next.js frontend sa localhost:3000. Dapat may credentials support at naka-allow ang lahat ng methods at headers."</blockquote>
+
+      <div class="info">
+        <strong>Key Insight</strong>
+        Ang CORS ay server-side configuration — ang backend (Laravel) ang nagdedesisyon kung sino ang pwedeng mag-access ng API nito.
+      </div>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Bakit kailangan ng CORS kapag magkaiba ang domain ng frontend at backend?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Para pabilisin ang connection</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Para payagan ang cross-origin requests na blocked ng browser</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Para mag-encrypt ng data</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Alin ang recommended authentication method para sa SPA na may Laravel backend?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Laravel Passport</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Laravel Sanctum</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> JWT Manual</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Ano ang tamang value ng <code>allowed_origins</code> sa CORS config para sa production?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> <code>['*']</code></label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> <code>[env('FRONTEND_URL')]</code></label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> <code>['http://localhost:3000']</code></label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: Configure CORS gamit ang AI</h3>
+        <p>Gamit ang AI, mag-setup ng CORS configuration para sa Laravel API na tatanggap ng requests mula sa Next.js frontend. Sundin ang steps:</p>
+        <ol>
+          <li>Mag-create ng bagong Laravel project (o gamitin ang existing)</li>
+          <li>I-prompt si AI: "Generate CORS configuration for Laravel 11 allowing requests from Next.js frontend at http://localhost:3000 with credentials support"</li>
+          <li>I-set ang <code>FRONTEND_URL</code> sa <code>.env</code> file</li>
+          <li>Mag-create ng test endpoint at i-verify gamit ang browser console o Postman</li>
+        </ol>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang CORS ay nagpapahintulot sa frontend na mag-request sa backend na magkaiba ng domain</li>
+        <li>I-configure ang <code>config/cors.php</code> para sa allowed origins, methods, at headers</li>
+        <li>Gumamit ng API versioning (<code>/api/v1/</code>) para future-proof ang endpoints</li>
+        <li>Sanctum para sa SPA authentication, Passport para sa OAuth2</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation (CORS)</strong> — Official guide para sa CORS configuration sa Laravel APIs. <a href="https://laravel.com/docs/cors" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

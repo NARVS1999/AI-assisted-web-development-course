@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0035: CRUD Operations: Full-Stack Integration</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0035: CRUD Operations: Full-Stack Integration</h1>
+      <p><em>Buuin ang buong flow — mula button click sa Next.js, papuntang Laravel API, papuntang MySQL, pabalik sa UI.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makagawa ng kumpletong CRUD (Create, Read, Update, Delete) integration sa pagitan ng Next.js frontend at Laravel backend, kasama ang form submissions, toast notifications, at optimistic updates.
+      </div>
+
+      <h2>CRUD Flow Overview</h2>
+      <p>Ang CRUD ay ang apat na pangunahing operations sa database: <strong>C</strong>reate, <strong>R</strong>ead, <strong>U</strong>pdate, <strong>D</strong>elete. Sa full-stack integration, ganito ang flow:</p>
+
+      <pre><code>Next.js UI → Axios/Fetch → Laravel API → Eloquent → MySQL
+      ↑                                         ↓
+      └─────────── JSON Response ←──────────────┘</code></pre>
+
+      <h2>Creating Products (POST)</h2>
+      <p>Sa Next.js, gumawa ng form na magsesend ng POST request sa Laravel API.</p>
+
+      <pre><code>'use client';
+import { useState } from 'react';
+import api from '@/lib/api';
+import { toast } from 'react-hot-toast';
+
+export default function CreateProductForm() {
+  const [form, setForm] = useState({ name: '', price: '' });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/products', form);
+      toast.success('Product created successfully!');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to create');
+    }
+  };
+
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      &lt;input name="name" value={form.name}
+        onChange={e =&gt; setForm({...form, name: e.target.value})} /&gt;
+      &lt;input name="price" value={form.price}
+        onChange={e =&gt; setForm({...form, price: e.target.value})} /&gt;
+      &lt;button type="submit"&gt;Create&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}</code></pre>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Gumamit ng toast notifications para ma-inform agad ang user kung success o error ang request.
+      </div>
+
+      <h2>Reading Products (GET)</h2>
+      <p>Gamitin ang API service para kumuha ng listahan ng products.</p>
+
+      <pre><code>// app/products/page.tsx (Server Component)
+export default async function ProductsPage() {
+  const res = await fetch('http://localhost:8000/api/v1/products',
+    { cache: 'no-store' });
+  const { data } = await res.json();
+
+  return (
+    &lt;div&gt;
+      {data.map(product =&gt; (
+        &lt;div key={product.id}&gt;
+          &lt;h3&gt;{product.name}&lt;/h3&gt;
+          &lt;p&gt;&#8369;{product.price}&lt;/p&gt;
+        &lt;/div&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <h2>Updating Products (PUT/PATCH)</h2>
+      <p>Para sa update, mag-load ng existing data sa form, pagkatapos ay i-PUT ang changes.</p>
+
+      <pre><code>const handleUpdate = async (id, data) => {
+  try {
+    const res = await api.put(`/products/${id}`, data);
+    toast.success('Product updated!');
+    return res.data;
+  } catch (err) {
+    toast.error('Update failed');
+    throw err;
+  }
+};</code></pre>
+
+      <h2>Deleting Products (DELETE)</h2>
+      <p>Magdagdag ng confirmation dialog bago mag-delete.</p>
+
+      <pre><code>const handleDelete = async (id) => {
+  if (!confirm('Are you sure you want to delete this product?')) return;
+  try {
+    await api.delete(`/products/${id}`);
+    toast.success('Product deleted');
+  } catch (err) {
+    toast.error('Delete failed');
+  }
+};</code></pre>
+
+      <h2>Optimistic Updates</h2>
+      <p>Ang <strong>optimistic update</strong> ay agad na ina-update ang UI bago pa dumating ang response mula sa server — kung mag-fail, ibabalik ang dating state.</p>
+
+      <pre><code>// Gamit ang React state para sa optimistic delete
+const [products, setProducts] = useState(initialData);
+
+const handleDeleteOptimistic = async (id) => {
+  const previous = products;
+  setProducts(products.filter(p => p.id !== id)); // agad remove sa UI
+
+  try {
+    await api.delete(`/products/${id}`);
+    toast.success('Deleted');
+  } catch {
+    setProducts(previous); // ibalik kung fail
+    toast.error('Failed to delete');
+  }
+};</code></pre>
+
+      <div class="warning">
+        <strong>Warning</strong>
+        Ang optimistic updates ay maganda para sa UX, pero dapat laging may fallback kung mag-fail ang server request.
+      </div>
+
+      <h2>Using AI para sa CRUD Workflow</h2>
+      <p>I-prompt si AI para sa buong CRUD flow:</p>
+      <blockquote>"Generate a complete CRUD product management page in Next.js with the following: create form, product list, edit form with pre-filled data, delete with confirmation. Use Axios API service, toast notifications, and TypeScript. Include optimistic updates for delete."</blockquote>
+
+      <div class="info">
+        <strong>Key Insight</strong>
+        Ang full-stack CRUD ay ang pundasyon ng karamihan sa web applications. Kapag na-master mo ito, kaya mo na gumawa ng kahit anong data-driven na app.
+      </div>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Anong HTTP method ang ginagamit para mag-update ng existing resource?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> GET</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> POST</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> PUT/PATCH</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Ano ang ginagawa ng optimistic update?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Naghihintay ng response bago i-update ang UI</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Ina-update agad ang UI bago ang server response</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Hindi nag-a-update ng UI</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Bakit mahalaga ang confirmation dialog bago mag-delete?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Para pabagalin ang user</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Para maiwasan ang accidental deletion</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Para sa SEO</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: Build a Product Management Page gamit ang AI</h3>
+        <p>Gamit ang AI, gumawa ng kumpletong product management page:</p>
+        <ol>
+          <li>I-prompt si AI: "Create a Next.js product management page with full CRUD. Use the API service from previous lesson. Include create form, product table with edit/delete buttons, edit modal, and toast notifications."</li>
+          <li>I-integrate ang create form sa Laravel API (POST)</li>
+          <li>Mag-load ng product list mula sa API (GET)</li>
+          <li>Magdagdag ng edit functionality (PUT)</li>
+          <li>Magdagdag ng delete na may confirmation (DELETE)</li>
+          <li>Implement optimistic updates para sa delete</li>
+        </ol>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>CRUD = Create (POST), Read (GET), Update (PUT/PATCH), Delete (DELETE)</li>
+        <li>Gumamit ng toast notifications para sa feedback</li>
+        <li>Magdagdag ng confirmation dialog bago mag-delete</li>
+        <li>Optimistic updates para sa mas magandang user experience</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation</strong> — Official docs para sa backend API patterns. <a href="https://laravel.com/docs" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Next.js Documentation</strong> — Official docs para sa frontend data fetching at mutations. <a href="https://nextjs.org/docs" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'c', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

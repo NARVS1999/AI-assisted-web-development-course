@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0030: Authentication UI & Protected Routes</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0030: Authentication UI at Protected Routes</h1>
+      <p><em>Matutong gumawa ng login/register forms, mag-setup ng middleware para sa route protection, at i-manage ang session sa frontend.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makagawa ng auth UI (login/register forms) at ma-implement ang route protection gamit ang Next.js Middleware.
+      </div>
+
+      <!-- ======== Section 1: Login and Register Forms ======== -->
+      <h2>Login at Register Forms</h2>
+
+      <p>Ang auth forms ay isa sa mga pinaka-common na gamit ng AI-generated code. Narito ang magandang login form gamit ang Server Actions:</p>
+
+      <pre><code>// app/actions/auth.ts
+'use server';
+
+import { z } from 'zod';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+
+const loginSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+export async function login(prevState: any, formData: FormData) {
+  const validated = loginSchema.safeParse({
+    email: formData.get('email'),
+    password: formData.get('password'),
+  });
+
+  if (!validated.success) {
+    return { errors: validated.error.flatten().fieldErrors };
+  }
+
+  const res = await fetch('http://localhost:8000/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(validated.data),
+  });
+
+  if (!res.ok) {
+    return { errors: { general: ['Invalid credentials'] } };
+  }
+
+  const { token, user } = await res.json();
+  const cookieStore = await cookies();
+  cookieStore.set('session', token, { httpOnly: true, secure: true, path: '/' });
+
+  redirect('/dashboard');
+}</code></pre>
+
+      <pre><code>'use client';
+import { useActionState } from 'react';
+import { login } from '@/app/actions/auth';
+
+export default function LoginForm() {
+  const [state, formAction, pending] = useActionState(login, null);
+
+  return (
+    &lt;form action={formAction} className="max-w-md mx-auto space-y-4"&gt;
+      &lt;h2 className="text-2xl font-bold"&gt;Login&lt;/h2&gt;
+
+      {state?.errors?.general && (
+        &lt;p className="text-red-500 text-sm"&gt;{state.errors.general[0]}&lt;/p&gt;
+      )}
+
+      &lt;div&gt;
+        &lt;label htmlFor="email"&gt;Email&lt;/label&gt;
+        &lt;input id="email" name="email" type="email" required
+          className="border rounded p-2 w-full" /&gt;
+        {state?.errors?.email && (
+          &lt;p className="text-red-500 text-sm"&gt;{state.errors.email[0]}&lt;/p&gt;
+        )}
+      &lt;/div&gt;
+
+      &lt;div&gt;
+        &lt;label htmlFor="password"&gt;Password&lt;/label&gt;
+        &lt;input id="password" name="password" type="password" required
+          className="border rounded p-2 w-full" /&gt;
+        {state?.errors?.password && (
+          &lt;p className="text-red-500 text-sm"&gt;{state.errors.password[0]}&lt;/p&gt;
+        )}
+      &lt;/div&gt;
+
+      &lt;button type="submit" disabled={pending}
+        className="bg-blue-600 text-white px-4 py-2 rounded w-full disabled:opacity-50"&gt;
+        {pending ? 'Logging in...' : 'Login'}
+      &lt;/button&gt;
+    &lt;/form&gt;
+  );
+}</code></pre>
+
+      <!-- ======== Section 2: Middleware for Route Protection ======== -->
+      <h2>Middleware para sa Route Protection</h2>
+
+      <blockquote>
+        "Dapat may middleware sa Next.js para i-check kung naka-login ang user bago ma-access ang dashboard."
+      </blockquote>
+
+      <p>Ang <strong>Middleware</strong> sa Next.js ay isang file (<code>middleware.ts</code>) sa root ng project na nag-e-execute bago ang bawat request. Gamitin ito para i-protect ang routes:</p>
+
+      <pre><code>// middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+const protectedRoutes = ['/dashboard', '/profile', '/admin'];
+const authRoutes = ['/login', '/register'];
+
+export function middleware(request: NextRequest) {
+  const session = request.cookies.get('session');
+  const { pathname } = request.nextUrl;
+
+  // If accessing protected route without session, redirect to login
+  if (protectedRoutes.some(route =&gt; pathname.startsWith(route)) && !session) {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // If already logged in and accessing auth pages, redirect to dashboard
+  if (authRoutes.includes(pathname) && session) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+};</code></pre>
+
+      <div class="info">
+        <strong>Note</strong>
+        Ang middleware ay tumatakbo sa Edge Runtime — hindi puwedeng gumamit ng Node.js APIs dito. Para sa database access, gumamit ng Server Actions o API routes.
+      </div>
+
+      <!-- ======== Section 3: Session Management sa Frontend ======== -->
+      <h2>Session Management sa Frontend</h2>
+
+      <p>Para ma-access ang session info sa frontend, gumawa ng client-side context o gumamit ng Zustand store na magfa-fetch ng user data:</p>
+
+      <pre><code>'use client';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  logout: () => Promise<void>;
+}
+
+const AuthContext = createContext&lt;AuthContextType | undefined&gt;(undefined);
+
+export function SessionProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState&lt;User | null&gt;(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/me')
+      .then(res =&gt; res.ok ? res.json() : null)
+      .then(data =&gt; setUser(data))
+      .finally(() =&gt; setLoading(false));
+  }, []);
+
+  const logout = async () => {
+    await fetch('/api/logout', { method: 'POST' });
+    setUser(null);
+  };
+
+  return (
+    &lt;AuthContext.Provider value={{ user, loading, logout }}&gt;
+      {children}
+    &lt;/AuthContext.Provider&gt;
+  );
+}
+
+export const useSession = () =&gt; {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useSession must be inside SessionProvider');
+  return ctx;
+};</code></pre>
+
+      <p>Gamitin sa isang protected page:</p>
+
+      <pre><code>'use client';
+import { useSession } from '@/context/SessionContext';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+export default function Dashboard() {
+  const { user, loading, logout } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) router.push('/login');
+  }, [loading, user, router]);
+
+  if (loading) return &lt;p&gt;Loading...&lt;/p&gt;;
+  if (!user) return null;
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Welcome, {user.name}!&lt;/h1&gt;
+      &lt;button onClick={logout}&gt;Logout&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <!-- ======== Section 4: Using AI to Generate Auth UI ======== -->
+      <h2>Using AI para Mag-generate ng Auth UI</h2>
+
+      <p>Ang AI ay sobrang epektibo para mag-generate ng auth-related code. Magandang prompt:</p>
+
+      <blockquote>
+        "Generate a complete Next.js 14 authentication system: Login form with email and password, registration form with name/email/password/confirm password, middleware that protects /dashboard route, and a SessionProvider context. Use Server Actions with Zod validation. Style with Tailwind CSS. Use TypeScript."
+      </blockquote>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        I-specify kung anong auth backend ang gagamitin mo (Laravel Sanctum, NextAuth.js, JWT) para ma-generate ng AI ang tamang API calls at token handling.
+      </div>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Saan mo ilalagay ang file na <code>middleware.ts</code> sa Next.js project?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Sa loob ng <code>app/</code> folder</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Sa root ng project (kapantay ng <code>app/</code> at <code>package.json</code>)</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Sa loob ng <code>pages/</code> folder</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Ano ang mangyayari kapag nag-access ang isang unauthenticated user sa <code>/dashboard</code> na may middleware protection?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Makikita pa rin ang dashboard pero walang laman</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Iri-redirect sa login page (may optional redirect param)</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Magse-send ng 401 Unauthorized error</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Ano ang tamang paraan para mag-request ng user data sa client component pagkatapos ng login?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Gumamit ng Server Action para i-fetch ang user</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Gumamit ng <code>useEffect</code> na mag-fetch sa <code>/api/me</code> endpoint gamit ang session cookie</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> I-embed ang user data sa HTML response</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: Login Form at Protected Dashboard</h3>
+        <p>Gamit ang AI, gumawa ng:</p>
+        <ul>
+          <li><strong>Login form</strong> — may email at password fields, validation, at error handling.</li>
+          <li><strong>Protected Dashboard layout</strong> — nagre-redirect sa login kung walang session.</li>
+          <li><strong>Middleware</strong> — nagpi-protect ng <code>/dashboard</code> route.</li>
+          <li><strong>Logout button</strong> — nagre-remove ng session at nagre-redirect sa login.</li>
+        </ul>
+        <p><em>Prompt tip: "Create a Next.js 14 authentication system. Include: (1) login form with Server Actions and Zod validation, (2) middleware.ts that protects /dashboard route, (3) SessionProvider context that fetches /api/me on mount, (4) dashboard page that shows user info and logout button. Use Tailwind CSS and TypeScript. The API is a Laravel backend."</em></p>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Gumamit ng <strong>Server Actions</strong> para sa login/register form handling — secure at walang client-side logic exposure.</li>
+        <li>Ang <strong>Middleware</strong> ay nasa root ng project at nagpi-protect ng routes bago pa ma-render ang page.</li>
+        <li>Gumamit ng <strong>SessionProvider/Context</strong> para ma-access ang user data sa buong app.</li>
+        <li>Ang cookies ay mas secure para sa session tokens — i-set ang <code>httpOnly</code> at <code>secure</code> flags.</li>
+        <li>Ang AI ay mahusay sa pag-generate ng auth system — specify ang backend at auth strategy.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>NextAuth.js Documentation</strong> — Official guide para sa authentication sa Next.js applications. <a href="https://next-auth.js.org/getting-started/introduction" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

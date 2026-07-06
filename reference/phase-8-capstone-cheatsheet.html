@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phase 8: Capstone Projects — Cheatsheet</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Phase 8: Capstone Projects — Cheatsheet</h1>
+      <p><em>Reference guide para sa apat na capstone projects: project planning template, architecture diagrams, data models, at deployment checklist.</em></p>
+
+      <div class="info">
+        <strong>Purpose</strong>
+        Isang mabilisang reference para sa lahat ng capstone projects. Gamitin ito kasabay ng mga lesson para hindi mo na kailangan mag-search sa internet.
+      </div>
+
+      <!-- ======== Section 1: Project Planning Template ======== -->
+      <h2>1. Project Planning Template</h2>
+      <p>Gamitin ang template na ito para sa bawat capstone project bago mag-code:</p>
+
+      <pre><code>## Project Planning Template
+
+### 1. Project Overview
+- Name:
+- Description:
+- Target Users:
+
+### 2. Features (MVP)
+- [ ] Feature 1
+- [ ] Feature 2
+- [ ] Feature 3
+
+### 3. Tech Stack
+- Backend: Laravel 11
+- Frontend: Next.js 14
+- Database: MySQL
+- Additional: Redis, Reverb, etc.
+
+### 4. Database Schema
+- Table 1:
+- Table 2:
+- Relationships:
+
+### 5. API Routes
+- GET /api/...
+- POST /api/...
+- PUT /api/...
+- DELETE /api/...
+
+### 6. Frontend Pages
+- / (landing)
+- /dashboard
+- /features
+
+### 7. AI Prompts Needed
+- [ ] Prompt for scaffolding
+- [ ] Prompt for debugging
+- [ ] Prompt for tests
+</code></pre>
+
+      <!-- ======== Section 2: Task Management Architecture ======== -->
+      <h2>2. Task Management System Architecture</h2>
+
+      <h3>Database Schema</h3>
+      <pre><code>users
+  id, name, email, password, avatar
+
+projects
+  id, owner_id, name, description, status, created_at
+
+tasks
+  id, project_id, creator_id, title, description,
+  status (todo, in_progress, done), priority (low, medium, high),
+  due_date, created_at, updated_at
+
+task_assignments
+  id, task_id, user_id, assigned_at
+
+file_attachments
+  id, task_id, user_id, filename, path, size, mime_type
+
+comments
+  id, task_id, user_id, content, created_at
+</code></pre>
+
+      <h3>API Routes</h3>
+      <pre><code>POST   /api/auth/register
+POST   /api/auth/login
+POST   /api/auth/logout
+GET    /api/auth/user
+
+GET    /api/projects
+POST   /api/projects
+GET    /api/projects/{id}
+PUT    /api/projects/{id}
+DELETE /api/projects/{id}
+
+GET    /api/projects/{project}/tasks
+POST   /api/projects/{project}/tasks
+PUT    /api/tasks/{id}
+DELETE /api/tasks/{id}
+POST   /api/tasks/{id}/assign
+POST   /api/tasks/{id}/upload
+
+GET    /api/tasks/{id}/comments
+POST   /api/tasks/{id}/comments
+</code></pre>
+
+      <h3>Real-Time Events (Reverb)</h3>
+      <pre><code>TaskCreated     → project.{projectId}
+TaskUpdated     → project.{projectId}
+TaskAssigned    → user.{userId}
+TaskDeleted     → project.{projectId}
+</code></pre>
+
+      <!-- ======== Section 3: E-Commerce Data Model ======== -->
+      <h2>3. E-Commerce Data Model</h2>
+
+      <pre><code>┌─────────────┐       ┌──────────────────┐
+│   users     │       │   categories     │
+│─────────────│       │──────────────────│
+│ id          │       │ id               │
+│ name        │       │ name             │
+│ email       │       │ slug             │
+│ password    │       │ parent_id (self) │
+│ role        │       │ description      │
+│ address     │       └────────┬─────────┘
+└──────┬──────┘                │
+       │                       │
+       │  ┌────────────────────┘
+       │  │
+       │  ▼
+       │  ┌──────────────────┐
+       │  │   products       │
+       │  │──────────────────│
+       │  │ id               │
+       │  │ category_id      │────► categories.id
+       │  │ name, slug       │
+       │  │ description      │
+       │  │ price, stock     │
+       │  │ images (json)    │
+       │  │ is_active        │
+       │  └────────┬─────────┘
+       │           │
+       │  ┌────────▼─────────┐
+       │  │   cart_items     │
+       │  │──────────────────│
+       │  │ id               │
+       │  │ cart_id          │
+       │  │ product_id       │────► products.id
+       │  │ quantity         │
+       │  │ price            │
+       │  └────────┬─────────┘
+       │           │
+       │  ┌────────▼─────────┐
+       │  │   carts          │
+       │  │──────────────────│
+       │  │ id               │
+       │  │ user_id          │────► users.id
+       │  │ session_id       │
+       │  │ created_at       │
+       │  └──────────────────┘
+       │
+       │  ┌──────────────────┐
+       │  │   orders         │
+       │  │──────────────────│
+       │  │ id               │
+       │  │ user_id          │────► users.id
+       │  │ order_number     │
+       │  │ status           │
+       │  │ total_amount     │
+       │  │ shipping_address │
+       │  │ payment_method   │
+       │  │ payment_status   │
+       │  └────────┬─────────┘
+       │           │
+       │  ┌────────▼─────────┐
+       │  │   order_items    │
+       │  │──────────────────│
+       │  │ id               │
+       │  │ order_id         │
+       │  │ product_id       │
+       │  │ quantity, price  │
+       │  └──────────────────┘
+       │
+       │  ┌──────────────────┐
+       │  │   payments       │
+       │  │──────────────────│
+       │  │ id               │
+       │  │ order_id         │
+       │  │ gateway          │
+       │  │ transaction_id   │
+       │  │ amount, status   │
+       │  └──────────────────┘
+</code></pre>
+
+      <!-- ======== Section 4: Social Media Relationships ======== -->
+      <h2>4. Social Media Relationships Diagram</h2>
+
+      <pre><code>┌─────────────────────────────────────────────┐
+│                   users                      │
+│─────────────────────────────────────────────│
+│ id, name, email, username, avatar, bio      │
+└────────┬────────┬────────┬────────┬──────────┘
+         │        │        │        │
+         │        │        │        │
+  ┌──────▼──┐ ┌───▼────┐ ┌─▼──────┐ │
+  │  posts  │ │comments│ │  likes │ │
+  │─────────│ │────────│ │────────│ │
+  │ id      │ │ id     │ │ id     │ │
+  │ user_id │ │user_id │ │user_id │ │
+  │ content │ │post_id │ │likeable│ │
+  │ image   │ │parent  │ │_id     │ │
+  │         │ │_id     │ │likeable│ │
+  └─────────┘ │content │ │_type   │ │
+              └────────┘ └────────┘ │
+                                    │
+         ┌──────────────────────────┘
+         │
+  ┌──────▼──────────────────────────────┐
+  │           follows                    │
+  │─────────────────────────────────────│
+  │ id, follower_id, followee_id        │
+  │ (self-referencing many-to-many)     │
+  └─────────────────────────────────────┘
+
+  ┌──────────────────────────────────────┐
+  │         notifications                │
+  │──────────────────────────────────────│
+  │ id, user_id, type, data (json),      │
+  │ read_at                              │
+  └──────────────────────────────────────┘
+
+  ┌──────────────────────────────────────┐
+  │   conversations & messages           │
+  │──────────────────────────────────────│
+  │ conversations: id, created_at        │
+  │ conversation_user: conv_id, user_id  │
+  │ messages: id, conv_id, sender_id,    │
+  │           content, read_at           │
+  └──────────────────────────────────────┘
+</code></pre>
+
+      <h3>Eloquent Relationships Code</h3>
+      <pre><code>// User model
+public function posts() { return $this->hasMany(Post::class); }
+public function comments() { return $this->hasMany(Comment::class); }
+public function likes() { return $this->hasMany(Like::class); }
+
+// Post model
+public function comments() { return $this->hasMany(Comment::class); }
+public function likes()
+  { return $this->morphMany(Like::class, 'likeable'); }
+
+// Like model (polymorphic)
+public function likeable()
+  { return $this->morphTo(); }
+
+// Follow system (self-referencing)
+public function followers()
+  { return $this->belongsToMany(User::class, 'follows',
+      'followee_id', 'follower_id'); }
+public function following()
+  { return $this->belongsToMany(User::class, 'follows',
+      'follower_id', 'followee_id'); }</code></pre>
+
+      <!-- ======== Section 5: SaaS Multi-Tenancy Patterns ======== -->
+      <h2>5. SaaS Multi-Tenancy Patterns</h2>
+
+      <h3>Approach 1: Single Database with tenant_id (Recommended)</h3>
+      <table>
+        <tr><th>Pros</th><th>Cons</th></tr>
+        <tr><td>Simple to implement</td><td>Harder to scale (single DB)</td></tr>
+        <tr><td>Easy to backup</td><td>Risk of data leak if scope fails</td></tr>
+        <tr><td>Cost-effective</td><td>Tenant data not fully isolated</td></tr>
+        <tr><td>Easy cross-tenant analytics</td><td></td></tr>
+      </table>
+
+      <h3>Approach 2: Database per Tenant</h3>
+      <table>
+        <tr><th>Pros</th><th>Cons</th></tr>
+        <tr><td>Full data isolation</td><td>Complex to implement</td></tr>
+        <tr><td>Easier to scale</td><td>Harder backups (per DB)</td></tr>
+        <tr><td>Better security</td><td>Expensive (many DBs)</td></tr>
+        <tr><td></td><td>Cross-tenant queries impossible</td></tr>
+      </table>
+
+      <h3>Tenant Scoping Implementation (Laravel)</h3>
+      <pre><code>// Step 1: Tenant Model
+class Tenant extends Model {
+  protected $fillable = ['name', 'domain', 'plan', 'settings'];
+  public function users() { return $this->hasMany(User::class); }
+}
+
+// Step 2: Global Scope
+class TenantScope implements Scope {
+  public function apply(Builder $builder, Model $model) {
+    if (auth()->check() && session('tenant_id')) {
+      $builder->where('tenant_id', session('tenant_id'));
+    }
+  }
+}
+
+// Step 3: Middleware
+class IdentifyTenant {
+  public function handle($request, $next) {
+    $subdomain = explode('.', $request->getHost())[0];
+    $tenant = Tenant::where('domain', $subdomain)->firstOrFail();
+    session(['tenant_id' => $tenant->id]);
+    return $next($request);
+  }
+}
+
+// Step 4: Trait for models
+trait BelongsToTenant {
+  public static function bootBelongsToTenant() {
+    static::addGlobalScope(new TenantScope);
+    static::creating(function ($model) {
+      if (auth()->check() && session('tenant_id')) {
+        $model->tenant_id = session('tenant_id');
+      }
+    });
+  }
+}</code></pre>
+
+      <!-- ======== Section 6: AI API Integration Guide ======== -->
+      <h2>6. AI API Integration Guide (OpenAI / Claude)</h2>
+
+      <h3>OpenAI Setup</h3>
+      <pre><code>// .env
+OPENAI_API_KEY=sk-...
+
+// config/services.php
+'openai' => [
+  'key' => env('OPENAI_API_KEY'),
+  'model' => env('OPENAI_MODEL', 'gpt-4'),
+],
+
+// app/Services/OpenAIService.php
+class OpenAIService {
+  protected $apiKey;
+  protected $model;
+
+  public function __construct() {
+    $this->apiKey = config('services.openai.key');
+    $this->model = config('services.openai.model');
+  }
+
+  public function chat(array $messages, array $options = []) {
+    $response = Http::withToken($this->apiKey)
+      ->timeout(120)
+      ->post('https://api.openai.com/v1/chat/completions', array_merge([
+        'model' => $this->model,
+        'messages' => $messages,
+        'temperature' => 0.7,
+        'max_tokens' => 2000,
+      ], $options));
+
+    if ($response->failed()) {
+      throw new \Exception('OpenAI API error: ' . $response->body());
+    }
+
+    return $response->json();
+  }
+
+  public function generateText($prompt) {
+    $result = $this->chat([
+      ['role' => 'user', 'content' => $prompt]
+    ]);
+    return $result['choices'][0]['message']['content'];
+  }
+}
+
+// Usage in controller
+$ai = new OpenAIService();
+$response = $ai->generateText('Explain SaaS architecture');
+</code></pre>
+
+      <h3>Claude (Anthropic) Setup</h3>
+      <pre><code>// .env
+CLAUDE_API_KEY=sk-ant-...
+
+// config/services.php
+'claude' => [
+  'key' => env('CLAUDE_API_KEY'),
+  'model' => env('CLAUDE_MODEL', 'claude-3-opus-20240229'),
+],
+
+// app/Services/ClaudeService.php
+class ClaudeService {
+  public function generateText($prompt) {
+    $response = Http::withToken(config('services.claude.key'))
+      ->withHeader('anthropic-version', '2023-06-01')
+      ->timeout(120)
+      ->post('https://api.anthropic.com/v1/messages', [
+        'model' => config('services.claude.model'),
+        'max_tokens' => 2000,
+        'messages' => [['role' => 'user', 'content' => $prompt]],
+      ]);
+
+    if ($response->failed()) {
+      throw new \Exception('Claude API error: ' . $response->body());
+    }
+
+    return $response->json()['content'][0]['text'];
+  }
+}
+
+// Usage
+$claude = new ClaudeService();
+$response = $claude->generateText('Explain multi-tenancy');
+</code></pre>
+
+      <h3>AI Integration Best Practices</h3>
+      <ul>
+        <li><strong>API Key Security</strong> — Always use .env, never hardcode</li>
+        <li><strong>Rate Limiting</strong> — Implement per-tenant/ per-user rate limits</li>
+        <li><strong>Queue Processing</strong> — Use Laravel Queues para sa heavy AI requests</li>
+        <li><strong>Token Tracking</strong> — Track token usage for billing</li>
+        <li><strong>Error Handling</strong> — Catch API errors, implement retry logic</li>
+        <li><strong>Timeout</strong> — Set proper timeouts (120s for long prompts)</li>
+        <li><strong>Caching</strong> — Cache common AI responses para tipid sa tokens</li>
+        <li><strong>Logging</strong> — Log all API calls for debugging at auditing</li>
+      </ul>
+
+      <!-- ======== Section 7: Deployment Checklist ======== -->
+      <h2>7. Full-Stack Deployment Checklist</h2>
+
+      <h3>Pre-Deployment</h3>
+      <ul>
+        <li><input type="checkbox" disabled> Set .env.production with all environment variables</li>
+        <li><input type="checkbox" disabled> Disable APP_DEBUG in production</li>
+        <li><input type="checkbox" disabled> Run php artisan optimize (cache routes, config, events)</li>
+        <li><input type="checkbox" disabled> Run php artisan migrate --force</li>
+        <li><input type="checkbox" disabled> Generate APP_KEY for production</li>
+        <li><input type="checkbox" disabled> Set up MySQL database and user</li>
+        <li><input type="checkbox" disabled> Configure Redis for caching and queues</li>
+      </ul>
+
+      <h3>Laravel Backend Deployment</h3>
+      <ul>
+        <li><input type="checkbox" disabled> Choose hosting: Forge + DigitalOcean / AWS / Laravel Vapor</li>
+        <li><input type="checkbox" disabled> Set up Nginx with PHP-FPM</li>
+        <li><input type="checkbox" disabled> Configure queue worker (php artisan queue:work)</li>
+        <li><input type="checkbox" disabled> Set up cron for scheduler (php artisan schedule:run)</li>
+        <li><input type="checkbox" disabled> Configure SSL (Let's Encrypt via Certbot)</li>
+        <li><input type="checkbox" disabled> Set up Reverb for WebSockets (supervisor config)</li>
+        <li><input type="checkbox" disabled> Configure file storage (S3 or local)</li>
+      </ul>
+
+      <h3>Next.js Frontend Deployment</h3>
+      <ul>
+        <li><input type="checkbox" disabled> Build for production: npm run build</li>
+        <li><input type="checkbox" disabled> Choose hosting: Vercel / Netlify / DigitalOcean App Platform</li>
+        <li><input type="checkbox" disabled> Set environment variables in hosting dashboard</li>
+        <li><input type="checkbox" disabled> Configure custom domain with SSL</li>
+        <li><input type="checkbox" disabled> Set up ISR (Incremental Static Regeneration) kung applicable</li>
+        <li><input type="checkbox" disabled> Configure CDN for static assets</li>
+      </ul>
+
+      <h3>Database & Caching</h3>
+      <ul>
+        <li><input type="checkbox" disabled> Set up automated backups (daily)</li>
+        <li><input type="checkbox" disabled> Configure MySQL slow query log</li>
+        <li><input type="checkbox" disabled> Set up Redis persistence</li>
+        <li><input type="checkbox" disabled> Enable query optimizer (EXPLAIN for slow queries)</li>
+      </ul>
+
+      <h3>AI API Configuration</h3>
+      <ul>
+        <li><input type="checkbox" disabled> Set OpenAI/Claude API keys in .env</li>
+        <li><input type="checkbox" disabled> Set up API rate limits per tenant</li>
+        <li><input type="checkbox" disabled> Configure usage tracking and alerts</li>
+        <li><input type="checkbox" disabled> Set up billing integration (Stripe webhooks)</li>
+      </ul>
+
+      <h3>Monitoring & Maintenance</h3>
+      <ul>
+        <li><input type="checkbox" disabled> Set up Laravel Telescope (dev) or Pulse (prod)</li>
+        <li><input type="checkbox" disabled> Configure error tracking (Sentry / Flare)</li>
+        <li><input type="checkbox" disabled> Set up uptime monitoring (Pingdom / UptimeRobot)</li>
+        <li><input type="checkbox" disabled> Configure log rotation</li>
+        <li><input type="checkbox" disabled> Set up alerting (Slack / Email)</li>
+        <li><input type="checkbox" disabled> Document deployment and rollback procedures</li>
+      </ul>
+
+      <h3>Post-Deployment Checklist</h3>
+      <ul>
+        <li><input type="checkbox" disabled> Run smoke tests on production</li>
+        <li><input type="checkbox" disabled> Test user registration and login</li>
+        <li><input type="checkbox" disabled> Test AI API integration (if applicable)</li>
+        <li><input type="checkbox" disabled> Test payment flow (sandbox mode)</li>
+        <li><input type="checkbox" disabled> Verify WebSocket connections</li>
+        <li><input type="checkbox" disabled> Test email delivery (notifications, invoices)</li>
+        <li><input type="checkbox" disabled> Verify SSL certificate</li>
+        <li><input type="checkbox" disabled> Test mobile responsiveness</li>
+      </ul>
+
+      <!-- ======== Summary ======== -->
+      <h2>Quick Reference: Phase 8 Commands</h2>
+
+      <table>
+        <tr><th>Command</th><th>Description</th></tr>
+        <tr><td><code>php artisan make:model -m -c -r</code></td><td>Create model with migration, controller, resource routes</td></tr>
+        <tr><td><code>php artisan make:resource</code></td><td>Create API resource</td></tr>
+        <tr><td><code>php artisan make:scope</code></td><td>Create global scope (for multi-tenancy)</td></tr>
+        <tr><td><code>php artisan make:event</code></td><td>Create event (for broadcasting)</td></tr>
+        <tr><td><code>composer require laravel/reverb</code></td><td>Install Laravel Reverb for WebSockets</td></tr>
+        <tr><td><code>php artisan queue:work</code></td><td>Start queue worker</td></tr>
+        <tr><td><code>php artisan optimize</code></td><td>Cache routes, config, events for production</td></tr>
+        <tr><td><code>php artisan vendor:publish</code></td><td>Publish vendor assets</td></tr>
+        <tr><td><code>php artisan tinker</code></td><td>Interactive shell for testing</td></tr>
+        <tr><td><code>npm run build</code></td><td>Build Next.js for production</td></tr>
+        <tr><td><code>php artisan test</code></td><td>Run all tests</td></tr>
+      </table>
+
+      <div class="info">
+        <strong>Good luck sa iyong capstone projects!</strong>
+        Tandaan: Ang AI ay tool mo — ikaw ang architect, si AI ang assistant. Magandang prompt = magandang code.
+      </div>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

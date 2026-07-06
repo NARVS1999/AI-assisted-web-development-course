@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0049: Laravel Performance Optimization</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0049: Laravel Performance Optimization</h1>
+      <p><em>Gamitin ang Laravel Debugbar para makita ang queries — kapag maraming duplicate, may problema.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Matutunan ang query optimization, caching strategies, queue optimization, at kung paano gamitin si AI para mag-identify ng performance bottlenecks.
+      </div>
+
+      <h2>Query Optimization: N+1 Problem at Eager Loading</h2>
+      <p>Ang N+1 problem ay isa sa pinakakaraniwang performance issue sa Laravel. Nangyayari ito kapag nag-lo-loop ka ng models at nag-a-access ng relationship sa bawat iteration:</p>
+      <pre><code>// N+1 Problem — gumagawa ng 1 query para sa products + N queries para sa categories
+$products = Product::all();
+foreach ($products as $product) {
+    echo $product->category->name; // N+1 queries!
+}
+
+// Solution: Eager Loading — 2 queries lang total
+$products = Product::with('category')->get();</code></pre>
+      <p>I-install ang Laravel Debugbar para makita ang mga queries:</p>
+      <pre><code>composer require barryvdh/laravel-debugbar --dev</code></pre>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Kapag nakita mong maraming duplicate queries sa Debugbar, eager loading ang sagot. I-prompt si AI: "I have an N+1 problem with my Product and Category relationship. Show me how to fix it using eager loading."
+      </div>
+
+      <h2>Caching Strategies (Redis, Model Caching)</h2>
+      <p>Ang caching ay pag-store ng data para hindi na kailangang i-query ulit. Gamitin ang Redis o database cache:</p>
+      <pre><code>// Cache ng products for 60 minutes
+$products = Cache::remember('products.all', 3600, function () {
+    return Product::with('category')->get();
+});
+
+// Model caching gamit ang Laravel Model Caching package
+// Automatic na na-invalidate ang cache kapag nag-update ng model
+$products = Product::with('category')->cacheFor(3600)->get();</code></pre>
+
+      <div class="info">
+        <strong>Key Insight</strong>
+        Hindi lahat ng data kailangang i-cache. I-cache lang ang data na: 1) madalas i-access, 2) hindi madalas magbago, at 3) mahal i-compute (e.g., complex queries).
+      </div>
+
+      <h2>Queue Optimization</h2>
+      <p>Ilipat ang mababagal na tasks (email sending, image processing, report generation) sa queues para hindi ma-block ang HTTP response:</p>
+      <pre><code>// Instead of doing this synchronously
+Mail::to($user)->send(new OrderConfirmation($order));
+
+// Dispatch to queue
+ProcessOrder::dispatch($order)->onQueue('high');</code></pre>
+      <p>I-configure ang queue connection sa <code>.env</code>:</p>
+      <pre><code>QUEUE_CONNECTION=database</code></pre>
+      <p>I-run ang queue worker:</p>
+      <pre><code>php artisan queue:work</code></pre>
+
+      <h2>Using AI to Identify Performance Bottlenecks</h2>
+      <p>I-paste ang query log o Debugbar output kay AI at humingi ng optimization suggestions:</p>
+      <blockquote>"Here are my Laravel Debugbar queries for the products page. I have 100 duplicate category queries. How do I fix this? Here's my controller code: ..."</blockquote>
+      <p>Puwede ring mag-prompt ng AI para mag-analyze ng slow queries:</p>
+      <blockquote>"I have a Laravel page that takes 5 seconds to load. Here's the controller code and the queries from Debugbar. What's the bottleneck and how do I optimize it?"</blockquote>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang N+1 problem sa Laravel?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Kapag may N users at 1 admin</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Kapag nag-loop ka ng models at nag-a-access ng relationship, nagre-resulta sa maraming queries</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Kapag may N+1 files sa storage</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Ano ang solusyon sa N+1 problem?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Eager loading gamit ang with()</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Lazy loading gamit ang load()</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Paggamit ng raw SQL queries</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Alin sa mga sumusunod ang DAPAT mong i-cache?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> User password updates</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Product list na madalas i-access at hindi madalas magbago</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Real-time chat messages</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: AI Analyzes a Slow Query</h3>
+        <p>Gumawa ng isang intentional N+1 problem sa iyong Laravel app, i-present kay AI, at mag-suggest ng fix:</p>
+        <ol>
+          <li>Gumawa ng Controller method na naglo-load ng lahat ng products at nag-a-access ng <code>category</code> relationship sa loob ng loop (walang eager loading)</li>
+          <li>I-install ang Laravel Debugbar at i-load ang page — tingnan ang dami ng queries</li>
+          <li>I-copy ang controller code at query info</li>
+          <li>I-prompt kay AI: "This controller loads products and their categories, but I see N+1 queries in Debugbar. Here's my code. How do I fix this with eager loading?"</li>
+          <li>I-apply ang fix na sinuggest ni AI at i-verify na bumaba ang bilang ng queries</li>
+        </ol>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang N+1 problem ay common performance issue — solusyon ay eager loading gamit ang <code>with()</code></li>
+        <li>Gamitin ang Laravel Debugbar para makita ang mga queries na tumatakbo</li>
+        <li>I-cache ang data na madalas i-access, hindi madalas magbago, at mahal i-compute</li>
+        <li>Ilipat ang heavy tasks sa queues para hindi ma-block ang HTTP response</li>
+        <li>Si AI ay magaling mag-analyze ng bottleneck — i-paste ang Debugbar output at code</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation (Performance)</strong> — Official guide para sa caching at optimization techniques. <a href="https://laravel.com/docs/cache" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Laravel Documentation (Octane)</strong> — Official guide para sa high-performance Laravel application serving. <a href="https://laravel.com/docs/octane" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'a', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

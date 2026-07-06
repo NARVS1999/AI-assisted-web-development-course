@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0031: Error Handling & Loading States</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0031: Error Handling at Loading States</h1>
+      <p><em>Alamin ang built-in error handling at loading conventions ng Next.js — error.tsx, loading.tsx, not-found.tsx, at Suspense boundaries.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makagawa ng error boundaries, loading skeletons, at 404 pages gamit ang Next.js conventions at AI assistance.
+      </div>
+
+      <!-- ======== Section 1: Next.js Error Conventions ======== -->
+      <h2>Next.js Error Handling Conventions</h2>
+
+      <blockquote>
+        "Built-in sa Next.js ang error handling — gumawa ka lang ng error.tsx file sa folder."
+      </blockquote>
+
+      <p>Ang Next.js ay may tatlong special files para sa error at loading states:</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>File</th>
+            <th>Purpose</th>
+            <th>Kailan nagre-render</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>error.tsx</code></td>
+            <td>Error boundary — nagha-handle ng runtime errors</td>
+            <td>Kapag may unhandled error sa component tree</td>
+          </tr>
+          <tr>
+            <td><code>loading.tsx</code></td>
+            <td>Loading UI — ipinapakita habang naglo-load ang page</td>
+            <td>Kapag nag-stream ng content (Suspense)</td>
+          </tr>
+          <tr>
+            <td><code>not-found.tsx</code></td>
+            <td>404 page — para sa hindi nahanap na resources</td>
+            <td>Kapag nag-throw ng <code>notFound()</code> o hindi match ang route</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- ======== Section 2: error.tsx ======== -->
+      <h2>error.tsx — Error Boundary</h2>
+
+      <p>Ang <code>error.tsx</code> ay isang Client Component (dapat may <code>'use client'</code>) na nagha-handle ng errors sa loob ng route segment:</p>
+
+      <pre><code>'use client';
+
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  return (
+    &lt;div className="flex flex-col items-center justify-center min-h-[50vh]"&gt;
+      &lt;h2 className="text-2xl font-bold text-red-600 mb-4"&gt;
+        Something went wrong!
+      &lt;/h2&gt;
+      &lt;p className="text-gray-600 mb-6"&gt;
+        {error.message || 'An unexpected error occurred.'}
+      &lt;/p&gt;
+      &lt;button
+        onClick={reset}
+        className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+      &gt;
+        Try Again
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <p>Ang <code>reset</code> function ay nagtatangkang i-re-render ulit ang component. Kung hindi pa rin successful, kailangan ng user na mag-navigate sa ibang page.</p>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Puwede kang magkaroon ng multiple <code>error.tsx</code> files sa iba't ibang levels. Halimbawa, may global error sa <code>app/error.tsx</code> at specific error sa <code>app/products/error.tsx</code>. Ang pinakamalapit sa error source ang magha-handle.
+      </div>
+
+      <!-- ======== Section 3: loading.tsx ======== -->
+      <h2>loading.tsx — Loading States</h2>
+
+      <p>Ang <code>loading.tsx</code> ay nagpapakita ng UI habang naglo-load ang page content. Ito ay automatic na naka-wrap sa Suspense boundary:</p>
+
+      <pre><code>// app/products/loading.tsx
+export default function Loading() {
+  return (
+    &lt;div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-pulse"&gt;
+      {[1, 2, 3, 4, 5, 6].map(i =&gt; (
+        &lt;div key={i} className="border rounded-lg p-4"&gt;
+          &lt;div className="bg-gray-200 h-48 rounded mb-4"&gt;&lt;/div&gt;
+          &lt;div className="h-4 bg-gray-200 rounded w-3/4 mb-2"&gt;&lt;/div&gt;
+          &lt;div className="h-4 bg-gray-200 rounded w-1/2"&gt;&lt;/div&gt;
+        &lt;/div&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <p>Ang <code>animate-pulse</code> ng Tailwind ay nagbibigay ng shimmer effect — parang kumukurap na placeholder na maganda tignan:</p>
+
+      <pre><code>// Custom loading skeleton component
+export function Skeleton({ className }: { className?: string }) {
+  return (
+    &lt;div className={`bg-gray-200 rounded animate-pulse ${className || ''}`} /&gt;
+  );
+}
+
+// Gamitin sa loading page
+export default function Loading() {
+  return (
+    &lt;div className="space-y-6"&gt;
+      &lt;Skeleton className="h-8 w-64" /&gt;
+      &lt;div className="grid grid-cols-3 gap-6"&gt;
+        {[1, 2, 3].map(i =&gt; (
+          &lt;div key={i} className="space-y-3"&gt;
+            &lt;Skeleton className="h-48 w-full" /&gt;
+            &lt;Skeleton className="h-4 w-3/4" /&gt;
+            &lt;Skeleton className="h-4 w-1/2" /&gt;
+          &lt;/div&gt;
+        ))}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <!-- ======== Section 4: not-found.tsx ======== -->
+      <h2>not-found.tsx — 404 Pages</h2>
+
+      <p>Ang <code>not-found.tsx</code> ay nagre-render kapag ang isang <code>notFound()</code> function ay na-invoke o kapag ang route ay walang match:</p>
+
+      <pre><code>// app/not-found.tsx — global 404
+import Link from 'next/link';
+
+export default function NotFound() {
+  return (
+    &lt;div className="flex flex-col items-center justify-center min-h-[50vh]"&gt;
+      &lt;h1 className="text-6xl font-bold text-gray-300 mb-4"&gt;404&lt;/h1&gt;
+      &lt;h2 className="text-2xl font-semibold mb-4"&gt;Page Not Found&lt;/h2&gt;
+      &lt;p className="text-gray-600 mb-6"&gt;
+        The page you are looking for does not exist.
+      &lt;/p&gt;
+      &lt;Link
+        href="/"
+        className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+      &gt;
+        Go Home
+      &lt;/Link&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <p>I-trigger ang <code>notFound()</code> sa isang dynamic route kapag walang nakitang resource:</p>
+
+      <pre><code>// app/products/[id]/page.tsx
+import { notFound } from 'next/navigation';
+
+export default async function ProductPage({ params }: { params: { id: string } }) {
+  const product = await getProduct(params.id);
+
+  if (!product) {
+    notFound(); // magre-render ng app/products/[id]/not-found.tsx
+  }
+
+  return &lt;div&gt;{/* product content */}&lt;/div&gt;;
+}</code></pre>
+
+      <!-- ======== Section 5: Suspense Boundaries ======== -->
+      <h2>Suspense Boundaries</h2>
+
+      <p>Ang <strong>Suspense</strong> ay nagpapahintulot sa iyo na magpakita ng fallback UI habang naglo-load ang specific parts ng page. Ito ay mas granular kaysa sa <code>loading.tsx</code>:</p>
+
+      <pre><code>import { Suspense } from 'react';
+
+export default function Page() {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Dashboard&lt;/h1&gt;
+
+      &lt;Suspense fallback={&lt;div className="animate-pulse h-48 bg-gray-200 rounded" /&gt;}&gt;
+        &lt;SlowComponent /&gt;
+      &lt;/Suspense&gt;
+
+      &lt;Suspense fallback={&lt;div className="animate-pulse h-32 bg-gray-200 rounded" /&gt;}&gt;
+        &lt;AnotherSlowComponent /&gt;
+      &lt;/Suspense&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Ito ay Server Component na matagal mag-load
+async function SlowComponent() {
+  await new Promise(resolve =&gt; setTimeout(resolve, 2000));
+  return &lt;p&gt;Loaded!&lt;/p&gt;;
+}</code></pre>
+
+      <!-- ======== Section 6: Using AI to Create Error Boundaries ======== -->
+      <h2>Using AI para Gumawa ng Error Boundaries at Loading Skeletons</h2>
+
+      <p>Madaling mag-generate ng error handling files gamit ang AI:</p>
+
+      <blockquote>
+        "Generate error.tsx, loading.tsx, and not-found.tsx files for a Next.js 14 e-commerce site. error.tsx should show a friendly error message with a Try Again button. loading.tsx should have skeleton placeholders for a product grid (3 columns). not-found.tsx should have a 404 message and a Go Home link. Use Tailwind CSS."
+      </blockquote>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Alin sa mga sumusunod ang <strong>hindi</strong> kailangan ng <code>'use client'</code> directive?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> <code>error.tsx</code></label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> <code>loading.tsx</code></label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> <code>not-found.tsx</code></label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Ano ang function ng <code>reset</code> prop sa <code>error.tsx</code>?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Ire-redirect ang user sa home page</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Subukang i-re-render ulit ang component na nag-error</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> I-clear ang browser cache at cookies</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Paano mo i-trigger ang 404 page sa isang Server Component kapag walang nakitang product?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Mag-throw ng <code>new Error('Not found')</code></label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> I-call ang <code>notFound()</code> function mula sa <code>next/navigation</code></label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> I-return ang <code>&lt;NotFound /&gt;</code> component</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: Error Handling Files</h3>
+        <p>Gamit ang AI, gumawa ng mga sumusunod na files para sa isang Next.js app:</p>
+        <ul>
+          <li><strong>app/error.tsx</strong> — error boundary na may Try Again button at error message display</li>
+          <li><strong>app/loading.tsx</strong> — loading skeleton na may shimmer effect (gamit ang <code>animate-pulse</code>)</li>
+          <li><strong>app/not-found.tsx</strong> — 404 page na may Go Home link</li>
+          <li><strong>app/products/error.tsx</strong> — specific error para sa products section</li>
+          <li><strong>app/products/loading.tsx</strong> — product grid skeleton (3 columns, 6 items)</li>
+        </ul>
+        <p><em>Prompt tip: "Generate error handling files for a Next.js 14 e-commerce site. Create error.tsx (with reset button), loading.tsx (animated skeleton for product grid), and not-found.tsx (404 with home link) in the app directory. Also create specific error.tsx and loading.tsx for the /products route. Use Tailwind CSS animate-pulse for loading skeletons."</em></p>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang <code>error.tsx</code> ay Client Component na nagha-handle ng runtime errors — may <code>error</code> at <code>reset</code> props.</li>
+        <li>Ang <code>loading.tsx</code> ay automatic Suspense boundary — nagpapakita ng UI habang nag-stream ng content.</li>
+        <li>Ang <code>not-found.tsx</code> ay nagre-render kapag <code>notFound()</code> ang na-call o walang match ang route.</li>
+        <li>Ang <code>Suspense</code> ay para sa granular na loading states — specific parts lang ng page ang may fallback.</li>
+        <li>Gamitin ang AI para mag-generate ng lahat ng error handling files — consistent na styling at messaging.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Next.js Documentation (Error Handling)</strong> — Official guide para sa error boundaries at loading states. <a href="https://nextjs.org/docs/app/building-your-application/routing/error-handling" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

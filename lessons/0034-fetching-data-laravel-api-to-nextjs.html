@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0034: Fetching Data from Laravel API to Next.js</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0034: Fetching Data from Laravel API to Next.js</h1>
+      <p><em>Paano kumuha ng data mula sa Laravel API papunta sa Next.js frontend gamit ang server-side fetching at API service files.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makagawa ng API service file sa Next.js na kumukuha ng data mula sa Laravel backend, na may proper loading, error, at success states.
+      </div>
+
+      <h2>Server-Side Fetching vs Client-Side Fetching</h2>
+      <p>Sa Next.js App Router, puwedeng mag-fetch ng data sa <strong>Server Components</strong> (direkta, walang useEffect) o sa <strong>Client Components</strong> (gamit ang useEffect o libraries).</p>
+
+      <pre><code>// Server Component — mag-fetch sa server
+export default async function ProductsPage() {
+  const res = await fetch('http://localhost:8000/api/v1/products', {
+    cache: 'no-store' // para laging fresh data
+  });
+  const products = await res.json();
+  return &lt;ProductList products={products} /&gt;;
+}</code></pre>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Sa Server Components, hindi kailangan ng loading/error states dahil ang error ay mapupunta sa <code>error.js</code> at loading sa <code>loading.js</code>.
+      </div>
+
+      <h2>Axios vs Native Fetch</h2>
+      <table>
+        <tr><th>Feature</th><th>Native Fetch</th><th>Axios</th></tr>
+        <tr><td>Built-in</td><td>&#10003; Yes</td><td>&#10007; Need install</td></tr>
+        <tr><td>Interceptors</td><td>&#10007; Manual</td><td>&#10003;</td></tr>
+        <tr><td>Automatic JSON</td><td>&#10007; Need .json()</td><td>&#10003; Auto</td></tr>
+        <tr><td>Error Handling</td><td>&#10007; Only network errors</td><td>&#10003; HTTP errors included</td></tr>
+        <tr><td>Request Cancel</td><td>&#10007; AbortController</td><td>&#10003; CancelToken</td></tr>
+      </table>
+
+      <p>Para sa course na ito, gagamit tayo ng Axios dahil mas madali ang error handling at may interceptors.</p>
+
+      <h2>Creating an API Service File</h2>
+      <p>Gumawa ng <code>api.ts</code> file na naglalaman ng lahat ng API calls — para isang lugar lang ang titingnan.</p>
+
+      <pre><code>// lib/api.ts
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1',
+  headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
+});
+
+// Response interceptor
+api.interceptors.response.use(
+  response => response,
+  error => {
+    console.error('API Error:', error.response?.data || error.message);
+    return Promise.reject(error);
+  }
+);
+
+export default api;</code></pre>
+
+      <h2>Handling Loading, Error, at Success States</h2>
+      <p>Sa Client Components, gamitin ang <code>useState</code> at <code>useEffect</code> para sa tatlong states:</p>
+
+      <pre><code>'use client';
+import { useState, useEffect } from 'react';
+import api from '@/lib/api';
+
+export default function ProductList() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    api.get('/products')
+      .then(res => setProducts(res.data.data))
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return &lt;p&gt;Loading...&lt;/p&gt;;
+  if (error) return &lt;p&gt;Error: {error}&lt;/p&gt;;
+  return &lt;!-- render products --&gt;;
+}</code></pre>
+
+      <h2>Using AI para gumawa ng API Service</h2>
+      <p>I-prompt si AI para gumawa ng kumpletong API service file:</p>
+      <blockquote>"Gumawa ng Axios API service file for Next.js na may baseURL na naka-configure para sa Laravel backend. Dapat may getAllProducts, getProduct, createProduct, updateProduct, at deleteProduct functions. May proper error handling at TypeScript types."</blockquote>
+
+      <div class="info">
+        <strong>Key Insight</strong>
+        Ang API service file ay nagse-centralize ng lahat ng network calls — mas madaling i-maintain at i-debug kaysa scattered fetch calls sa buong app.
+      </div>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang advantage ng pag-fetch sa Server Component kaysa Client Component?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Mas mabilis sa client</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Hindi na kailangan ng loading/error states sa component</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Puwedeng gumamit ng localStorage</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Alin ang totoo tungkol sa Axios kumpara sa native Fetch?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Parehas lang sila, walang difference</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Axios ay may automatic JSON parsing at interceptors</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Fetch ay nangangailangan ng npm install</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Bakit maganda ang paggawa ng centralized API service file?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Para isang lugar lang ang titingnan at i-maintain</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Para mas maraming code</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Para hindi na kailangan ng error handling</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: Gumawa ng API Service File gamit ang AI</h3>
+        <p>Gamit ang AI, gumawa ng API service file na may mga sumusunod:</p>
+        <ol>
+          <li>Mag-create ng <code>lib/api.ts</code> na may Axios instance</li>
+          <li>I-prompt si AI: "Generate an API service file for Next.js with functions: getAllProducts, getProduct(id), createProduct(data), updateProduct(id, data), deleteProduct(id). Use Axios with proper TypeScript types."</li>
+          <li>Magdagdag ng response at request interceptors</li>
+          <li>I-import at gamitin ang service sa isang page component</li>
+        </ol>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Gumamit ng Server Components para sa direktang data fetching</li>
+        <li>Axios ay mas maganda para sa error handling at interceptors kumpara sa native fetch</li>
+        <li>Palaging mag-handle ng loading, error, at success states</li>
+        <li>I-centralize ang API calls sa isang service file para sa mas madaling maintenance</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Next.js Documentation (Data Fetching)</strong> — Official guide para sa pag-fetch ng data mula sa external APIs. <a href="https://nextjs.org/docs/app/building-your-application/data-fetching" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'a' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0054: Deploying Next.js Frontend</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0054: Deploying Next.js Frontend</h1>
+      <p><em>Alamin kung paano i-deploy ang Next.js app — sa Vercel, self-hosted gamit ang Docker, o sa custom VPS.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Ma-deploy ang Next.js app sa Vercel, ma-configure ang environment variables, mag-setup ng custom domain at SSL, at maunawaan ang self-hosting gamit ang Docker.
+      </div>
+
+      <!-- ======== Section 1: Vercel Deployment ======== -->
+      <h2>Vercel — Ang Pinakamadaling Paraan</h2>
+
+      <blockquote>
+        <p>"Ang Vercel ang pinakamadaling i-deploy ang Next.js — ilang clicks lang, live na. Libre para sa small projects."</p>
+      </blockquote>
+
+      <p>Si Vercel ang gumawa ng Next.js, kaya natural na ito ang best deployment platform. Narito ang steps:</p>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>I-connect ang GitHub repo:</strong> Mag-sign up sa <a href="https://vercel.com" target="_blank">vercel.com</a> gamit ang GitHub account. I-click ang "Add New Project" at piliin ang iyong repository.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>I-configure ang build settings:</strong> Auto-detect ng Vercel na Next.js ang project. I-set ang <code>NEXT_PUBLIC_API_URL</code> at iba pang environment variables.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>I-deploy:</strong> I-click ang "Deploy". Sa loob ng ilang minuto, live na ang iyong app sa <code>your-app.vercel.app</code>.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <p><strong>Auto-deploy sa bawat push:</strong> Mag-setup ng preview deployments para sa bawat branch at production deployment para sa main branch.</p>
+        </div>
+      </div>
+
+      <pre><code># Environment variables sa Vercel (i-set sa dashboard)
+NEXT_PUBLIC_API_URL=https://api.example.com
+DATABASE_URL=...
+NEXTAUTH_SECRET=...
+NEXTAUTH_URL=https://myapp.vercel.app</code></pre>
+
+      <!-- ======== Section 2: Self-Hosting with Docker ======== -->
+      <h2>Self-Hosting gamit ang Docker</h2>
+
+      <p>Kung gusto mong i-host ang Next.js app sa iyong sariling server, Docker ang pinakamadaling paraan.</p>
+
+      <pre><code># Dockerfile
+FROM node:20-alpine AS base
+
+# Dependencies
+FROM base AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Build
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN npm run build
+
+# Production
+FROM base AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+EXPOSE 3000
+ENV PORT=3000
+CMD ["node", "server.js"]</code></pre>
+
+      <pre><code># docker-compose.yml
+version: "3.8"
+services:
+  nextjs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.production
+    restart: unless-stopped</code></pre>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        I-set ang <code>output: "standalone"</code> sa <code>next.config.js</code> para gumana ang Docker deployment. Paliitin nito ang image size.
+      </div>
+
+      <!-- ======== Section 3: Environment Variables sa Production ======== -->
+      <h2>Environment Variables sa Production</h2>
+
+      <p>Ang Next.js ay may dalawang uri ng environment variables:</p>
+
+      <table>
+        <tr>
+          <th>Prefix</th>
+          <th>Accessible sa</th>
+          <th>Example</th>
+        </tr>
+        <tr>
+          <td><code>NEXT_PUBLIC_</code></td>
+          <td>Browser at Server</td>
+          <td><code>NEXT_PUBLIC_API_URL</code></td>
+        </tr>
+        <tr>
+          <td>Walang prefix</td>
+          <td>Server lang</td>
+          <td><code>DATABASE_URL</code>, <code>API_SECRET</code></td>
+        </tr>
+      </table>
+
+      <div class="warning">
+        <strong>Warning</strong>
+        Huwag maglagay ng sensitive data (API keys, database passwords) sa <code>NEXT_PUBLIC_</code> variables — makikita ito sa browser. Gamitin ang non-prefixed variables para sa server-only data.
+      </div>
+
+      <!-- ======== Section 4: Custom Domain at SSL ======== -->
+      <h2>Custom Domain at SSL</h2>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>Vercel:</strong> Sa dashboard, pumunta sa Settings > Domains. I-add ang iyong custom domain at i-update ang DNS records (CNAME or A record).</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>SSL:</strong> Automatic na nagha-handle ng SSL certificates ang Vercel (Let's Encrypt). Para sa self-hosted, gamitin ang Certbot.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>Self-hosted SSL gamit ang Certbot:</strong></p>
+          <pre><code>sudo apt install certbot python3-certbot-nginx -y
+sudo certbot --nginx -d example.com</code></pre>
+        </div>
+      </div>
+
+      <pre><code># Nginx reverse proxy para sa self-hosted Next.js
+server {
+    listen 80;
+    server_name example.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name example.com;
+
+    ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}</code></pre>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang pinakamadaling platform para i-deploy ang Next.js?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> DigitalOcean</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Vercel</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Hostinger</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Aling environment variable prefix ang accessible sa browser?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> <code>NEXT_SERVER_</code></label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> <code>NEXT_PUBLIC_</code></label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> <code>NEXT_CLIENT_</code></label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Ano ang output mode na dapat i-set sa <code>next.config.js</code> para sa Docker deployment?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> <code>output: "export"</code></label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> <code>output: "standalone"</code></label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> <code>output: "server"</code></label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: Deploy Next.js to Vercel with Environment Variables</h3>
+        <p>Kumuha ng existing Next.js project (o gumawa ng bago gamit ang <code>create-next-app</code>). I-deploy ito sa Vercel:</p>
+        <ul>
+          <li>I-connect ang GitHub repository sa Vercel.</li>
+          <li>Mag-setup ng <code>NEXT_PUBLIC_SITE_NAME</code> environment variable sa Vercel dashboard.</li>
+          <li>I-configure ang custom domain (o gamitin ang libreng <code>.vercel.app</code> domain).</li>
+          <li>I-verify na gumagana ang SSL (https).</li>
+        </ul>
+        <p><strong>Challenge:</strong> I-prompt si AI: "Generate a Docker Compose setup for Next.js with Nginx reverse proxy and Let's Encrypt SSL."</p>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang Vercel ang pinakamadali at recommended platform para sa Next.js deployment.</li>
+        <li>Gamitin ang <code>NEXT_PUBLIC_</code> prefix para sa browser-accessible env variables.</li>
+        <li>Para sa self-hosting, gamitin ang Docker na may <code>output: "standalone"</code>.</li>
+        <li>Ang Vercel ay may automatic SSL; para sa self-hosted, gamitin ang Certbot.</li>
+        <li>Mag-setup ng custom domain sa Vercel dashboard o sa pamamagitan ng Nginx reverse proxy.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Vercel Documentation</strong> — Official guide para sa deploying Next.js applications. <a href="https://vercel.com/docs" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <!-- Prev / Next — auto-populated by lesson-nav.js -->
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Scripts — order matters -->
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0056: Maintenance, Updates & Continuous Improvement</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0056: Maintenance, Updates & Continuous Improvement</h1>
+      <p><em>Ang software development ay hindi natatapos sa deployment — alamin kung paano i-maintain at i-improve ang iyong app gamit ang monitoring, dependency updates, at AI.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makapag-setup ng uptime monitoring, ma-manage ang dependency updates, mahawakan ang user feedback, at magamit ang AI para sa continuous improvement.
+      </div>
+
+      <!-- ======== Section 1: Monitoring Uptime ======== -->
+      <h2>Monitoring Uptime at Performance</h2>
+
+      <p>Pagkatapos ng deployment, kailangan mong bantayan ang iyong app 24/7. Narito ang mga tools:</p>
+
+      <table>
+        <tr>
+          <th>Tool</th>
+          <th>Free Tier</th>
+          <th>Gamit</th>
+        </tr>
+        <tr>
+          <td><strong>UptimeRobot</strong></td>
+          <td>50 monitors, 5-min checks</td>
+          <td>Simple uptime monitoring, email/SMS alerts</td>
+        </tr>
+        <tr>
+          <td><strong>Laravel Pulse</strong></td>
+          <td>Libre (built-in)</td>
+          <td>Real-time monitoring ng Laravel app (slow queries, jobs, requests)</td>
+        </tr>
+        <tr>
+          <td><strong>Better Stack</strong></td>
+          <td>3 users, 10 status pages</td>
+          <td>Uptime monitoring na may status page para sa users</td>
+        </tr>
+        <tr>
+          <td><strong>Datadog</strong></td>
+          <td>May free tier (limited)</td>
+          <td>Full observability: logs, metrics, traces</td>
+        </tr>
+      </table>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>I-setup ang UptimeRobot:</strong> Mag-sign up, i-add ang URL ng iyong app, at piliin ang monitoring interval. Makakatanggap ka ng alert kapag down ang site.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>I-install ang Laravel Pulse:</strong> Para sa Laravel backend, magbigay ito ng real-time insights sa performance.</p>
+        </div>
+      </div>
+
+      <pre><code># I-install ang Laravel Pulse
+composer require laravel/pulse
+
+# I-publish ang config at migration
+php artisan vendor:publish --provider="Laravel\Pulse\PulseServiceProvider"
+php artisan migrate
+
+# I-access sa /pulse URL</code></pre>
+
+      <!-- ======== Section 2: Dependency Updates ======== -->
+      <h2>Dependency Updates (Composer at npm)</h2>
+
+      <blockquote>
+        <p>"Ang software development ay hindi natatapos sa deployment — tuloy-tuloy ang improvement base sa user feedback."</p>
+      </blockquote>
+
+      <p>Ang pag-update ng dependencies ay importante para sa security at performance:</p>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>I-check kung may updates:</strong></p>
+          <pre><code># Laravel
+composer outdated
+
+# Next.js
+npm outdated</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>I-update nang ligtas:</strong></p>
+          <pre><code># I-update ang isang package lang
+composer update laravel/framework --with-dependencies
+
+# I-update lahat ng minor/patch versions
+npm update
+
+# I-update sa major version (ingat!)
+npm install next@latest</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>I-test pagkatapos mag-update:</strong> Palaging mag-run ng tests pagkatapos mag-update ng dependencies. I-deploy muna sa staging bago sa production.</p>
+        </div>
+      </div>
+
+      <div class="warning">
+        <strong>Warning</strong>
+        Huwag mag-update ng dependencies diretso sa production. I-test muna sa development environment. May mga update na nagbe-break ng existing functionality (lalo na ang major version updates).
+      </div>
+
+      <!-- ======== Section 3: Handling User Feedback at Bug Reports ======== -->
+      <h2>Paghawak ng User Feedback at Bug Reports</h2>
+
+      <p>Ang user feedback ay goldmine para sa improvement. Narito ang workflow:</p>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>Collect feedback:</strong> Gumamit ng in-app feedback form, o simpleng email. I-store ang feedback sa database.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>I-analyze gamit ang AI:</strong> I-prompt si AI na i-summarize ang feedback trends at mag-suggest ng improvements.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>Prioritize:</strong> Hindi lahat ng feedback ay kailangan agad. I-prioritize based sa impact at effort.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <p><strong>Iterate:</strong> Mag-release ng updates regularly. I-communicate sa users ang mga changes.</p>
+        </div>
+      </div>
+
+      <pre><code>Prompt para kay AI:
+"I-analyze mo ang mga user feedback na ito at sabihin kung ano ang
+top 3 areas na dapat i-improve: [paste feedback here]"</code></pre>
+
+      <!-- ======== Section 4: Iterative Improvement with AI ======== -->
+      <h2>Iterative Improvement Gamit ang AI</h2>
+
+      <p>Ang AI ay hindi lang para sa coding — pwede rin itong gamitin para sa continuous improvement:</p>
+
+      <ul>
+        <li><strong>Code Review:</strong> I-prompt si AI na i-review ang iyong code at mag-suggest ng improvements.</li>
+        <li><strong>Performance Audit:</strong> "Analyze my Laravel app's slow queries and suggest optimizations."</li>
+        <li><strong>Security Audit:</strong> "Check my package.json and composer.json for known vulnerabilities."</li>
+        <li><strong>Feature Suggestions:</strong> "Based on these user feedback, suggest 5 features to implement next."</li>
+        <li><strong>Refactoring:</strong> "Refactor this controller to use repository pattern."</li>
+      </ul>
+
+      <pre><code># Regular maintenance checklist — i-ask si AI:
+"I-generate mo ang isang weekly maintenance checklist para sa
+Laravel + Next.js app. Isama ang:
+- Dependency updates
+- Log review
+- Database optimization
+- Backup verification
+- Performance check"</code></pre>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Aling tool ang built-in sa Laravel para sa real-time monitoring ng performance?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> UptimeRobot</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Laravel Pulse</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Datadog</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Ano ang dapat gawin pagkatapos mag-update ng dependencies?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> I-deploy agad sa production</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Mag-run ng tests at i-deploy muna sa staging</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Delete ang node_modules at vendor folders</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Ano ang pinakamagandang source para sa pag-improve ng iyong app?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Hula lang</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> User feedback at bug reports</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Random features mula sa internet</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: Set Up Uptime Monitoring & Dependency Update Process</h3>
+        <p>Gawin ang sumusunod:</p>
+        <ul>
+          <li>Mag-sign up sa <a href="https://uptimerobot.com" target="_blank">UptimeRobot</a> (free tier) at i-monitor ang iyong deployed app.</li>
+          <li>I-configure ang email/SMS alerts kapag down ang site.</li>
+          <li>Gamit ang AI, i-prompt: "Generate a monthly dependency update process for a Laravel + Next.js app. Include commands, testing steps, and rollback plan."</li>
+          <li>I-save ang process documentation sa <code>MAINTENANCE.md</code>.</li>
+        </ul>
+        <p><strong>Challenge:</strong> I-prompt si AI na gumawa ng bash script na nagche-check ng outdated dependencies at nagse-send ng report via email.</p>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Gamitin ang UptimeRobot at Laravel Pulse para sa 24/7 monitoring.</li>
+        <li>Regular na mag-update ng dependencies — pero i-test muna bago i-deploy.</li>
+        <li>Ang user feedback ay pinakamahalagang source ng improvement ideas.</li>
+        <li>Gamitin ang AI para sa code review, performance audit, at feature suggestions.</li>
+        <li>Magkaroon ng regular maintenance schedule at document lahat ng processes.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation</strong> — Official guide para sa maintenance at updates ng Laravel application. <a href="https://laravel.com/docs" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <!-- Prev / Next — auto-populated by lesson-nav.js -->
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Scripts — order matters -->
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

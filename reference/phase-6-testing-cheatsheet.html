@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phase 6: Testing, Debugging & Performance — Cheatsheet</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Phase 6: Testing, Debugging & Performance — Cheatsheet</h1>
+      <p><em>Mabilisang reference para sa testing, debugging, at performance optimization.</em></p>
+
+      <!-- ========== 1. Pest PHP Assertion Reference ========== -->
+      <h2>Pest PHP Assertion Reference</h2>
+      <p>Mga karaniwang assertions sa Pest PHP:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Assertion</th>
+            <th>Description</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>assertStatus(200)</code></td>
+            <td>Check HTTP status code</td>
+            <td><code>getJson('/api/products')->assertStatus(200)</code></td>
+          </tr>
+          <tr>
+            <td><code>assertJson(['key' =&gt; 'value'])</code></td>
+            <td>Check JSON response structure</td>
+            <td><code>assertJson(['name' =&gt; 'Laptop'])</code></td>
+          </tr>
+          <tr>
+            <td><code>assertDatabaseHas()</code></td>
+            <td>Check if record exists in DB</td>
+            <td><code>assertDatabaseHas('products', ['name' =&gt; 'Laptop'])</code></td>
+          </tr>
+          <tr>
+            <td><code>assertDatabaseMissing()</code></td>
+            <td>Check if record is deleted</td>
+            <td><code>assertDatabaseMissing('products', ['id' =&gt; 1])</code></td>
+          </tr>
+          <tr>
+            <td><code>expect($value)-&gt;toBe()</code></td>
+            <td>Exact value match</td>
+            <td><code>expect($total)-&gt;toBe(100)</code></td>
+          </tr>
+          <tr>
+            <td><code>expect($value)-&gt;toHaveCount()</code></td>
+            <td>Check array/collection count</td>
+            <td><code>expect($products)-&gt;toHaveCount(3)</code></td>
+          </tr>
+          <tr>
+            <td><code>actingAs($user)</code></td>
+            <td>Authenticate user for test</td>
+            <td><code>actingAs($user)-&gt;getJson('/api/products')</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <pre><code>// Full Pest test example
+uses(RefreshDatabase::class);
+
+it('creates a product', function () {
+    $user = User::factory()->create();
+
+    actingAs($user)->postJson('/api/products', [
+        'name' => 'Laptop',
+        'price' => 49999
+    ])->assertStatus(201)
+      ->assertJson(['name' => 'Laptop']);
+
+    $this->assertDatabaseHas('products', ['name' => 'Laptop']);
+});</code></pre>
+
+      <!-- ========== 2. Jest + RTL Common Patterns ========== -->
+      <h2>Jest + React Testing Library Common Patterns</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Pattern</th>
+            <th>Code</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Render component</td>
+            <td><code>render(&lt;Component /&gt;)</code></td>
+          </tr>
+          <tr>
+            <td>Find by text</td>
+            <td><code>screen.getByText('Hello')</code></td>
+          </tr>
+          <tr>
+            <td>Find by role</td>
+            <td><code>screen.getByRole('button', { name: /submit/i })</code></td>
+          </tr>
+          <tr>
+            <td>Find by label</td>
+            <td><code>screen.getByLabelText('Email')</code></td>
+          </tr>
+          <tr>
+            <td>Type in input</td>
+            <td><code>await userEvent.type(input, 'value')</code></td>
+          </tr>
+          <tr>
+            <td>Click button</td>
+            <td><code>await userEvent.click(button)</code></td>
+          </tr>
+          <tr>
+            <td>Wait for text</td>
+            <td><code>await screen.findByText('Success')</code></td>
+          </tr>
+          <tr>
+            <td>Assert in document</td>
+            <td><code>expect(el).toBeInTheDocument()</code></td>
+          </tr>
+          <tr>
+            <td>Assert not in doc</td>
+            <td><code>expect(el).not.toBeInTheDocument()</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <pre><code>// Full RTL test example
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import ProductCard from '@/components/ProductCard';
+
+describe('ProductCard', () => {
+  it('renders and handles click', async () => {
+    const mockFn = jest.fn();
+    render(&lt;ProductCard name="Laptop" price={49999} onAddToCart={mockFn} /&gt;);
+
+    expect(screen.getByText('Laptop')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /add to cart/i }));
+    expect(mockFn).toHaveBeenCalledWith('Laptop');
+  });
+});</code></pre>
+
+      <!-- ========== 3. Playwright E2E Setup ========== -->
+      <h2>Playwright E2E Setup</h2>
+      <p>Installation:</p>
+      <pre><code>npm install -D @playwright/test
+npx playwright install</code></pre>
+      <p>Configuration (<code>playwright.config.js</code>):</p>
+      <pre><code>module.exports = {
+  testDir: './tests/e2e',
+  webServer: {
+    command: 'npm run dev',
+    port: 3000,
+    reuseExistingServer: true,
+  },
+};</code></pre>
+      <p>Example test:</p>
+      <pre><code>import { test, expect } from '@playwright/test';
+
+test('user can view product', async ({ page }) => {
+  await page.goto('/products/1');
+  await expect(page.locator('h1')).toContainText('Laptop');
+  await expect(page.locator('.price')).toBeVisible();
+});</code></pre>
+
+      <!-- ========== 4. Debugging Workflow with AI ========== -->
+      <h2>Debugging Workflow with AI</h2>
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>I-copy ang error</strong> — exact error message at stack trace</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>I-paste kay AI</strong> kasama ang context: framework, file, line, surrounding code</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>Humingi ng explanation</strong>: "What is causing this error and how do I fix it?"</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <p><strong>Intindihin ang suggestion</strong> bago i-apply — huwag blindly copy-paste</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">5</div>
+        <div class="step-content">
+          <p><strong>I-test ang fix</strong> at i-verify na nawala ang error</p>
+        </div>
+      </div>
+
+      <p>Sample prompt template:</p>
+      <blockquote>"I'm getting this error in [Laravel/Next.js]. Here's the stack trace: [paste]. Here's my code at line [X]: [paste]. What's causing this and what's the best fix?"</blockquote>
+
+      <!-- ========== 5. Laravel Performance Tools ========== -->
+      <h2>Laravel Performance Tools</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Tool / Technique</th>
+            <th>Purpose</th>
+            <th>Command / Usage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Laravel Debugbar</td>
+            <td>See queries, memory, time</td>
+            <td><code>composer require barryvdh/laravel-debugbar --dev</code></td>
+          </tr>
+          <tr>
+            <td>Eager Loading</td>
+            <td>Fix N+1 problem</td>
+            <td><code>Product::with('category')-&gt;get()</code></td>
+          </tr>
+          <tr>
+            <td>Cache::remember()</td>
+            <td>Cache query results</td>
+            <td><code>Cache::remember('key', 3600, fn() =&gt; ...)</code></td>
+          </tr>
+          <tr>
+            <td>Queue</td>
+            <td>Async processing</td>
+            <td><code>php artisan queue:work</code>, <code>QUEUE_CONNECTION=database</code></td>
+          </tr>
+          <tr>
+            <td>Indexes</td>
+            <td>Faster DB queries</td>
+            <td><code>Schema::table('products', fn($t) =&gt; $t-&gt;index('name'))</code></td>
+          </tr>
+          <tr>
+            <td>Config caching</td>
+            <td>Reduce config load time</td>
+            <td><code>php artisan config:cache</code></td>
+          </tr>
+          <tr>
+            <td>Route caching</td>
+            <td>Reduce route registration</td>
+            <td><code>php artisan route:cache</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- ========== 6. Next.js Optimization Checklist ========== -->
+      <h2>Next.js Optimization Checklist</h2>
+      <ul>
+        <li><input type="checkbox"> Use <code>next/image</code> for all images (automatic optimization, lazy loading)</li>
+        <li><input type="checkbox"> Use <code>next/font</code> instead of <code>@import</code> or Google Fonts link</li>
+        <li><input type="checkbox"> Minimize <code>'use client'</code> — keep components as Server Components</li>
+        <li><input type="checkbox"> Dynamic import for heavy components: <code>dynamic(() =&gt; import('...'))</code></li>
+        <li><input type="checkbox"> Run <code>@next/bundle-analyzer</code> to check bundle size</li>
+        <li><input type="checkbox"> Use <code>loading="lazy"</code> for below-the-fold iframes/images</li>
+        <li><input type="checkbox"> Add <code>priority</code> prop to above-the-fold images</li>
+        <li><input type="checkbox"> Use <code>generateStaticParams()</code> for static pages</li>
+        <li><input type="checkbox"> Enable <code>output: 'standalone'</code> for optimized Docker builds</li>
+        <li><input type="checkbox"> Minimize third-party scripts — use <code>next/script</code> with strategy</li>
+      </ul>
+
+      <!-- ========== 7. Logging vs Monitoring Comparison ========== -->
+      <h2>Logging vs Monitoring Comparison</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Aspect</th>
+            <th>Logging</th>
+            <th>Monitoring</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Purpose</td>
+            <td>Record events and errors</td>
+            <td>Track system health and performance</td>
+          </tr>
+          <tr>
+            <td>Data</td>
+            <td>Detailed log entries with context</td>
+            <td>Metrics, uptime, response times</td>
+          </tr>
+          <tr>
+            <td>When to use</td>
+            <td>Debugging specific issues</td>
+            <td>Real-time alerts and dashboards</td>
+          </tr>
+          <tr>
+            <td>Tools (PHP)</td>
+            <td>Laravel Log, Monolog</td>
+            <td>Sentry, Laravel Pulse</td>
+          </tr>
+          <tr>
+            <td>Tools (JS)</td>
+            <td>console.log, Winston</td>
+            <td>Sentry, Datadog RUM</td>
+          </tr>
+          <tr>
+            <td>Retention</td>
+            <td>Days to weeks (daily logs)</td>
+            <td>Months (aggregated metrics)</td>
+          </tr>
+          <tr>
+            <td>Alerting</td>
+            <td>Manual (check logs)</td>
+            <td>Automatic (threshold-based alerts)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="info">
+        <strong>Pro Tip</strong>
+        I-bookmark ang page na ito! Gamitin bilang reference habang ginagawa ang Phase 6 lessons at projects.
+      </div>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

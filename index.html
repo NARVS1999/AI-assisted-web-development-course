@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI-Assisted Web Development Course</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+
+<div class="landing">
+  <h1>AI-Assisted Web Development</h1>
+  <p class="subtitle">Laravel + Next.js + MySQL &mdash; gamit ang AI coding assistants. Taglish lessons para sa Pinoy developers.</p>
+
+  <ul class="desc">
+    <li>Matuto kang gumamit ng AI tools (Claude Code CLI / OpenCode CLI) bilang coding partner mo</li>
+    <li>Bumuo ng full-stack applications: Laravel backend, Next.js frontend, MySQL database</li>
+    <li>Mag-apply ng authentication, security, testing, at deployment best practices</li>
+    <li>Kumpletuhin ang 4 na capstone projects mula task management hanggang AI-enhanced SaaS</li>
+  </ul>
+
+  <a class="btn-start" href="lessons/0001-intro-ai-assisted-development.html">Start the Course</a>
+
+  <div class="phases">
+    <div class="phase-item">
+      <span class="phase-num">Phase 0</span>
+      <span class="phase-name">AI Coding Tools Setup &amp; Mindset</span>
+      <span class="phase-count">6 lessons</span>
+    </div>
+    <div class="phase-item">
+      <span class="phase-num">Phase 1</span>
+      <span class="phase-name">MySQL Database Design &amp; Management</span>
+      <span class="phase-count">7 lessons</span>
+    </div>
+    <div class="phase-item">
+      <span class="phase-num">Phase 2</span>
+      <span class="phase-name">Laravel Backend Development</span>
+      <span class="phase-count">10 lessons</span>
+    </div>
+    <div class="phase-item">
+      <span class="phase-num">Phase 3</span>
+      <span class="phase-name">Next.js Frontend Development</span>
+      <span class="phase-count">9 lessons</span>
+    </div>
+    <div class="phase-item">
+      <span class="phase-num">Phase 4</span>
+      <span class="phase-name">API Integration &amp; Full-Stack Communication</span>
+      <span class="phase-count">6 lessons</span>
+    </div>
+    <div class="phase-item">
+      <span class="phase-num">Phase 5</span>
+      <span class="phase-name">Authentication, Authorization &amp; Security</span>
+      <span class="phase-count">7 lessons</span>
+    </div>
+    <div class="phase-item">
+      <span class="phase-num">Phase 6</span>
+      <span class="phase-name">Testing, Debugging &amp; Performance</span>
+      <span class="phase-count">6 lessons</span>
+    </div>
+    <div class="phase-item">
+      <span class="phase-num">Phase 7</span>
+      <span class="phase-name">Deployment, DevOps &amp; Maintenance</span>
+      <span class="phase-count">5 lessons</span>
+    </div>
+    <div class="phase-item">
+      <span class="phase-num">Phase 8</span>
+      <span class="phase-name">Capstone Projects</span>
+      <span class="phase-count">4 lessons</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0057: Capstone Project 1: Task Management System</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0057: Capstone Project 1: Task Management System</h1>
+      <p><em>Gagawa ka ng parang Trello o Jira — full-stack with real-time updates. Kayang-kaya with AI assistance.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Maplano at ma-scaffold ang isang full-stack task management system na may real-time features gamit ang AI prompts para sa bawat feature.
+      </div>
+
+      <h2>Ano ang gagawin natin?</h2>
+      <p>Sa lesson na ito, gagawa ka ng parang Trello o Jira — isang task management system na may user authentication, project CRUD, task assignment, real-time updates via WebSockets, at file attachments. Ito ang first capstone project mo, kaya gagamitin mo lahat ng natutunan mo from Phase 1 to Phase 7.</p>
+
+      <h2>Features Overview</h2>
+      <ul>
+        <li><strong>User Auth</strong> — Registration, login, logout, profile management</li>
+        <li><strong>Project CRUD</strong> — Create, read, update, delete projects</li>
+        <li><strong>Task Assignment</strong> — Assign tasks to users, set priorities and deadlines</li>
+        <li><strong>Real-Time Updates</strong> — WebSockets via Laravel Reverb para sa live updates</li>
+        <li><strong>File Attachments</strong> — Upload files sa tasks</li>
+      </ul>
+
+      <h2>Tech Stack</h2>
+      <table>
+        <tr><th>Layer</th><th>Technology</th></tr>
+        <tr><td>Backend API</td><td>Laravel 11 (RESTful API)</td></tr>
+        <tr><td>Frontend</td><td>Next.js 14 (App Router)</td></tr>
+        <tr><td>Database</td><td>MySQL</td></tr>
+        <tr><td>Real-Time</td><td>Laravel Reverb (WebSockets)</td></tr>
+        <tr><td>File Storage</td><td>Laravel Storage (local or S3)</td></tr>
+        <tr><td>Auth</td><td>Laravel Sanctum / NextAuth.js</td></tr>
+      </table>
+
+      <h2>AI Role: Scaffolding, Debugging, Test Generation</h2>
+      <p>Sa capstone project na ito, si AI ang magiging katulong mo sa:</p>
+      <ul>
+        <li><strong>Scaffolding</strong> — Magpagawa kay AI ng buong controllers, models, migrations, at components</li>
+        <li><strong>Debugging</strong> — Kapag may error, i-prompt si AI para ma-analyze at ma-fix</li>
+        <li><strong>Test Generation</strong> — Magpagawa kay AI ng Pest tests at Jest tests para sa iyong code</li>
+      </ul>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Huwag subukang isulat lahat manually. Ang goal ay gamitin si AI para mapabilis ang development. Focus sa architecture at logic, hindi sa syntax.
+      </div>
+
+      <h2>Project Planning</h2>
+      <p>Bago mag-code, mag-plan muna:</p>
+      <ol>
+        <li><strong>Database Design</strong> — Users table, Projects table, Tasks table, Task Assignments table, File Attachments table</li>
+        <li><strong>API Routes</strong> — /api/projects, /api/tasks, /api/users, /api/auth</li>
+        <li><strong>Frontend Pages</strong> — Login/Register, Dashboard, Project Board, Task Detail</li>
+        <li><strong>Real-Time Events</strong> — Task created, updated, assigned, deleted</li>
+      </ol>
+
+      <h2>Step-by-Step: AI Prompts</h2>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>Setup Laravel Project</strong></p>
+          <pre><code>composer create-project laravel/laravel task-manager-api
+cd task-manager-api
+composer require laravel/reverb laravel/sanctum</code></pre>
+          <p>Prompt AI: <em>"Generate a Laravel 11 setup with Sanctum auth, Reverb WebSockets, and CORS config for a task management API."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>Database Migrations & Models</strong></p>
+          <p>Prompt AI: <em>"Create migrations and Eloquent models for a task management system with users, projects, tasks, task_assignments, and file_attachments tables. Include foreign keys and relationships."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>Authentication System</strong></p>
+          <p>Prompt AI: <em>"Generate Laravel Sanctum auth controllers for register, login, logout, and profile. Include form requests and API routes."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <p><strong>Project CRUD API</strong></p>
+          <p>Prompt AI: <em>"Generate a ProjectController with CRUD methods, API resources, form requests, and policy-based authorization for a Laravel project management system."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">5</div>
+        <div class="step-content">
+          <p><strong>Task Management with Assignments</strong></p>
+          <p>Prompt AI: <em>"Create a TaskController with CRUD, task assignment logic, status transitions (todo, in-progress, done), and file attachment support."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">6</div>
+        <div class="step-content">
+          <p><strong>Real-Time Events (Reverb)</strong></p>
+          <p>Prompt AI: <em>"Set up Laravel Reverb broadcasting events for task creation, update, assignment, and deletion. Include private channels per project."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">7</div>
+        <div class="step-content">
+          <p><strong>Next.js Frontend</strong></p>
+          <p>Prompt AI: <em>"Generate a Next.js 14 App Router frontend for a task management system with login, project board (kanban-style), task detail page, and real-time updates via Echo + Reverb."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">8</div>
+        <div class="step-content">
+          <p><strong>Testing</strong></p>
+          <p>Prompt AI: <em>"Generate Pest tests for all Task Management API endpoints and Jest + RTL tests for the Next.js components."</em></p>
+        </div>
+      </div>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang pinaka-appropriate na database relationship sa pagitan ng Projects at Tasks?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> One-to-Many (isang project ay maraming tasks)</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Many-to-Many (maraming projects ay maraming tasks)</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> One-to-One (isang project ay isang task)</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Anong Laravel package ang ginagamit para sa real-time WebSocket updates sa task management system na ito?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Laravel Echo (client-side lang)</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Laravel Reverb (first-party WebSocket server)</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Pusher Channels (third-party lang)</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Bakit mahalaga ang AI prompts sa scaffolding ng capstone project na ito?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Para hindi na kailangan mag-isip ng architecture</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Para mas mabilis makabuo ng boilerplate code at focus sa custom logic</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Para automatic na ide-deploy ang app</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Capstone Project 1: Task Management System</h3>
+        <p>Gamit ang AI prompts sa itaas, i-scaffold ang isang task management system. Sundin ang 8-step process at gumamit ng AI para sa bawat feature. Pagkatapos, i-run ang sumusunod na command para ma-verify:</p>
+        <pre><code>php artisan migrate
+php artisan db:seed
+php artisan test
+npm run dev</code></pre>
+        <p><strong>Deliverables:</strong></p>
+        <ul>
+          <li>Laravel API na may projects, tasks, assignments, auth, at file uploads</li>
+          <li>Next.js frontend na may login, kanban board, at task detail page</li>
+          <li>Real-time updates via Laravel Reverb</li>
+          <li>Pest tests para sa API endpoints</li>
+          <li>Document kung anong AI prompts ang ginamit</li>
+        </ul>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang task management system ay parang Trello/Jira — may projects, tasks, assignments, at real-time updates</li>
+        <li>Tech stack: Laravel API + Next.js + MySQL + Laravel Reverb</li>
+        <li>Gamitin si AI para sa scaffolding, debugging, at test generation</li>
+        <li>Planuhin muna ang database at routes bago mag-code</li>
+        <li>Ang magandang AI prompt ay kalahati na ng trabaho</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation</strong> — Comprehensive guide para sa building web applications. <a href="https://laravel.com/docs" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Next.js Documentation</strong> — Comprehensive guide para sa building frontend applications. <a href="https://nextjs.org/docs" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'a', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

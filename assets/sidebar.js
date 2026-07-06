@@ -53,4 +53,27 @@
   }
 
   sidebar.innerHTML = html;
+
+  // Mobile burger toggle
+  var toggle = document.createElement('button');
+  toggle.className = 'sidebar-toggle';
+  toggle.id = 'sidebarToggle';
+  toggle.innerHTML = '\u2630';
+  toggle.setAttribute('title', 'Toggle sidebar');
+  document.body.appendChild(toggle);
+
+  var backdrop = document.createElement('div');
+  backdrop.className = 'sidebar-backdrop';
+  backdrop.id = 'sidebarBackdrop';
+  document.body.appendChild(backdrop);
+
+  toggle.addEventListener('click', function() {
+    sidebar.classList.toggle('open');
+    backdrop.classList.toggle('open');
+  });
+
+  backdrop.addEventListener('click', function() {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('open');
+  });
 })();

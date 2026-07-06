@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glossary — AI-Assisted Web Development</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Glossary</h1>
+      <p><em>Canonical terms para sa AI-Assisted Web Development Course.</em></p>
+
+      <h2>AI Coding Tools</h2>
+
+      <p><strong>Claude Code CLI</strong>: Command-line AI coding assistant ng Anthropic. Gamit ang Claude API, nakakatulong magsulat, mag-debug, at mag-refactor ng code sa terminal.</p>
+      <p><strong>OpenCode CLI</strong>: Open-source alternative kay Claude Code CLI. Community-driven, libre, at may katulad na workflow.</p>
+      <p><strong>Prompt</strong>: Ang instruction o tanong na ibinigay mo sa AI. Mas specific ang prompt, mas accurate ang output.</p>
+      <p><strong>Iterative prompting</strong>: Process ng pag-refine ng prompts based sa AI responses — parang conversation para ma-improve ang result.</p>
+      <p><strong>Pair programming (with AI)</strong>: Ang AI ay acting bilang "pair programmer" mo — nagse-suggest ng code, nagre-review, at tumutulong mag-debug.</p>
+      <p><strong>Prompt → Review → Test → Refactor</strong>: Ang recommended workflow para sa AI-assisted development: mag-prompt, i-review ang output, i-test, at i-refactor kung kailangan.</p>
+
+      <h2>Database &amp; MySQL</h2>
+
+      <p><strong>Relational database</strong>: Database na nag-o-organize ng data sa tables na may rows at columns, at may relationships sa isa't isa.</p>
+      <p><strong>Table</strong>: Parang spreadsheet — may columns (fields) at rows (records).</p>
+      <p><strong>Primary Key</strong>: Unique identifier para sa bawat row sa table. Usually auto-incrementing integer o UUID.</p>
+      <p><strong>Foreign Key</strong>: Column na nagre-reference sa primary key ng ibang table — nagde-define ng relationship.</p>
+      <p><strong>Index</strong>: Database structure na nagpapabilis ng queries. Parang table of contents ng libro.</p>
+      <p><strong>Normalization</strong>: Process ng pag-optimize ng database schema para mabawasan ang redundancy at ma-improve ang integrity. 1NF, 2NF, 3NF.</p>
+      <p><strong>Migration</strong>: Version control para sa database schema sa Laravel. Gamit ang PHP code, hindi raw SQL.</p>
+      <p><strong>Seeder</strong>: Class na nagpo-populate ng database ng test data.</p>
+      <p><strong>Factory</strong>: Helper sa Laravel na gumagamit ng Faker para gumawa ng realistic dummy data.</p>
+      <p><strong>JOIN</strong>: SQL operation na pinagsasama ang rows mula sa dalawa o higit pang tables based sa related column.</p>
+      <p><strong>Eager loading</strong>: Technique sa Eloquent na nagla-load ng relationships nang sabay-sabay para maiwasan ang N+1 query problem.</p>
+      <p><strong>N+1 problem</strong>: Performance issue kung saan nag-la-load ng parent records at saka isa-isang nagla-load ng child records — sobra ang queries.</p>
+
+      <h2>Laravel</h2>
+
+      <p><strong>Artisan CLI</strong>: Command-line tool ng Laravel para sa common tasks (make:controller, make:model, migrate, atbp).</p>
+      <p><strong>Controller</strong>: Class na humahawak ng HTTP requests at nagre-return ng responses. Nagco-contain ng business logic.</p>
+      <p><strong>Route</strong>: Definition kung paano nagre-respond ang application sa specific HTTP request (GET, POST, PUT, DELETE).</p>
+      <p><strong>Middleware</strong>: Filter ng HTTP requests bago makarating sa controller. Parang checkpoint.</p>
+      <p><strong>Eloquent ORM</strong>: Active Record implementation ng Laravel para sa database. PHP objects = database records.</p>
+      <p><strong>Model</strong>: Class na kumakatawan sa database table. Each model instance = one row.</p>
+      <p><strong>Relationship</strong>: Eloquent method na nagde-define kung paano nagre-relate ang models (hasMany, belongsTo, belongsToMany, hasOne).</p>
+      <p><strong>Form Request</strong>: Custom request class na nagha-handle ng validation at authorization.</p>
+      <p><strong>API Resource</strong>: Class na nagti-transform ng Eloquent models sa JSON response.</p>
+      <p><strong>Job</strong>: Class na nagco-contain ng task na pwedeng i-push sa queue para sa background processing.</p>
+      <p><strong>Queue</strong>: System para mag-process ng tasks asynchronously. Pwedeng database, Redis, o SQS ang driver.</p>
+      <p><strong>Cache</strong>: Temporary storage ng data para bumilis ang pag-retrieve. Pwedeng file, Redis, o Memcached.</p>
+      <p><strong>Sanctum</strong>: Lightweight authentication package ng Laravel para sa SPAs at mobile apps.</p>
+      <p><strong>RESTful API</strong>: API na sumusunod sa REST conventions — GET (read), POST (create), PUT/PATCH (update), DELETE (delete).</p>
+
+      <h2>Next.js &amp; React</h2>
+
+      <p><strong>Next.js</strong>: React framework na may built-in na features tulad ng server-side rendering, file-based routing, at App Router.</p>
+      <p><strong>App Router</strong>: Bagong routing system ng Next.js (v13+) na gumagamit ng file-based routing sa `app/` directory.</p>
+      <p><strong>Server Component</strong>: React component na nagre-render sa server. Pwedeng mag-fetch ng data nang direkta.</p>
+      <p><strong>Client Component</strong>: React component na nagre-render sa browser. Kailangan ng `"use client"` directive. May access sa hooks at browser APIs.</p>
+      <p><strong>Layout</strong>: Shared UI wrapper sa Next.js na nagpe-preserve ng state at hindi nagre-remount sa navigation.</p>
+      <p><strong>Server Action</strong>: Function na tumatakbo sa server, puwedeng i-call directly mula sa Client Component o form.</p>
+      <p><strong>Tailwind CSS</strong>: Utility-first CSS framework na gumagamit ng class names para i-style ang elements.</p>
+      <p><strong>Zustand</strong>: Lightweight state management library para sa React. Simple API, walang boilerplate.</p>
+      <p><strong>Context API</strong>: Built-in React feature para sa global state management. Best para sa simpleng state.</p>
+      <p><strong>NextAuth.js (Auth.js)</strong>: Authentication library para sa Next.js na may suporta sa maraming providers (credentials, OAuth).</p>
+
+      <h2>API &amp; Integration</h2>
+
+      <p><strong>CORS (Cross-Origin Resource Sharing)</strong>: Security mechanism ng browser na nagco-control kung aling domains ang pwedeng mag-access ng resources.</p>
+      <p><strong>WebSocket</strong>: Protocol na nagbibigay ng two-way communication sa pagitan ng client at server. Real-time.</p>
+      <p><strong>Laravel Reverb</strong>: First-party WebSocket server ng Laravel para sa real-time broadcasting.</p>
+      <p><strong>Axios</strong>: HTTP client library para sa JavaScript. Mas maraming features kaysa native fetch.</p>
+
+      <h2>Security</h2>
+
+      <p><strong>XSS (Cross-Site Scripting)</strong>: Vulnerability kung saan na-i-inject ng attacker ang malicious scripts sa web page.</p>
+      <p><strong>CSRF (Cross-Site Request Forgery)</strong>: Attack na nagfo-force sa user na mag-execute ng unwanted actions sa naka-login na application.</p>
+      <p><strong>SQL Injection</strong>: Attack na nag-i-inject ng malicious SQL code sa queries.</p>
+      <p><strong>bcrypt</strong>: Password hashing algorithm. Slow by design para mahirap i-brute force.</p>
+      <p><strong>JWT (JSON Web Token)</strong>: Token format na nagca-contain ng JSON payload. Ginagamit sa authentication.</p>
+      <p><strong>RBAC (Role-Based Access Control)</strong>: Access control mechanism na nagre-restrict ng system access based sa user roles.</p>
+      <p><strong>OWASP Top 10</strong>: List ng top 10 web application security risks na ina-update ng Open Web Application Security Project.</p>
+
+      <h2>Testing &amp; Performance</h2>
+
+      <p><strong>Pest PHP</strong>: Modern testing framework para sa PHP na may malinis na syntax. Built on top ng PHPUnit.</p>
+      <p><strong>Unit Test</strong>: Test na nagve-verify ng specific, isolated na bahagi ng code.</p>
+      <p><strong>Feature Test</strong>: Test na nagve-verify ng behavior ng mas malaking feature (e.g., API endpoint).</p>
+      <p><strong>E2E Test (End-to-End)</strong>: Test na ginagaya ang user interaction sa buong application.</p>
+      <p><strong>Bundle analysis</strong>: Process ng pag-analyze ng JavaScript bundle size para makita kung ano ang pwedeng i-optimize.</p>
+      <p><strong>Lazy loading</strong>: Technique na nagde-delay ng loading ng non-critical resources hanggang kailangan na.</p>
+
+      <h2>Deployment</h2>
+
+      <p><strong>CI/CD (Continuous Integration / Continuous Deployment)</strong>: Automated process ng pag-build, pag-test, at pag-deploy ng code.</p>
+      <p><strong>GitHub Actions</strong>: CI/CD platform ng GitHub para ma-automate ang workflows.</p>
+      <p><strong>Vercel</strong>: Deployment platform para sa frontend frameworks, lalo na Next.js. Free tier available.</p>
+      <p><strong>Laravel Forge</strong>: Server management tool para sa Laravel. Auto-provisions servers, manages Nginx, PHP, atbp.</p>
+      <p><strong>Docker</strong>: Containerization platform na nagpapa-run ng applications sa isolated containers.</p>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Gamitin ang glossary na ito bilang reference sa buong course.</li>
+        <li>Kung may bagong term na hindi mo maintindihan, i-prompt mo kay AI: "I-explain mo ang [term] sa Taglish."</li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

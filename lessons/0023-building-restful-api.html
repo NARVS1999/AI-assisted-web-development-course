@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0023: Building RESTful API with AI Assistance</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0023: Building RESTful API with AI Assistance</h1>
+      <p><em>Sa lesson na ito, gagawa tayo ng kumpletong API gamit ang AI.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Matutunan ang RESTful API conventions at bumuo ng kumpletong CRUD API gamit ang AI pair programming.
+      </div>
+
+      <h2>RESTful API Conventions</h2>
+      <p>Ang REST (Representational State Transfer) ay isang architectural style para sa APIs. Ang resources ay nire-represent bilang URLs at ginagamit ang HTTP methods para sa CRUD operations.</p>
+
+      <table>
+        <tr><th>HTTP Method</th><th>Endpoint</th><th>Action</th></tr>
+        <tr><td>GET</td><td>/api/tasks</td><td>List all tasks</td></tr>
+        <tr><td>POST</td><td>/api/tasks</td><td>Create a new task</td></tr>
+        <tr><td>GET</td><td>/api/tasks/{id}</td><td>Show a single task</td></tr>
+        <tr><td>PUT/PATCH</td><td>/api/tasks/{id}</td><td>Update a task</td></tr>
+        <tr><td>DELETE</td><td>/api/tasks/{id}</td><td>Delete a task</td></tr>
+      </table>
+
+      <h2>Nested Resources</h2>
+      <p>Para sa related resources, gumamit ng nesting:</p>
+      <pre><code>GET /api/users/{user}/tasks     // Tasks ng isang user
+POST /api/users/{user}/tasks    // Gumawa ng task para sa user</code></pre>
+
+      <h2>API Versioning</h2>
+      <p>Para hindi ma-break ang existing clients kapag may changes, mag-version ng API:</p>
+      <pre><code>// routes/api.php
+Route::prefix('v1')->group(function () {
+    Route::apiResource('tasks', TaskController::class);
+});
+
+Route::prefix('v2')->group(function () {
+    Route::apiResource('tasks', V2\TaskController::class);
+});</code></pre>
+
+      <h2>Building a Complete CRUD API</h2>
+      <p>Sa lesson na ito, gagamitin natin si AI para i-scaffold ang buong API para sa isang Task model.</p>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>Create Model with Migration</strong></p>
+          <pre><code>php artisan make:model Task -m</code></pre>
+          <p>I-prompt si AI: "Generate the migration for a tasks table with title, description, status, due_date, and user_id fields."</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>Create Controller with API Resource</strong></p>
+          <pre><code>php artisan make:controller TaskController --api
+php artisan make:resource TaskResource</code></pre>
+          <p>I-prompt si AI: "Generate a TaskController with full CRUD methods and a TaskResource."</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>Define Routes</strong></p>
+          <pre><code>Route::apiResource('tasks', TaskController::class);</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <p><strong>Add Form Request Validation</strong></p>
+          <p>I-prompt si AI: "Generate a StoreTaskRequest with validation rules for title (required), description (nullable), status (in: pending,in_progress,done), and due_date (nullable, date)."</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">5</div>
+        <div class="step-content">
+          <p><strong>Test with Postman or curl</strong></p>
+          <pre><code>curl -X GET http://localhost:8000/api/tasks
+curl -X POST http://localhost:8000/api/tasks \
+  -H "Content-Type: application/json" \
+  -d '{"title": "My Task", "status": "pending"}'</code></pre>
+        </div>
+      </div>
+
+      <h2>Using AI for the Entire API</h2>
+      <p>Minsan, isang prompt lang sa AI kaya na ang lahat:</p>
+      <blockquote>"I-prompt si AI: 'Create a complete CRUD API for a Task model in Laravel 11. Include migration, model, controller, API resource, form request validation, and API routes. Use API versioning v1.'"</blockquote>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Anong HTTP method ang ginagamit para mag-update ng isang resource?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> GET</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> POST</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> PUT/PATCH</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Paano mo ive-version ang isang API sa Laravel?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Maglagay ng version query parameter (e.g., ?v=1)</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Gumamit ng route prefix (e.g., Route::prefix('v1'))</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Maglagay ng version sa .env file</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Ano ang REST?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Isang programming language</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Isang architectural style para sa pag-design ng APIs</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Isang database management system</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: Complete Task CRUD API</h3>
+        <p>Gamit ang AI, bumuo ng kumpletong CRUD API para sa isang Task model. Dapat may migration, model, controller, API resource, form request validation, at routes na naka-version (v1). I-prompt si AI ng ganito: "Create a complete CRUD API for a Task model in Laravel 11. Include migration with title, description, status, due_date, and user_id. Include StoreTaskRequest, TaskResource, TaskController with all CRUD methods, and API routes with v1 prefix."</p>
+        <p>I-test ang API endpoints gamit ang curl o Postman.</p>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang RESTful API ay gumagamit ng HTTP methods (GET, POST, PUT/PATCH, DELETE)</li>
+        <li>Ang nested resources ay para sa related data (e.g., /users/{id}/tasks)</li>
+        <li>Gamitin ang route prefixes para sa API versioning (v1, v2)</li>
+        <li>Ang <code>Route::apiResource()</code> ay automatic na gumagawa ng CRUD routes</li>
+        <li>Gamitin si AI para i-scaffold ang buong API sa isang prompt lang</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation (API Development)</strong> — Official guide para sa building RESTful APIs gamit ang Laravel. <a href="https://laravel.com/docs/eloquent-resources" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'c', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

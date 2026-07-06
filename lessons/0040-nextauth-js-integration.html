@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0040: NextAuth.js Integration</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0040: NextAuth.js Integration</h1>
+      <p><em>NextAuth.js ay swak kung gusto mo ng built-in na auth UI at OAuth providers.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Ma-set up ang NextAuth.js (Auth.js) na may Credentials provider na kumokonekta sa Laravel API backend, at ma-configure ang OAuth providers (Google, GitHub) gamit ang AI.
+      </div>
+
+      <h2>Ano ang NextAuth.js?</h2>
+      <p>Ang NextAuth.js (ngayon ay Auth.js) ay isang authentication library para sa Next.js na nagbibigay ng ready-to-use na sign-in forms, session management, at suporta sa maraming providers tulad ng Google, GitHub, Facebook, at Credentials.</p>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        "NextAuth.js = authentication na hindi mo kailangan isulat from scratch. I-set up mo lang ang providers, ready na!"
+      </div>
+
+      <h2>Installation at Basic Setup</h2>
+      <pre><code>npm install next-auth @auth/core</code></pre>
+      <p>Gumawa ng route handler sa <code>app/api/auth/[...nextauth]/route.ts</code>:</p>
+      <pre><code>import NextAuth from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+
+const handler = NextAuth({
+  providers: [
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        // Tawagan ang Laravel API login endpoint
+        const res = await fetch("http://localhost:8000/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(credentials)
+        });
+        const user = await res.json();
+        if (res.ok && user) return user;
+        return null;
+      }
+    })
+  ],
+  session: { strategy: "jwt" },
+  pages: { signIn: "/auth/login" }
+});
+
+export { handler as GET, handler as POST };</code></pre>
+
+      <h2>Credentials Provider vs OAuth</h2>
+      <p>Ang <strong>Credentials provider</strong> ay ginagamit kapag may sarili kang backend (tulad ng Laravel API). Ang <strong>OAuth providers</strong> naman (Google, GitHub) ay nagpapahintulot sa users na mag-login gamit ang kanilang social accounts.</p>
+      <p>Para magdagdag ng Google OAuth:</p>
+      <pre><code>import GoogleProvider from "next-auth/providers/google";
+
+providers: [
+  GoogleProvider({
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET
+  }),
+  // ... other providers
+]</code></pre>
+
+      <h2>Pag-configure gamit ang AI</h2>
+      <p>I-prompt si AI para i-set up ang NextAuth.js nang mabilis:</p>
+      <blockquote>"Set up NextAuth.js v5 in a Next.js 14 app with a Credentials provider that authenticates against a Laravel API at http://localhost:8000/api/login. Include JWT session strategy and a custom login page."</blockquote>
+      <p>Si AI ay magbibigay ng kumpletong setup kasama ang environment variables, callbacks, at session management.</p>
+
+      <div class="info">
+        <strong>Key Insight</strong>
+        Ang NextAuth.js ay nagha-handle ng session management, CSRF protection, at OAuth flow para sa iyo. Focus ka na lang sa UI at business logic.
+      </div>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Anong provider ang ginagamit kapag may sarili kang backend authentication?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> GoogleProvider</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> CredentialsProvider</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> GitHubProvider</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Saan sa Next.js App Router nilalagay ang NextAuth configuration?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> app/auth/route.ts</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> app/api/auth/[...nextauth]/route.ts</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> app/nextauth/route.ts</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Ano ang ginagawa ng <code>authorize</code> callback sa CredentialsProvider?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Nagre-refresh ng access token</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Nagva-validate ng credentials laban sa backend</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Nagse-set ng session cookie</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: NextAuth.js with Laravel Backend</h3>
+        <p>Gamit ang AI, i-set up ang NextAuth.js sa isang Next.js project na may Credentials provider na kumokonekta sa Laravel Sanctum API. I-prompt si AI: "Set up NextAuth.js with Credentials provider. The authorize callback should call a Laravel API login endpoint and return the user data."</p>
+        <p>I-test ang login flow — dapat maka-sign in ang user gamit ang credentials mula sa Laravel database.</p>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang NextAuth.js ay nagbibigay ng ready-to-use authentication para sa Next.js</li>
+        <li>Credentials provider ay para sa custom backend (Laravel API)</li>
+        <li>OAuth providers (Google, GitHub) ay para sa social login</li>
+        <li>Ang configuration ay nasa <code>app/api/auth/[...nextauth]/route.ts</code></li>
+        <li>Gamitin si AI para mabilis na makapag-set up ng NextAuth.js</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>NextAuth.js Documentation</strong> — Official guide para sa authentication integration sa Next.js. <a href="https://next-auth.js.org/getting-started/introduction" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

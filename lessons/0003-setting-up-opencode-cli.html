@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0003: Setting Up OpenCode CLI (Alternative)</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0003: Setting Up OpenCode CLI (Alternative)</h1>
+      <p><em>Kilalanin ang OpenCode CLI — ang open-source alternative kay Claude Code CLI.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Mai-install ang OpenCode CLI at maikumpara ito kay Claude Code CLI upang malaman kung kailan gagamitin ang bawat isa.
+      </div>
+
+      <!-- ======== Section 1: What is OpenCode CLI ======== -->
+      <h2>Ano ang OpenCode CLI?</h2>
+
+      <p>Ang OpenCode CLI ay isang open-source, community-driven na AI coding assistant na katulad ng Claude Code CLI. Ito ay:</p>
+
+      <ul>
+        <li><strong>Free at open-source</strong> — Walang bayad, pwedeng i-customize</li>
+        <li><strong>Community-driven</strong> — Open ang development at pwedeng mag-contribute</li>
+        <li><strong>Model-agnostic</strong> — Pwedeng gumamit ng iba't ibang LLM providers (Anthropic, OpenAI, atbp.)</li>
+        <li><strong>CLI-first</strong> — Idinisenyo para gamitin sa terminal</li>
+      </ul>
+
+      <p>Ito ay nasa ilalim ng Apache 2.0 license at pwedeng i-download mula sa <a href="https://opencode.ai" target="_blank">opencode.ai</a> o <a href="https://github.com/anomalyco/opencode" target="_blank">GitHub</a>.</p>
+
+      <!-- ======== Section 2: Installation ======== -->
+      <h2>Installation at Setup</h2>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>Install via npm</strong></p>
+          <pre><code>npm install -g @opencode/cli</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>I-verify ang installation</strong></p>
+          <pre><code>opencode --version</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>I-configure ang API key</strong></p>
+          <pre><code>opencode config set ANTHROPIC_API_KEY "sk-ant-..."</code></pre>
+          <p>Pwede ring gumamit ng environment variable: <code>export ANTHROPIC_API_KEY=sk-ant-...</code></p>
+        </div>
+      </div>
+
+      <blockquote>
+        "Kung open-source ang trip mo, OpenCode CLI ang option. Halos pareho ng workflow pero community-driven."
+      </blockquote>
+
+      <!-- ======== Section 3: Comparison ======== -->
+      <h2>Pagkukumpara: Claude Code CLI vs OpenCode CLI</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Claude Code CLI</th>
+            <th>OpenCode CLI</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Presyo</td>
+            <td>May bayad (subscription)</td>
+            <td>Libre (open-source)</td>
+          </tr>
+          <tr>
+            <td>License</td>
+            <td>Proprietary</td>
+            <td>Apache 2.0</td>
+          </tr>
+          <tr>
+            <td>LLM Provider</td>
+            <td>Anthropic lang</td>
+            <td>Multiple (Anthropic, OpenAI, atbp.)</td>
+          </tr>
+          <tr>
+            <td>CLAUDE.md support</td>
+            <td>Built-in</td>
+            <td>Pwede i-configure</td>
+          </tr>
+          <tr>
+            <td>Community Contributions</td>
+            <td>Hindi pwede</td>
+            <td>Pwede (open-source)</td>
+          </tr>
+          <tr>
+            <td>Mga advanced features</td>
+            <td>Maraming built-in</td>
+            <td>Community plugins</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Performance Considerations</h3>
+
+      <ul>
+        <li><strong>Claude Code CLI</strong> — optimized para sa Anthropic models. Mas integrated at may mga proprietary features.</li>
+        <li><strong>OpenCode CLI</strong> — mas flexible pero maaaring mangailangan ng manual configuration. Mabagal minsan depende sa provider.</li>
+      </ul>
+
+      <!-- ======== Section 4: When to Use Which ======== -->
+      <h2>Kailan Gagamitin ang Alin?</h2>
+
+      <div class="tip">
+        <strong>Gamitin ang Claude Code CLI kung:</strong>
+        <ul>
+          <li>Gusto mo ng "plug and play" na experience</li>
+          <li>Bayad ka na sa Anthropic subscription</li>
+          <li>Kailangan mo ng official support at stability</li>
+        </ul>
+      </div>
+
+      <div class="tip">
+        <strong>Gamitin ang OpenCode CLI kung:</strong>
+        <ul>
+          <li>Gusto mo ng libreng option</li>
+          <li>Gusto mong mag-customize o mag-contribute</li>
+          <li>Gusto mong gumamit ng iba't ibang LLM providers</li>
+          <li>Important sa iyo ang open-source principles</li>
+        </ul>
+      </div>
+
+      <p>Sa kursong ito, gagamitin natin ang <strong>Claude Code CLI</strong> bilang primary tool, pero lahat ng lessons ay applicable rin sa OpenCode CLI.</p>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang pinakamalaking bentahe ng OpenCode CLI kumpara kay Claude Code CLI?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Mas maraming built-in features</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Ito ay libre at open-source</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Mas mabilis mag-process ng prompts</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Aling tool ang mas maganda kung gusto mo ng "plug and play" na experience?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Claude Code CLI</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> OpenCode CLI</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Pareho lang sila</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Ano ang license ng OpenCode CLI?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> MIT License</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> GPL v3</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Apache 2.0</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: I-compare ang Output ng Claude Code at OpenCode CLI</h3>
+        <p>Kung may access ka sa parehong tools, gawin ang sumusunod:</p>
+        <ol>
+          <li>I-install ang OpenCode CLI via npm</li>
+          <li>I-configure ito gamit ang iyong API key</li>
+          <li>I-prompt ang parehong tanong sa dalawang tool: "Create a PHP function that validates an email address"</li>
+          <li>I-compare ang output — alin ang mas detailed? Alin ang mas accurate?</li>
+          <li>I-save ang parehong output sa isang file na <code>tool-comparison.txt</code></li>
+        </ol>
+        <p><em>Kung isa lang ang tool na available, mag-focus sa pag-master ng tool na iyon.</em></p>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang OpenCode CLI ay isang libre at open-source na alternative kay Claude Code CLI.</li>
+        <li>Ang OpenCode CLI ay model-agnostic at pwedeng gumamit ng iba't ibang LLM providers.</li>
+        <li>Ang Claude Code CLI ay mas "plug and play" samantalang ang OpenCode CLI ay mas flexible at customizable.</li>
+        <li>Pumili ng tool na swak sa iyong workflow at budget.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>OpenCode CLI</strong> — Open-source AI coding assistant. <a href="https://opencode.ai" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'a', q3: 'c' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0009: Advanced SQL Queries (Prompting AI)</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0009: Advanced SQL Queries (Prompting AI)</h1>
+      <p><em>Matutong gumamit ng JOINs, GROUP BY, at subqueries — at hayaan si AI na tumulong sa complex queries.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makapag-combine ng data mula sa maramihang tables gamit ang JOINs, makapag-analyze ng data gamit ang aggregate functions at GROUP BY, at magamit ang AI para bumuo ng complex queries.
+      </div>
+
+      <!-- ======== Section 1: Database Schema for Examples ======== -->
+      <h2>Sample Schema</h2>
+
+      <p>Para sa mga sumusunod na halimbawa, gagamitin natin ang schema na ito:</p>
+
+      <pre><code>CREATE TABLE customers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    city VARCHAR(100)
+);
+
+CREATE TABLE orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT NOT NULL,
+    order_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    total DECIMAL(10, 2),
+    FOREIGN KEY (customer_id) REFERENCES customers(id)
+);
+
+CREATE TABLE order_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    product_name VARCHAR(200),
+    quantity INT,
+    price DECIMAL(10, 2),
+    FOREIGN KEY (order_id) REFERENCES orders(id)
+);</code></pre>
+
+      <!-- ======== Section 2: JOINs ======== -->
+      <h2>JOINs: Pagsasama ng Tables</h2>
+
+      <p>Kapag nahihirapan ka sa complex JOIN, i-describe mo lang kay AI ang gusto mong output — halimbawa: "I want to see all customers and their orders, including customers who haven't ordered anything."</p>
+
+      <h3>INNER JOIN</h3>
+      <p>Returns records na may match sa <strong>parehong</strong> tables:</p>
+      <pre><code>SELECT customers.name, orders.id AS order_id, orders.order_date, orders.total
+FROM customers
+INNER JOIN orders ON customers.id = orders.customer_id;
+
+-- Result: customers lang na may at least isang order</code></pre>
+
+      <h3>LEFT JOIN</h3>
+      <p>Returns <strong>lahat</strong> ng records mula sa left table, kahit walang match sa right:</p>
+      <pre><code>SELECT customers.name, orders.id AS order_id, orders.total
+FROM customers
+LEFT JOIN orders ON customers.id = orders.customer_id;
+
+-- Result: lahat ng customers, may order man o wala (NULL ang order fields kung wala)</code></pre>
+
+      <h3>RIGHT JOIN</h3>
+      <p>Returns <strong>lahat</strong> ng records mula sa right table:</p>
+      <pre><code>SELECT customers.name, orders.id AS order_id, orders.total
+FROM customers
+RIGHT JOIN orders ON customers.id = orders.customer_id;
+
+-- Result: lahat ng orders, kahit walang customer match (bihira gamitin)</code></pre>
+
+      <blockquote>
+        <p>"Isipin mo ang INNER JOIN parang intersection ng dalawang circles — yung match lang sa both sides. Ang LEFT JOIN naman ay yung buong left circle plus yung intersection."</p>
+      </blockquote>
+
+      <h3>Multiple JOINs</h3>
+      <pre><code>SELECT
+    customers.name AS customer_name,
+    orders.id AS order_id,
+    order_items.product_name,
+    order_items.quantity,
+    order_items.price
+FROM customers
+INNER JOIN orders ON customers.id = orders.customer_id
+INNER JOIN order_items ON orders.id = order_items.order_id
+ORDER BY customers.name;</code></pre>
+
+      <!-- ======== Section 3: GROUP BY and Aggregate Functions ======== -->
+      <h2>GROUP BY at Aggregate Functions</h2>
+
+      <p>Ang GROUP BY ay ginagamit para <strong>mag-grupo</strong> ng rows at mag-apply ng aggregate functions:</p>
+
+      <table>
+        <tr>
+          <th>Function</th>
+          <th>Ginagawa</th>
+          <th>Example</th>
+        </tr>
+        <tr>
+          <td><code>COUNT()</code></td>
+          <td>Bilang ng rows</td>
+          <td><code>COUNT(*) AS total_orders</code></td>
+        </tr>
+        <tr>
+          <td><code>SUM()</code></td>
+          <td>Kabuuang suma</td>
+          <td><code>SUM(total) AS revenue</code></td>
+        </tr>
+        <tr>
+          <td><code>AVG()</code></td>
+          <td>Average</td>
+          <td><code>AVG(total) AS avg_order</code></td>
+        </tr>
+        <tr>
+          <td><code>MAX()</code></td>
+          <td>Pinakamataas</td>
+          <td><code>MAX(price) AS most_expensive</code></td>
+        </tr>
+        <tr>
+          <td><code>MIN()</code></td>
+          <td>Pinakamababa</td>
+          <td><code>MIN(price) AS cheapest</code></td>
+        </tr>
+      </table>
+
+      <pre><code>-- Bilang ng orders per customer
+SELECT customer_id, COUNT(*) AS order_count, SUM(total) AS total_spent
+FROM orders
+GROUP BY customer_id;
+
+-- Average order value per customer (na may at least 2 orders)
+SELECT customer_id, AVG(total) AS avg_order_value, COUNT(*) AS num_orders
+FROM orders
+GROUP BY customer_id
+HAVING COUNT(*) >= 2;
+
+-- Pinakamabentang products
+SELECT product_name, SUM(quantity) AS total_sold
+FROM order_items
+GROUP BY product_name
+ORDER BY total_sold DESC
+LIMIT 5;</code></pre>
+
+      <div class="tip">
+        <strong>GROUP BY vs HAVING</strong>
+        Gamitin ang <code>WHERE</code> para i-filter bago i-group, at <code>HAVING</code> para i-filter pagkatapos i-group.
+      </div>
+
+      <!-- ======== Section 4: Subqueries ======== -->
+      <h2>Subqueries at Derived Tables</h2>
+
+      <p>Ang subquery ay isang query sa loob ng isa pang query. Pwede itong gamitin sa SELECT, FROM, o WHERE clause:</p>
+
+      <pre><code>-- Subquery sa WHERE: customers na may order na higit sa average
+SELECT name FROM customers
+WHERE id IN (
+    SELECT customer_id FROM orders
+    WHERE total > (SELECT AVG(total) FROM orders)
+);
+
+-- Derived table (subquery sa FROM): pinakabagong order per customer
+SELECT c.name, recent.order_date, recent.total
+FROM customers c
+INNER JOIN (
+    SELECT customer_id, MAX(order_date) AS order_date, total
+    FROM orders
+    GROUP BY customer_id
+) recent ON c.id = recent.customer_id;</code></pre>
+
+      <!-- ======== Section 5: Using AI for Complex Queries ======== -->
+      <h2>Paggamit ng AI para sa Complex Queries</h2>
+
+      <p>Sa halip na isaulo ang syntax ng JOINs at subqueries, i-describe mo na lang kay AI ang gusto mong makuha:</p>
+
+      <div class="info">
+        <strong>Sample Prompts</strong>
+        <ul>
+          <li>"Show me all customers who have placed more than 3 orders, along with their total spending."</li>
+          <li>"Generate an SQL query that lists top 5 products by revenue with their total quantity sold."</li>
+          <li>"I need a query that shows orders with their items, including customers who haven't ordered yet."</li>
+          <li>"Write a MySQL query to find duplicate email addresses in the users table."</li>
+        </ul>
+      </div>
+
+      <blockquote>
+        <p>"Ang sikreto sa AI-assisted SQL development: i-describe ang <strong>output</strong> na gusto mo, hindi ang <strong>technical steps</strong>. Sabihin mo lang kung anong columns ang gusto mo makita at kung anong condition."</p>
+      </blockquote>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Aling JOIN ang magshi-show ng lahat ng records mula sa left table kahit walang match sa right table?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> INNER JOIN</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> LEFT JOIN</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> RIGHT JOIN</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Aling aggregate function ang ginagamit para makuha ang kabuuang bilang ng rows?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> TOTAL()</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> COUNT()</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> SUM()</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Ano ang pinagkaiba ng WHERE at HAVING sa GROUP BY query?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Pareho lang sila, pwedeng palitan</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> WHERE ay para sa individual rows bago i-group, HAVING ay para sa groups pagkatapos i-group</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> WHERE ay para sa groups, HAVING ay para sa rows</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: Total Orders Per Customer</h3>
+        <p>Gamit ang schema sa itaas (customers, orders, order_items), i-prompt si AI na gumawa ng query na nagpapakita ng:</p>
+        <ul>
+          <li>Customer name</li>
+          <li>Kabuuang bilang ng orders nila</li>
+          <li>Total amount na nagastos nila</li>
+          <li>Average order value</li>
+          <li>Date ng kanilang huling order</li>
+        </ul>
+        <p><strong>Steps:</strong></p>
+        <ol>
+          <li>I-setup ang tatlong tables at mag-insert ng sample data (o i-ask si AI na gumawa ng sample data).</li>
+          <li>I-ask si AI: "Generate a MySQL query that shows total orders per customer with their name, order count, total spent, average order value, and last order date."</li>
+          <li>Patakbuhin ang query at i-verify ang results.</li>
+        </ol>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>INNER JOIN — match lang sa both tables; LEFT JOIN — lahat ng left table records.</li>
+        <li>Gamitin ang GROUP BY para mag-grupo ng rows at mag-apply ng COUNT, SUM, AVG, MAX, MIN.</li>
+        <li>WHERE ay bago i-group, HAVING ay pagkatapos i-group.</li>
+        <li>Ang subquery ay query sa loob ng query — gamitin sa SELECT, FROM, o WHERE.</li>
+        <li>Para sa complex queries, idescribe lang kay AI ang gusto mong output.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>MySQL Documentation</strong> — Official guide para sa advanced SQL queries at functions. <a href="https://dev.mysql.com/doc/" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <!-- Prev / Next — auto-populated by lesson-nav.js -->
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Scripts — order matters -->
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

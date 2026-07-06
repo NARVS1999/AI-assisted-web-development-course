@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0007: Database Fundamentals with MySQL</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0007: Database Fundamentals with MySQL</h1>
+      <p><em>Unawain ang relational database concepts at matutong mag-setup ng MySQL gamit ang XAMPP o Laragon.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Ma-explain kung ano ang relational database, makapag-install ng MySQL environment, at makagawa ng unang database at table gamit ang phpMyAdmin o MySQL CLI.
+      </div>
+
+      <!-- ======== Section 1: What is a Relational Database? ======== -->
+      <h2>Ano ang Relational Database?</h2>
+
+      <p>Ang MySQL database ay parang filing cabinet — may folders (tables), may documents (rows), at may fields (columns). Ang relational database ay nag-iimbak ng data sa mga table na interconnected sa isa't isa gamit ang <strong>keys</strong>.</p>
+
+      <table>
+        <tr>
+          <th>Term</th>
+          <th>Filipino Analogy</th>
+          <th>Definition</th>
+        </tr>
+        <tr>
+          <td>Table</td>
+          <td>Folder sa cabinet</td>
+          <td>Koleksyon ng related data na naka-organize sa rows at columns</td>
+        </tr>
+        <tr>
+          <td>Row (Record)</td>
+          <td>Isang document</td>
+          <td>Isang kumpletong set ng data sa table</td>
+        </tr>
+        <tr>
+          <td>Column (Field)</td>
+          <td>Label sa folder</td>
+          <td>Isang attribute ng data (e.g., name, email)</td>
+        </tr>
+        <tr>
+          <td>Primary Key</td>
+          <td>ID number</td>
+          <td>Unique identifier ng bawat row</td>
+        </tr>
+        <tr>
+          <td>Foreign Key</td>
+          <td>Reference number</td>
+          <td>Nag-uugnay ng table sa isa pang table</td>
+        </tr>
+      </table>
+
+      <blockquote>
+        <p>"Ang database ay hindi lang simpleng imbakan — ito ang puso ng iyong application. Lahat ng user data, products, orders, at settings ay nandito."</p>
+      </blockquote>
+
+      <!-- ======== Section 2: MySQL Installation ======== -->
+      <h2>Pag-install ng MySQL Environment</h2>
+
+      <p>May dalawang sikat na tool para magkaroon ng MySQL sa iyong local machine:</p>
+
+      <div class="tip">
+        <strong>XAMPP</strong>
+        Cross-platform package na may Apache, MySQL, PHP, at phpMyAdmin. I-download sa <a href="https://www.apachefriends.org/" target="_blank">apachefriends.org</a> at i-install. After installation, buksan ang XAMPP Control Panel at i-start ang <strong>MySQL</strong> service.
+      </div>
+
+      <div class="tip">
+        <strong>Laragon</strong>
+        Mas moderno at magaan na alternative. I-download sa <a href="https://laragon.org/" target="_blank">laragon.org</a>. May kasama na itong MySQL, Apache, at Nginx. I-start lang ang Laragon at click ang "Start All".
+      </div>
+
+      <h3>Pag-access sa MySQL</h3>
+
+      <p>Pagkatapos mag-install, may dalawang paraan para ma-access ang MySQL:</p>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>phpMyAdmin</strong> — Web-based interface. I-type ang <code>http://localhost/phpmyadmin</code> sa browser.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>MySQL CLI</strong> — Command line. I-type ang <code>mysql -u root -p</code> sa terminal.</p>
+        </div>
+      </div>
+
+      <pre><code># MySQL CLI basics
+mysql -u root -p
+
+# After mag-login:
+mysql> SHOW DATABASES;
+mysql> SELECT VERSION();
+mysql> EXIT;</code></pre>
+
+      <!-- ======== Section 3: Creating Your First Database ======== -->
+      <h2>Creating Your First Database at Table</h2>
+
+      <p>Gamit ang MySQL CLI, sundan ang steps na ito:</p>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>Create database</strong></p>
+          <pre><code>CREATE DATABASE school_db;
+USE school_db;</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>Create table</strong></p>
+          <pre><code>CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    birthdate DATE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>Insert sample data</strong></p>
+          <pre><code>INSERT INTO users (first_name, last_name, email, birthdate)
+VALUES ('Juan', 'Dela Cruz', 'juan@example.com', '2000-01-15');</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <p><strong>Query your data</strong></p>
+          <pre><code>SELECT * FROM users;
+SELECT first_name, last_name FROM users WHERE birthdate > '1999-01-01';</code></pre>
+        </div>
+      </div>
+
+      <blockquote>
+        <p>"Sa phpMyAdmin, i-type lang ang SQL queries sa SQL tab o gamitin ang visual interface para gumawa ng database at table."</p>
+      </blockquote>
+
+      <!-- ======== Section 4: MySQL Data Types Overview ======== -->
+      <h2>Common MySQL Data Types</h2>
+
+      <table>
+        <tr>
+          <th>Data Type</th>
+          <th>Gamit</th>
+          <th>Example</th>
+        </tr>
+        <tr>
+          <td><code>INT</code></td>
+          <td>Buong numero</td>
+          <td><code>age INT</code></td>
+        </tr>
+        <tr>
+          <td><code>VARCHAR(n)</code></td>
+          <td>Maikling text (max n characters)</td>
+          <td><code>name VARCHAR(100)</code></td>
+        </tr>
+        <tr>
+          <td><code>TEXT</code></td>
+          <td>Mahabang text</td>
+          <td><code>bio TEXT</code></td>
+        </tr>
+        <tr>
+          <td><code>DATE</code></td>
+          <td>Petsa lang (YYYY-MM-DD)</td>
+          <td><code>birthdate DATE</code></td>
+        </tr>
+        <tr>
+          <td><code>DATETIME</code></td>
+          <td>Petsa at oras</td>
+          <td><code>created_at DATETIME</code></td>
+        </tr>
+        <tr>
+          <td><code>DECIMAL(p,s)</code></td>
+          <td>Perahan o precision decimal</td>
+          <td><code>price DECIMAL(10,2)</code></td>
+        </tr>
+        <tr>
+          <td><code>BOOLEAN</code></td>
+          <td>True/False (TINYINT)</td>
+          <td><code>is_active BOOLEAN</code></td>
+        </tr>
+      </table>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang tawag sa unique identifier ng bawat row sa isang table?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Foreign Key</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Primary Key</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Index</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Aling MySQL command ang ginagamit para pumili ng database na gagamitin?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> SELECT DATABASE</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> USE database_name</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> OPEN database_name</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Sa relational database, ang isang column ay tinatawag na?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Field</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Record</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Table</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: Create a Database and Users Table</h3>
+        <p>Gamit ang phpMyAdmin o MySQL CLI, gumawa ng database na <code>inventory_db</code> at isang <code>users</code> table na may mga sumusunod na columns:</p>
+        <ul>
+          <li><code>id</code> — INT, AUTO_INCREMENT, PRIMARY KEY</li>
+          <li><code>username</code> — VARCHAR(50), UNIQUE, NOT NULL</li>
+          <li><code>email</code> — VARCHAR(100), UNIQUE, NOT NULL</li>
+          <li><code>password_hash</code> — VARCHAR(255), NOT NULL</li>
+          <li><code>created_at</code> — DATETIME, DEFAULT CURRENT_TIMESTAMP</li>
+        </ul>
+        <p>Mag-insert ng 3 sample users at i-display ang lahat ng records gamit ang <code>SELECT * FROM users;</code>.</p>
+        <p><strong>Challenge:</strong> I-ask si AI na "Generate a MySQL CREATE TABLE statement for a users table with id, username, email, password_hash, and timestamps."</p>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang relational database ay gumagamit ng tables, rows, at columns para mag-imbak ng data.</li>
+        <li>Ang Primary Key ay unique identifier ng bawat row; Foreign Key ang nag-uugnay ng tables.</li>
+        <li>Pwedeng mag-install ng MySQL via XAMPP o Laragon.</li>
+        <li>Dalawa ang paraan ng pag-access: phpMyAdmin (web) at MySQL CLI (terminal).</li>
+        <li>Gamitin ang <code>CREATE DATABASE</code>, <code>CREATE TABLE</code>, <code>INSERT</code>, at <code>SELECT</code> para sa basic operations.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>MySQL Documentation</strong> — Official reference para sa MySQL syntax, data types, at optimization. <a href="https://dev.mysql.com/doc/" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <!-- Prev / Next — auto-populated by lesson-nav.js -->
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Scripts — order matters -->
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'a' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

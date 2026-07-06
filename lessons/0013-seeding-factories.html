@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0013: Seeding & Factories (AI-Assisted)</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0013: Seeding & Factories (AI-Assisted)</h1>
+      <p><em>Matutong mag-populate ng test data gamit ang Laravel seeders at factories — at hayaan si AI na gumawa ng realistic dummy data.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makapag-create at mag-run ng database seeders, makagamit ng Laravel factories para mag-generate ng realistic test data, at makagamit ng AI para i-automate ang paggawa ng seeders at factories.
+      </div>
+
+      <!-- ======== Section 1: Database Seeders ======== -->
+      <h2>Database Seeders: Pag-p populate ng Test Data</h2>
+
+      <p>Kapag nagde-develop, kailangan mo ng dummy data — si AI na bahalang gumawa ng realistic names, emails, at iba pa.</p>
+
+      <p>Ang <strong>seeder</strong> ay klase sa Laravel na ginagamit para maglagay ng sample data sa database. Ito ay tumatakbo gamit ang Artisan command.</p>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>Gumawa ng Seeder</strong></p>
+          <pre><code>php artisan make:seeder UserSeeder</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>I-edit ang seeder file</strong></p>
+          <pre><code>&lt;?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+
+class UserSeeder extends Seeder
+{
+    public function run(): void
+    {
+        DB::table('users')->insert([
+            'name' => 'Juan Dela Cruz',
+            'email' => 'juan@example.com',
+            'password' => Hash::make('password123'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>I-call ang seeder mula sa DatabaseSeeder</strong></p>
+          <pre><code>// database/seeders/DatabaseSeeder.php
+$this-&gt;call([
+    UserSeeder::class,
+]);</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <p><strong>Run ang seeder</strong></p>
+          <pre><code>php artisan db:seed --class=UserSeeder
+
+# O kaya, i-run lahat ng seeders
+php artisan db:seed</code></pre>
+        </div>
+      </div>
+
+      <!-- ======== Section 2: Laravel Factories ======== -->
+      <h2>Laravel Factories: Generating Realistic Fake Data</h2>
+
+      <p>Ang factory ay gumagamit ng <strong>Faker</strong> library para mag-generate ng random pero realistic na data. Sa halip na manually magsulat ng 50 users, isang factory call lang, meron ka na.</p>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>Gumawa ng Factory</strong></p>
+          <pre><code>php artisan make:factory UserFactory --model=User</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>I-edit ang factory</strong></p>
+          <pre><code>&lt;?php
+
+namespace Database\Factories;
+
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Hash;
+
+class UserFactory extends Factory
+{
+    protected $model = \App\Models\User::class;
+
+    public function definition(): array
+    {
+        return [
+            'name' => fake()-&gt;name(),
+            'email' => fake()-&gt;unique()-&gt;safeEmail(),
+            'password' => Hash::make('password'),
+            'created_at' => fake()-&gt;dateTimeBetween('-1 year', 'now'),
+            'updated_at' => now(),
+        ];
+    }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>Gamitin ang factory sa seeder</strong></p>
+          <pre><code>// database/seeders/DatabaseSeeder.php
+&lt;?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\User;
+
+class DatabaseSeeder extends Seeder
+{
+    public function run(): void
+    {
+        // Gumawa ng 50 users
+        User::factory()-&gt;count(50)-&gt;create();
+    }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <p><strong>I-run</strong></p>
+          <pre><code>php artisan db:seed
+// 50 users ang malilikha na may random names, emails, at passwords</code></pre>
+        </div>
+      </div>
+
+      <blockquote>
+        <p>"Kapag nagde-develop, kailangan mo ng dummy data — si AI na bahalang gumawa ng realistic names, emails, at iba pa. Gamit ang Faker, parang may personal data generator ka."</p>
+      </blockquote>
+
+      <!-- ======== Section 3: Advanced Factory Features ======== -->
+      <h2>Advanced Factory Techniques</h2>
+
+      <h3>Factory States</h3>
+      <pre><code>// Magdagdag ng states para sa iba't ibang scenarios
+class UserFactory extends Factory
+{
+    public function definition(): array
+    {
+        return [
+            'name' => fake()-&gt;name(),
+            'email' => fake()-&gt;unique()-&gt;safeEmail(),
+            'password' => Hash::make('password'),
+            'is_admin' => false,
+            'is_active' => true,
+        ];
+    }
+
+    // State para sa admin users
+    public function admin(): static
+    {
+        return $this-&gt;state(fn(array $attributes) =&gt; [
+            'is_admin' => true,
+            'email' => 'admin@example.com',
+        ]);
+    }
+
+    // State para sa inactive users
+    public function inactive(): static
+    {
+        return $this-&gt;state(fn(array $attributes) =&gt; [
+            'is_active' => false,
+        ]);
+    }
+}
+
+// Gamitin ang states
+User::factory()-&gt;count(5)-&gt;admin()-&gt;create();
+User::factory()-&gt;count(3)-&gt;inactive()-&gt;create();</code></pre>
+
+      <h3>Factory Relationships</h3>
+      <pre><code>// Sa PostFactory, mag-create ng related user
+class PostFactory extends Factory
+{
+    public function definition(): array
+    {
+        return [
+            'user_id' => User::factory(), // Auto-create user
+            'title' => fake()-&gt;sentence(),
+            'content' => fake()-&gt;paragraphs(3, true),
+            'published_at' => fake()-&gt;dateTimeThisYear(),
+        ];
+    }
+}
+
+// Sa seeder, gumawa ng users na may posts
+User::factory()
+    -&gt;count(10)
+    -&gt;has(Post::factory()-&gt;count(5))
+    -&gt;create();
+// 10 users, bawat isa may 5 posts = 50 posts total</code></pre>
+
+      <!-- ======== Section 4: Using AI for Seeders and Factories ======== -->
+      <h2>Paggamit ng AI para Mag-generate ng Seeders</h2>
+
+      <p>I-prompt si AI para mag-generate ng seeders at factories para sa iyong mga tables:</p>
+
+      <div class="info">
+        <strong>Sample AI Prompts</strong>
+        <ul>
+          <li>"Generate a Laravel seeder that creates 50 users with realistic Filipino names and email addresses."</li>
+          <li>"Create a Laravel factory for a Product model with name, description, price, stock, and category fields."</li>
+          <li>"Generate a DatabaseSeeder that creates 10 users, each with 3 posts and 5 comments."</li>
+          <li>"Create a factory with states for different user roles: admin, editor, and subscriber."</li>
+          <li>"Generate a seeder that uses a factory to create 100 products with random categories."</li>
+        </ul>
+      </div>
+
+      <pre><code>// AI prompt: "Generate a Laravel factory for a Product model
+// with name, description, price, stock, and category."
+
+// AI response:
+class ProductFactory extends Factory
+{
+    public function definition(): array
+    {
+        $categories = ['Electronics', 'Clothing', 'Books', 'Home', 'Sports'];
+
+        return [
+            'name' => fake()-&gt;unique()-&gt;words(3, true),
+            'description' => fake()-&gt;sentence(10),
+            'price' => fake()-&gt;randomFloat(2, 50, 5000),
+            'stock' => fake()-&gt;numberBetween(0, 200),
+            'category' => fake()-&gt;randomElement($categories),
+        ];
+    }
+}</code></pre>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Anong Artisan command ang ginagamit para gumawa ng seeder?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> php artisan create:seeder</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> php artisan make:seeder</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> php artisan generate:seeder</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Anong library ang ginagamit ng Laravel factories para mag-generate ng realistic fake data?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Faker</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Mockery</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> DataFactory</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Paano ka gagawa ng 50 users gamit ang factory sa seeder?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> User::factory()->create(50)</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> User::factory()->count(50)->create()</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> User::factory()->times(50)->create()</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: Generate a Seeder with Factory for 50 Users</h3>
+        <p>Gamit ang AI assistance, gumawa ng seeder na gumagamit ng factory para sa 50 users:</p>
+        <ol>
+          <li>Kung wala pang User model at migration, i-prompt si AI: "Generate Laravel model, migration, and factory for a User with name, email, password, and timestamps."</li>
+          <li>Gumawa ng factory: <code>php artisan make:factory UserFactory --model=User</code></li>
+          <li>I-ask si AI: "Generate the definition() method for a UserFactory with realistic data fields: name, email (unique), password (hashed), and random created_at within the last year."</li>
+          <li>Gumawa ng seeder: <code>php artisan make:seeder UserSeeder</code></li>
+          <li>I-ask si AI: "Generate the run() method for UserSeeder that creates 50 users using the UserFactory."</li>
+          <li>I-run ang seeder: <code>php artisan db:seed --class=UserSeeder</code></li>
+          <li>I-verify na 50 users ang nalikha: <code>php artisan tinker</code> then <code>User::count();</code></li>
+        </ol>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang seeders ay nagpo-populate ng database ng sample data — gamitin ang <code>php artisan make:seeder</code>.</li>
+        <li>Ang factories ay gumagamit ng Faker library para mag-generate ng random pero realistic data.</li>
+        <li>Gamitin ang <code>factory()->count(N)->create()</code> para gumawa ng maraming records.</li>
+        <li>Pwedeng gumamit ng factory states para sa iba't ibang scenarios (admin, inactive, etc.).</li>
+        <li>I-prompt si AI para mag-generate ng factory definitions at seeder code.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation (Seeding)</strong> — Official guide sa paggamit ng seeders at model factories. <a href="https://laravel.com/docs/seeding" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <!-- Prev / Next — auto-populated by lesson-nav.js -->
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Scripts — order matters -->
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'a', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

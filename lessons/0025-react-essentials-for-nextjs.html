@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0025: React Essentials for Next.js</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0025: React Essentials para sa Next.js</h1>
+      <p><em>Alamin ang JSX, Components, Props, State, at Events — ang mga pundasyon ng React na kailangan mo sa Next.js.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makagawa ng React components na may props, state, at event handling gamit ang AI assistance, handa para sa Next.js development.
+      </div>
+
+      <!-- ======== Section 1: JSX at Components ======== -->
+      <h2>JSX at Components</h2>
+
+      <p>Ang <strong>JSX</strong> ay isang syntax extension ng JavaScript na parang HTML. Sa React/Next.js, ginagamit ito para idescribe ang itsura ng UI. Ang <strong>Component</strong> ay isang reusable na piraso ng UI — pwedeng function o class (pero sa modern React, function components ang gamit).</p>
+
+      <pre><code>// Ito ay isang simpleng React component
+// Ang return value ay JSX — parang HTML pero nasa JavaScript
+export default function Greeting() {
+  return &lt;h1&gt;Hello, World!&lt;/h1&gt;;
+}</code></pre>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Tandaan: sa JSX, <code>class</code> ay <code>className</code>, at <code>for</code> ay <code>htmlFor</code>. Ito ay dahil reserved words sa JavaScript ang class at for.
+      </div>
+
+      <!-- ======== Section 2: Props ======== -->
+      <h2>Props: Pagpasa ng Data sa Components</h2>
+
+      <p>Ang <strong>props</strong> ay paraan para magpasa ng data mula sa parent component papunta sa child component. Parang arguments sa function:</p>
+
+      <pre><code>interface ProductCardProps {
+  title: string;
+  price: number;
+  image: string;
+}
+
+export default function ProductCard({ title, price, image }: ProductCardProps) {
+  return (
+    &lt;div className="border rounded p-4"&gt;
+      &lt;img src={image} alt={title} className="w-full h-48 object-cover" /&gt;
+      &lt;h2&gt;{title}&lt;/h2&gt;
+      &lt;p&gt;&#8369;{price.toFixed(2)}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <blockquote>
+        "Gumawa ka ng ProductCard component na may props ng title, price, at image. Gamitin ito sa isang parent component para mag-display ng product list."
+      </blockquote>
+
+      <!-- ======== Section 3: State Management - useState at useEffect ======== -->
+      <h2>State Management: useState at useEffect</h2>
+
+      <p>Ang <strong>state</strong> ay data na nagbabago sa paglipas ng panahon. Kapag nagbago ang state, magre-render ulit ang component.</p>
+
+      <h3>useState</h3>
+      <pre><code>'use client';
+import { useState } from 'react';
+
+export default function Counter() {
+  const [count, setCount] = useState(0);
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Count: {count}&lt;/p&gt;
+      &lt;button onClick={() =&gt; setCount(count + 1)}&gt;+&lt;/button&gt;
+      &lt;button onClick={() =&gt; setCount(count - 1)}&gt;-&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <h3>useEffect</h3>
+      <p>Ang <strong>useEffect</strong> ay para sa side effects — pag-fetch ng data, pag-subscribe sa events, pag-manipulate ng DOM:</p>
+
+      <pre><code>'use client';
+import { useState, useEffect } from 'react';
+
+export default function DataFetcher() {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    fetch('https://api.example.com/data')
+      .then(res =&gt; res.json())
+      .then(data =&gt; setData(data));
+  }, []); // empty array = runs once on mount
+
+  return &lt;div&gt;{JSON.stringify(data)}&lt;/div&gt;;
+}</code></pre>
+
+      <div class="warning">
+        <strong>Warning</strong>
+        Tandaan: <code>useState</code> at <code>useEffect</code> ay <strong>hooks</strong> — puwede lang sila gamitin sa loob ng Client Components (may <code>'use client'</code>). Sa Server Components, hindi mo kailangan ng hooks dahil sa server nagre-render ang component.
+      </div>
+
+      <!-- ======== Section 4: Event Handling ======== -->
+      <h2>Event Handling at Conditional Rendering</h2>
+
+      <p>Sa React, ang event handlers ay camelCase: <code>onClick</code>, <code>onSubmit</code>, <code>onChange</code>, atbp.</p>
+
+      <pre><code>'use client';
+import { useState } from 'react';
+
+export default function LoginForm() {
+  const [email, setEmail] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitted(true);
+  };
+
+  if (submitted) {
+    return &lt;p&gt;Thank you! Submitted email: {email}&lt;/p&gt;;
+  }
+
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      &lt;input
+        type="email"
+        value={email}
+        onChange={(e) =&gt; setEmail(e.target.value)}
+        placeholder="Enter email"
+      /&gt;
+      &lt;button type="submit"&gt;Submit&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}</code></pre>
+
+      <!-- ======== Section 5: Using AI to Create React Components ======== -->
+      <h2>Using AI para Gumawa ng React Components</h2>
+
+      <p>Ang AI ay napaka-effective para mag-generate ng React components. Ang sikreto ay magbigay ng malinaw na specifications:</p>
+
+      <ul>
+        <li>Ano ang component at ano ang purpose nito?</li>
+        <li>Ano ang props (kung mayroon)?</li>
+        <li>Anong state ang kailangan?</li>
+        <li>Anong UI/design ang gusto mo?</li>
+        <li>Anong events ang dapat i-handle?</li>
+      </ul>
+
+      <p>Halimbawa prompt na maganda:</p>
+      <blockquote>
+        "Create a React component called ProductList that fetches products from '/api/products' and displays them using a ProductCard component. ProductCard accepts title, price, and imageUrl props. Show loading state while fetching and error state if the request fails. Use TypeScript."
+      </blockquote>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang tamang paraan para magpasa ng data mula sa parent patungo sa child component?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Gamit ang props</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Gamit ang useState</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Gamit ang useEffect</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Sa React, paano mo ginagamit ang <code>useEffect</code> para tumakbo nang isang beses lang (on mount)?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Hindi naglalagay ng dependency array</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Walang laman na dependency array — <code>useEffect(fn, [])</code></label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Ilagay ang <code>useEffect</code> sa labas ng component</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Bakit kailangan ng <code>'use client'</code> directive para gumamit ng hooks sa Next.js App Router?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Dahil ang hooks ay proprietary feature ng Next.js</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Dahil ang hooks ay nangangailangan ng browser environment (event loop, DOM) na wala sa server</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Dahil ang hooks ay deprecated na sa React 19</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: ProductCard at ProductList Components</h3>
+        <p>Gamit ang AI, gumawa ng dalawang React components:</p>
+        <ul>
+          <li><strong>ProductCard</strong> — tumatanggap ng <code>title</code>, <code>price</code>, at <code>imageUrl</code> props. I-display ang image, title, at price na may magandang styling.</li>
+          <li><strong>ProductList</strong> — kumuha ng products array mula sa isang static data source (o i-fetch mula sa placeholder API). I-render ang products gamit ang ProductCard.</li>
+        </ul>
+        <p><em>Prompt tip: "Create two React TypeScript components: ProductCard (props: title, price, imageUrl) and ProductList (props: products array). ProductCard displays a product card with image, title, and price. ProductList renders ProductCard for each product. Use Tailwind CSS for styling."</em></p>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang JSX ay syntax extension ng JavaScript na parang HTML. Components ang reusable building blocks ng React.</li>
+        <li>Ang <strong>props</strong> ay para magpasa ng data parent → child. Ang <strong>state</strong> ay para sa data na nagbabago sa component.</li>
+        <li>Gamitin ang <code>useState</code> para sa local state at <code>useEffect</code> para sa side effects.</li>
+        <li>Ang React hooks ay puwede lang sa <code>'use client'</code> components (Client Components) sa Next.js App Router.</li>
+        <li>Magbigay ng malinaw na specs sa AI para makakuha ng magandang component output.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>React Documentation</strong> — Official docs para sa React hooks, components, at state management. <a href="https://react.dev" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'a', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

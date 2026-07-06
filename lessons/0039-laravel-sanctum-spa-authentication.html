@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0039: Laravel Sanctum for SPA Authentication</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0039: Laravel Sanctum for SPA Authentication</h1>
+      <p><em>Ang Sanctum ay magaan na authentication package — perfect para sa SPA (Single Page Application) tulad ng Next.js.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Ma-install at ma-configure ang Laravel Sanctum para sa SPA authentication, at makagawa ng login, register, at logout API endpoints gamit ang AI.
+      </div>
+
+      <h2>Ano ang Laravel Sanctum?</h2>
+      <p>Ang Laravel Sanctum ay isang lightweight authentication package na nagbibigay ng token-based at session-based authentication. Para sa SPA (tulad ng Next.js), ginagamit ang <strong>cookie-based session authentication</strong> — hindi mo kailangan mag-manage ng tokens manually.</p>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        "Ang Sanctum ay parang security guard ng API mo — siya ang nagche-check kung sino ang pumapasok at lumalabas."
+      </div>
+
+      <h2>Installation at Configuration</h2>
+      <p>I-install ang Sanctum sa pamamagitan ng Composer:</p>
+      <pre><code>composer require laravel/sanctum
+php artisan install:api
+php artisan migrate</code></pre>
+      <p>Pagkatapos, i-configure ang <code>config/sanctum.php</code> at i-set ang <code>stateful</code> domains — dapat kasama ang iyong frontend URL (hal. <code>http://localhost:3000</code> para sa Next.js).</p>
+
+      <h2>SPA Authentication Flow</h2>
+      <p>Ang SPA authentication ay gumagamit ng cookies sa halip ng tokens. Flow:</p>
+      <ol>
+        <li>Mag-request ng <code>GET /sanctum/csrf-cookie</code> para makuha ang CSRF token</li>
+        <li>Mag-submit ng login credentials sa <code>POST /login</code></li>
+        <li>Si Sanctum ang bahala mag-set ng session cookie</li>
+        <li>Ang subsequent requests ay naka-authenticate na</li>
+      </ol>
+
+      <pre><code>// routes/api.php
+use App\Http\Controllers\AuthController;
+
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+Route::get('/user', function (Request $request) {
+    return $request->user();
+})->middleware('auth:sanctum');</code></pre>
+
+      <h2>Auth Controller gamit ang AI</h2>
+      <p>Sa halip na isulat manually ang auth controller, i-prompt si AI:</p>
+      <blockquote>"Gumawa ka ng AuthController sa Laravel 11 na may register, login, at logout methods gamit ang Sanctum. Dapat validated ang input at naka-return sa JSON."</blockquote>
+      <p>Si AI ay mag-generate ng kumpletong controller na may validation, token management, at proper responses.</p>
+
+      <div class="info">
+        <strong>Key Insight</strong>
+        Sa SPA setup, hindi mo kailangan mag-expose ng tokens sa frontend. Si Sanctum at ang browser cookies ang bahala sa authentication session.
+      </div>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Anong authentication method ang ginagamit ng Sanctum para sa SPA?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> JWT token-based authentication</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Cookie-based session authentication</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Basic HTTP authentication</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Anong command ang ginagamit para i-install ang Sanctum API routes?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> php artisan sanctum:install</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> php artisan install:api</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> composer require sanctum/api</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Bago mag-login sa SPA, anong endpoint ang dapat tawagin para makuha ang CSRF cookie?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> GET /api/csrf-cookie</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> GET /sanctum/csrf-cookie</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> POST /sanctum/csrf-token</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: Sanctum Auth API with AI</h3>
+        <p>Gamit ang AI, i-set up ang Laravel Sanctum sa isang bagong Laravel project. I-prompt si AI: "Install and configure Laravel Sanctum for SPA authentication, then create login, register, and logout API endpoints with proper validation."</p>
+        <p>I-test ang endpoints gamit ang Postman o curl — dapat makapag-register, mag-login, at mag-logout ang user.</p>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang Laravel Sanctum ay lightweight authentication package para sa SPA at mobile apps</li>
+        <li>Para sa SPA, gumagamit ng cookie-based sessions sa halip ng tokens</li>
+        <li>Ang <code>php artisan install:api</code> ang nagse-setup ng Sanctum</li>
+        <li>Kailangan tawagin ang <code>/sanctum/csrf-cookie</code> bago mag-login</li>
+        <li>Gamitin si AI para mag-generate ng auth controllers nang mabilis</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Sanctum Documentation</strong> — Official guide para sa SPA authentication gamit ang Sanctum. <a href="https://laravel.com/docs/sanctum" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

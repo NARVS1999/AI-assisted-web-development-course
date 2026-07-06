@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0008: SQL Fundamentals (DDL & DML)</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0008: SQL Fundamentals (DDL & DML)</h1>
+      <p><em>Matutong gamitin ang SQL Data Definition Language at Data Manipulation Language para i-manage ang iyong database.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makapag-create, mag-alter, at mag-drop ng tables (DDL), at makapag-insert, mag-select, mag-update, at mag-delete ng data (DML) nang may kumpyansa.
+      </div>
+
+      <!-- ======== Section 1: DDL — Data Definition Language ======== -->
+      <h2>DDL: Data Definition Language</h2>
+
+      <p>Ang DDL commands ay ginagamit sa paggawa at pagbabago ng <strong>structure</strong> ng database — hindi ang data mismo.</p>
+
+      <h3>CREATE TABLE</h3>
+      <pre><code>CREATE TABLE products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(200) NOT NULL,
+    description TEXT,
+    price DECIMAL(10, 2) NOT NULL,
+    stock INT DEFAULT 0,
+    is_available BOOLEAN DEFAULT TRUE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);</code></pre>
+
+      <h3>ALTER TABLE</h3>
+      <p>Pagbabago ng existing table structure:</p>
+      <pre><code>-- Magdagdag ng column
+ALTER TABLE products ADD COLUMN category VARCHAR(100);
+
+-- Baguhin ang data type ng column
+ALTER TABLE products MODIFY COLUMN price DECIMAL(12, 2);
+
+-- Mag-alis ng column
+ALTER TABLE products DROP COLUMN category;
+
+-- Magpalit ng pangalan ng column
+ALTER TABLE products CHANGE COLUMN stock quantity INT;</code></pre>
+
+      <h3>DROP TABLE</h3>
+      <pre><code>-- Mag-alis ng table (at lahat ng data nito)
+DROP TABLE products;
+
+-- Mag-alis lang kung existing
+DROP TABLE IF EXISTS products;</code></pre>
+
+      <div class="warning">
+        <strong>Warning</strong>
+        Ang <code>DROP TABLE</code> ay permanente. Hindi mo na mababawi ang data. Laging may backup bago mag-drop.
+      </div>
+
+      <!-- ======== Section 2: DML — Data Manipulation Language ======== -->
+      <h2>DML: Data Manipulation Language</h2>
+
+      <p>Ang DML commands naman ay para sa <strong>data</strong> mismo — pag-insert, pagkuha, pag-update, at pag-delete.</p>
+
+      <h3>INSERT</h3>
+      <pre><code>-- Isang record
+INSERT INTO products (name, description, price, stock)
+VALUES ('Wireless Mouse', 'Ergonomic wireless mouse with USB receiver', 599.99, 50);
+
+-- Maramihang records
+INSERT INTO products (name, description, price, stock) VALUES
+    ('Mechanical Keyboard', 'RGB backlit mechanical keyboard', 2499.00, 30),
+    ('USB-C Hub', '7-in-1 USB-C hub with HDMI', 1299.00, 100),
+    ('Laptop Stand', 'Adjustable aluminum laptop stand', 899.00, 75);</code></pre>
+
+      <h3>SELECT</h3>
+      <p>Ang pinaka-ginagamit na command — pagkuha ng data:</p>
+      <pre><code>-- Lahat ng columns at rows
+SELECT * FROM products;
+
+-- Specific columns lang
+SELECT name, price FROM products;
+
+-- May condition
+SELECT * FROM products WHERE price > 1000;
+
+-- Sorted
+SELECT * FROM products WHERE stock > 0 ORDER BY price DESC;
+
+-- Limited results
+SELECT * FROM products LIMIT 2;
+
+-- Unique values lang
+SELECT DISTINCT category FROM products;</code></pre>
+
+      <blockquote>
+        <p>"<code>SELECT * FROM users WHERE age > 18 ORDER BY name;</code> — ito ang basic query structure. Parang sinasabi mo sa MySQL: 'Kunin mo lahat ng users na age > 18, at i-sort mo sila sa pangalan.'"</p>
+      </blockquote>
+
+      <h3>UPDATE</h3>
+      <pre><code>-- Mag-update ng specific record
+UPDATE products SET price = 549.99 WHERE id = 1;
+
+-- Mag-update ng maramihan
+UPDATE products SET stock = stock + 10 WHERE is_available = TRUE;</code></pre>
+
+      <div class="warning">
+        <strong>Warning</strong>
+        Huwag kakalimutan ang <code>WHERE</code> clause sa UPDATE at DELETE. Kung wala nito, maaapektuhan lahat ng rows!
+      </div>
+
+      <h3>DELETE</h3>
+      <pre><code>-- Mag-delete ng specific record
+DELETE FROM products WHERE id = 3;
+
+-- Mag-delete ng maramihan
+DELETE FROM products WHERE stock = 0;
+
+-- Mag-delete ng lahat (ingat!)
+DELETE FROM products;</code></pre>
+
+      <!-- ======== Section 3: Filtering and Sorting ======== -->
+      <h2>Filtering at Sorting</h2>
+
+      <h3>WHERE Operators</h3>
+      <table>
+        <tr>
+          <th>Operator</th>
+          <th>Example</th>
+          <th>Explanation</th>
+        </tr>
+        <tr>
+          <td><code>=</code></td>
+          <td><code>WHERE name = 'Mouse'</code></td>
+          <td>Equal</td>
+        </tr>
+        <tr>
+          <td><code>&gt;</code> / <code>&lt;</code></td>
+          <td><code>WHERE price > 500</code></td>
+          <td>Greater than / Less than</td>
+        </tr>
+        <tr>
+          <td><code>&gt;=</code> / <code>&lt;=</code></td>
+          <td><code>WHERE stock >= 10</code></td>
+          <td>Greater than or equal / Less than or equal</td>
+        </tr>
+        <tr>
+          <td><code>!=</code> / <code>&lt;&gt;</code></td>
+          <td><code>WHERE category != 'Electronics'</code></td>
+          <td>Not equal</td>
+        </tr>
+        <tr>
+          <td><code>LIKE</code></td>
+          <td><code>WHERE name LIKE '%mouse%'</code></td>
+          <td>Pattern matching (% ay wildcard)</td>
+        </tr>
+        <tr>
+          <td><code>IN</code></td>
+          <td><code>WHERE id IN (1, 2, 3)</code></td>
+          <td>Match sa listahan</td>
+        </tr>
+        <tr>
+          <td><code>BETWEEN</code></td>
+          <td><code>WHERE price BETWEEN 500 AND 1500</code></td>
+          <td>Range</td>
+        </tr>
+      </table>
+
+      <h3>ORDER BY at LIMIT</h3>
+      <pre><code>-- Sorting: ASC (default) o DESC
+SELECT * FROM products ORDER BY price ASC;
+SELECT * FROM products ORDER BY created_at DESC;
+
+-- Limitahan ang results
+SELECT * FROM products ORDER BY price DESC LIMIT 5;
+
+-- Pagsamahin lahat
+SELECT * FROM products
+WHERE is_available = TRUE AND stock > 0
+ORDER BY price ASC
+LIMIT 10;</code></pre>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Aling SQL command ang ginagamit para magdagdag ng bagong column sa existing table?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> ADD COLUMN</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> ALTER TABLE</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> UPDATE TABLE</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Aling DML command ang ginagamit para kumuha ng data mula sa database?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> GET</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> FETCH</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> SELECT</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Ano ang mangyayari kung mag-run ka ng <code>DELETE FROM products</code> na walang WHERE clause?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> May error dahil bawal ang walang WHERE</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Made-delete lahat ng records sa products table</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Made-delete lang ang unang record</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: Products Table CRUD</h3>
+        <p>Gamit ang MySQL CLI o phpMyAdmin, gawin ang mga sumusunod:</p>
+        <ol>
+          <li>Gumawa ng <code>products</code> table na may: <code>id</code> (INT AUTO_INCREMENT PRIMARY KEY), <code>name</code> (VARCHAR(200) NOT NULL), <code>price</code> (DECIMAL(10,2)), <code>category</code> (VARCHAR(100)), <code>stock</code> (INT DEFAULT 0), <code>created_at</code> (DATETIME).</li>
+          <li>Mag-insert ng 5 products gamit ang isang INSERT statement.</li>
+          <li>I-query ang products na price > 500, sorted by price descending.</li>
+          <li>I-update ang stock ng isang product.</li>
+          <li>I-delete ang product na may pinakamababang price.</li>
+        </ol>
+        <p><strong>Challenge:</strong> I-prompt si AI: "Generate SQL INSERT statements for 5 sample products in a products table with columns: name, price, category, stock."</p>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>DDL (CREATE, ALTER, DROP) — para sa paggawa at pagbabago ng table structure.</li>
+        <li>DML (INSERT, SELECT, UPDATE, DELETE) — para sa pagmamanipula ng data.</li>
+        <li>Laging mag-ingat sa UPDATE at DELETE na walang WHERE — maaapektuhan lahat ng records.</li>
+        <li>Gamitin ang ORDER BY, LIMIT, DISTINCT, at WHERE para i-filter at i-sort ang results.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>MySQL Documentation</strong> — Official reference para sa SQL syntax at query optimization. <a href="https://dev.mysql.com/doc/" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <!-- Prev / Next — auto-populated by lesson-nav.js -->
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Scripts — order matters -->
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'c', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

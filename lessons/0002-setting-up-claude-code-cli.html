@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0002: Setting Up Claude Code CLI</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0002: Setting Up Claude Code CLI</h1>
+      <p><em>I-install at i-configure ang Claude Code CLI para magamit mo sa iyong development workflow.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Mai-install, ma-authenticate, at magamit ang Claude Code CLI sa basic prompts at interactive mode.
+      </div>
+
+      <!-- ======== Section 1: System Requirements ======== -->
+      <h2>System Requirements</h2>
+
+      <p>Bago mag-install, siguraduhing mayroon kang:</p>
+
+      <ul>
+        <li><strong>Node.js 18+</strong> — Kinakailangan para sa npm installation</li>
+        <li><strong>npm</strong> — Karaniwang kasama ng Node.js</li>
+        <li><strong>Anthropic Account</strong> — Para sa API key o subscription</li>
+        <li><strong>Sufficient RAM</strong> — Minimum 8GB, recommended 16GB</li>
+      </ul>
+
+      <p>Suportadong operating systems: macOS (Intel at Apple Silicon), Linux (x86_64, ARM64), at Windows (WSL2).</p>
+
+      <div class="warning">
+        <strong>Note for Windows</strong>
+        Sa Windows, kailangan mong gumamit ng WSL2. Hindi direktang supported ang Windows command prompt o PowerShell.
+      </div>
+
+      <!-- ======== Section 2: Installation ======== -->
+      <h2>Installation Steps</h2>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>Install via npm</strong></p>
+          <pre><code>npm install -g @anthropic-ai/claude-code</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>I-verify ang installation</strong></p>
+          <pre><code>claude --version</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>Mag-login gamit ang Anthropic account</strong></p>
+          <pre><code>claude login</code></pre>
+          <p>Maya-maya, may browser window na magbubukas para sa authentication. I-allow ang access.</p>
+        </div>
+      </div>
+
+      <blockquote>
+        "I-install mo lang via npm, mag-login gamit ang Anthropic account mo, at handa ka nang mag-prompt."
+      </blockquote>
+
+      <!-- ======== Section 3: Basic Commands ======== -->
+      <h2>Basic Commands</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Command</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>claude</code></td>
+            <td>Mag-start ng interactive session sa terminal</td>
+          </tr>
+          <tr>
+            <td><code>claude "prompt here"</code></td>
+            <td>Mag-prompt nang direkta mula sa command line</td>
+          </tr>
+          <tr>
+            <td><code>claude --help</code></td>
+            <td>Makita ang lahat ng available commands</td>
+          </tr>
+          <tr>
+            <td><code>claude -p "prompt"</code></td>
+            <td>One-shot prompt (non-interactive)</td>
+          </tr>
+          <tr>
+            <td><code>claude config</code></td>
+            <td>I-configure ang settings</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Interactive Mode</h3>
+
+      <p>Sa interactive mode, pwedeng magkaroon ng conversation si AI. Pwede kang mag-follow up, mag-refine ng prompt, at mag-ask ng clarifications. Ito ang pinaka-epektibong paraan para gamitin si Claude Code CLI.</p>
+
+      <pre><code>$ claude
+&gt; Create a Laravel controller for managing blog posts
+
+# Sasagot si Claude ng code at explanation
+
+&gt; Pwede bang gumamit ng Form Request instead?
+
+# Mag-a-adjust si Claude batay sa bagong request mo</code></pre>
+
+      <!-- ======== Section 4: Configuration ======== -->
+      <h2>Configuration</h2>
+
+      <p>Pwedeng i-customize ang behavior ni Claude Code CLI sa pamamagitan ng configuration files:</p>
+
+      <ul>
+        <li><strong>CLAUDE.md</strong> — Project-level na instructions. Ilagay dito ang preferred tech stack, coding standards, at conventions ng project mo.</li>
+        <li><strong>.claude/settings.json</strong> — Global at project-level settings (theme, keybindings, atbp.)</li>
+      </ul>
+
+      <p>Halimbawa ng <code>CLAUDE.md</code>:</p>
+
+      <pre><code># CLAUDE.md
+
+## Tech Stack
+- Laravel 11 (backend)
+- Next.js 14 (frontend)
+- MySQL 8 (database)
+- Tailwind CSS (styling)
+
+## Coding Standards
+- PSR-12 coding standard para sa PHP
+- ESLint + Prettier para sa JavaScript/TypeScript
+- Use strict types sa PHP
+- Always return type hints sa functions
+
+## Conventions
+- Migrations: plural snake_case table names
+- Models: singular PascalCase
+- Controllers: resourceful (index, create, store, etc.)</code></pre>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang tamang command para i-install si Claude Code CLI?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> <code>npm install -g @anthropic-ai/claude-code</code></label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> <code>npm install claude-code</code></label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> <code>pip install claude-code</code></label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Paano ka mag-start ng interactive session kay Claude Code CLI?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> <code>claude start</code></label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> <code>claude --interactive</code></label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> <code>claude</code> (nang walang arguments)</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Ano ang purpose ng CLAUDE.md file?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Document ng API endpoints</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Magbigay ng project-level instructions at conventions kay Claude</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Log ng lahat ng prompts</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: Install at Test Claude Code CLI</h3>
+        <p>Gawin ang mga sumusunod:</p>
+        <ol>
+          <li>I-install si Claude Code CLI via npm</li>
+          <li>I-verify na naka-install ito gamit ang <code>claude --version</code></li>
+          <li>Mag-login gamit ang Anthropic account mo</li>
+          <li>Gumawa ng CLAUDE.md file sa isang test project</li>
+          <li>Mag-run ng test prompt: <code>claude "Explain what Laravel Eloquent is in 3 sentences"</code></li>
+          <li>I-save ang output sa isang file na <code>claude-test-output.txt</code></li>
+        </ol>
+        <p><em>Tandaan: Kung walang Anthropic account, mag-sign up muna sa console.anthropic.com.</em></p>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>I-install ang Claude Code CLI gamit ang <code>npm install -g @anthropic-ai/claude-code</code>.</li>
+        <li>Gamitin ang <code>claude login</code> para ma-authenticate gamit ang Anthropic account.</li>
+        <li>Ang interactive mode (<code>claude</code> without arguments) ang pinaka-epektibong paraan ng paggamit.</li>
+        <li>Ang CLAUDE.md file ay nagbibigay ng project-level context at instructions kay Claude.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Claude Code CLI Docs</strong> — Official guide para sa paggamit ng Claude Code CLI. <a href="https://docs.anthropic.com/en/docs/claude-code/overview" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'a', q2: 'c', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

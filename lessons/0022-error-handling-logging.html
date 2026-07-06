@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0022: Error Handling & Logging</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0022: Error Handling & Logging</h1>
+      <p><em>Kapag may error, dapat naka-log — para kapag nagreklamo si user, alam mo kung anong nangyari.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Matutunan ang exception handling at logging sa Laravel, at kung paano gumamit ng AI para mag-generate ng error handling logic.
+      </div>
+
+      <h2>Why Error Handling Matters</h2>
+      <p>Kapag may error sa iyong application, hindi dapat makakita ang user ng technical details. Dapat naka-catch ang exception, naka-log, at nagre-return ng user-friendly error response.</p>
+
+      <blockquote>"Kapag may error, dapat naka-log — para kapag nagreklamo si user, alam mo kung anong nangyari."</blockquote>
+
+      <h2>Exception Handling in Laravel</h2>
+      <p>Ang exception handling ay nasa <code>app/Exceptions/Handler.php</code>. Dito mo i-customize kung paano mag-rerespond ang app sa iba't ibang exceptions.</p>
+
+      <pre><code>class Handler extends ExceptionHandler
+{
+    public function register(): void
+    {
+        $this->reportable(function (Throwable $e) {
+            // I-report ang exception (log, send to Slack, etc.)
+        });
+
+        $this->renderable(function (NotFoundHttpException $e, Request $request) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Resource not found.'
+                ], 404);
+            }
+        });
+    }
+}</code></pre>
+
+      <h2>Custom Exceptions</h2>
+      <pre><code>php artisan make:exception PaymentFailedException</code></pre>
+
+      <pre><code>class PaymentFailedException extends Exception
+{
+    public function render(Request $request): JsonResponse
+    {
+        return response()->json([
+            'error' => 'Payment failed. Please try again.',
+            'code' => $this->getCode(),
+        ], 402);
+    }
+}</code></pre>
+
+      <h2>Logging Configuration</h2>
+      <p>Ang logging ay nasa <code>config/logging.php</code>. Suportado ang iba't ibang channels:</p>
+
+      <table>
+        <tr><th>Channel</th><th>Description</th></tr>
+        <tr><td>single</td><td>Isang log file lang</td></tr>
+        <tr><td>daily</td><td>Araw-araw na log file (recommended)</td></tr>
+        <tr><td>slack</td><td>Mag-send ng notifications sa Slack</td></tr>
+        <tr><td>syslog</td><td>System log</td></tr>
+        <tr><td>stack</td><td>Pagsamahin ang multiple channels</td></tr>
+      </table>
+
+      <h2>Log Levels</h2>
+      <p>Mula sa pinaka-malala hanggang sa pinaka-maliit na severity:</p>
+      <pre><code>Log::emergency('System is down!');
+Log::alert('Action needed.');
+Log::critical('Critical error.');
+Log::error('Something went wrong.');
+Log::warning('Be careful.');
+Log::notice('Just so you know.');
+Log::info('User logged in.');
+Log::debug('Variable value: ' . $value);</code></pre>
+
+      <h2>Try-Catch with AI</h2>
+      <p>I-prompt si AI: "Add error handling and logging to this API endpoint. Catch all exceptions, log the error with context, and return a consistent JSON error response."</p>
+
+      <pre><code>public function store(Request $request)
+{
+    try {
+        // Your logic here
+        $product = Product::create($request->validated());
+        return new ProductResource($product);
+    } catch (\Exception $e) {
+        Log::error('Product creation failed', [
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+        return response()->json([
+            'message' => 'Failed to create product.',
+        ], 500);
+    }
+}</code></pre>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Anong method sa Exception Handler ang ginagamit para i-customize ang response?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> report()</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> render()</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> handle()</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Anong logging level ang dapat gamitin para sa mga error na kailangan ng immediate attention?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> info</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> error</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> debug</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Anong Artisan command ang gumagawa ng custom exception class?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> php artisan make:exception</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> php artisan make:error</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> php artisan make:handler</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: Custom Exception & API Logging</h3>
+        <p>Gamit ang AI, ipagawa ang isang custom exception at i-set up ang logging para sa API errors. I-prompt si AI ng ganito: "Create a custom PaymentFailedException in Laravel with a render method that returns a JSON response. Also show how to log API errors to a daily log file with context."</p>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang exception handling ay nasa <code>app/Exceptions/Handler.php</code></li>
+        <li>Gamitin ang <code>php artisan make:exception</code> para sa custom exceptions</li>
+        <li>Ang logging channels ay single, daily, slack, at stack</li>
+        <li>Gamitin ang appropriate log levels (debug, info, error, atbp.)</li>
+        <li>Ang try-catch na may logging ay essential para sa API error handling</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation (Error Handling)</strong> — Official guide para sa error handling at logging configuration. <a href="https://laravel.com/docs/errors" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'a' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

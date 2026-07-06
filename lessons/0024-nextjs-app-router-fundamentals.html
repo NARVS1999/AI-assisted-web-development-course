@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0024: Next.js App Router Fundamentals</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0024: Next.js App Router Fundamentals</h1>
+      <p><em>Alamin ang folder-based routing ng Next.js 13+ App Router, paggawa ng pages at layouts, at kung kelan gagamitin ang Server vs Client Components.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makapag-setup ng Next.js project gamit ang App Router, makagawa ng pages at layouts, at maintindihan ang pagkakaiba ng Server at Client Components.
+      </div>
+
+      <!-- ======== Section 1: App Router vs Pages Router ======== -->
+      <h2>App Router vs Pages Router</h2>
+
+      <p>Ang Next.js 13+ ay nagpakilala ng <strong>App Router</strong> — isang bagong routing system na gumagamit ng folder structure para mag-define ng URLs. Sa lumang Pages Router, nasa <code>pages/</code> folder ang routes. Sa App Router, nasa <code>app/</code> folder:</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Pages Router (old)</th>
+            <th>App Router (new)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>pages/index.tsx</code></td>
+            <td><code>app/page.tsx</code></td>
+          </tr>
+          <tr>
+            <td><code>pages/about.tsx</code></td>
+            <td><code>app/about/page.tsx</code></td>
+          </tr>
+          <tr>
+            <td><code>pages/products/[id].tsx</code></td>
+            <td><code>app/products/[id]/page.tsx</code></td>
+          </tr>
+          <tr>
+            <td>Layout = custom wrapper</td>
+            <td>Built-in <code>layout.tsx</code></td>
+          </tr>
+          <tr>
+            <td>Loading = manual</td>
+            <td>Built-in <code>loading.tsx</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Sa App Router, ang folder structure mo ang nagde-define ng URLs — <code>app/products/page.tsx</code> = <code>/products</code>. Kung may folder na may square brackets, dynamic route iyon: <code>app/products/[id]/page.tsx</code> = <code>/products/1</code>.
+      </div>
+
+      <!-- ======== Section 2: Pages and Layouts ======== -->
+      <h2>Pages at Layouts</h2>
+
+      <p>Sa App Router, dalawang uri ng file ang pangunahing gagamitin mo:</p>
+
+      <ul>
+        <li><strong><code>page.tsx</code></strong> — nagre-render ng UI para sa specific route. Required sa bawat route segment.</li>
+        <li><strong><code>layout.tsx</code></strong> — nagwe-wrap ng pages sa ilalim ng folder. Nagsi-share ng UI (e.g., navbar, sidebar) at nagpe-preserve ng state sa navigation.</li>
+      </ul>
+
+      <p>Halimbawa ng <code>app/layout.tsx</code> (root layout):</p>
+
+      <pre><code>export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    &lt;html lang="en"&gt;
+      &lt;body&gt;
+        &lt;nav&gt;Navigation Bar&lt;/nav&gt;
+        &lt;main&gt;{children}&lt;/main&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+  );
+}</code></pre>
+
+      <p>Ang AI prompt para dito: <em>"Generate a Next.js 14 root layout.tsx with a responsive navbar at the top and a footer at the bottom, using Tailwind CSS."</em></p>
+
+      <!-- ======== Section 3: File-Based Routing Deep Dive ======== -->
+      <h2>File-Based Routing</h2>
+
+      <p>Ang bawat folder sa loob ng <code>app/</code> ay nagre-represent ng isang URL segment. Narito ang mga pangunahing patterns:</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Folder Structure</th>
+            <th>URL</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>app/page.tsx</code></td>
+            <td><code>/</code></td>
+          </tr>
+          <tr>
+            <td><code>app/about/page.tsx</code></td>
+            <td><code>/about</code></td>
+          </tr>
+          <tr>
+            <td><code>app/products/page.tsx</code></td>
+            <td><code>/products</code></td>
+          </tr>
+          <tr>
+            <td><code>app/products/[id]/page.tsx</code></td>
+            <td><code>/products/1</code></td>
+          </tr>
+          <tr>
+            <td><code>app/products/[id]/edit/page.tsx</code></td>
+            <td><code>/products/1/edit</code></td>
+          </tr>
+          <tr>
+            <td><code>app/blog/[...slug]/page.tsx</code></td>
+            <td><code>/blog/2024/tech/post-1</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="info">
+        <strong>Note</strong>
+        Puwede kang gumamit ng AI para mag-generate ng buong folder structure. Prompt: <em>"Create a Next.js 14 app with App Router. Generate pages and layouts for home, about, products, and products/[id]."</em>
+      </div>
+
+      <!-- ======== Section 4: Server Components vs Client Components ======== -->
+      <h2>Server Components vs Client Components</h2>
+
+      <p>Sa App Router, <strong>lahat ng components ay Server Components by default</strong>. Ibig sabihin, sa server sila nagre-render at ang HTML lang ang pinapadala sa browser.</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Server Components</th>
+            <th>Client Components</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Nagre-render sa server</td>
+            <td>Nagre-render sa browser</td>
+          </tr>
+          <tr>
+            <td>Puwede dumiretso sa database, API, file system</td>
+            <td>Hindi puwedeng gumamit ng server-only features</td>
+          </tr>
+          <tr>
+            <td>Hindi puwedeng gumamit ng hooks (useState, useEffect)</td>
+            <td>Puwede gumamit ng React hooks at event listeners</td>
+          </tr>
+          <tr>
+            <td>Mas maliit ang bundle size</td>
+            <td>May kasamang JavaScript bundle</td>
+          </tr>
+          <tr>
+            <td>Default sa App Router</td>
+            <td>Kailangan ng <code>'use client'</code> directive</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>Para gumawa ng Client Component, lagyan lang ng <code>'use client'</code> sa tuktok ng file:</p>
+
+      <pre><code>'use client';
+
+import { useState } from 'react';
+
+export default function Counter() {
+  const [count, setCount] = useState(0);
+  return &lt;button onClick={() =&gt; setCount(c =&gt; c + 1)}&gt;Count: {count}&lt;/button&gt;;
+}</code></pre>
+
+      <blockquote>
+        "Rule of thumb: kung hindi mo kailangan ng interactivity (hooks, events, browser APIs), gawin mong Server Component. Mas mabilis at mas efficient."
+      </blockquote>
+
+      <!-- ======== Section 5: Using AI to Generate Pages and Layouts ======== -->
+      <h2>Using AI para Mag-generate ng Pages at Layouts</h2>
+
+      <p>Ang AI ay napakaepektibo para mag-scaffold ng Next.js pages at layouts. Narito ang mga dapat mong i-consider sa prompts:</p>
+
+      <ul>
+        <li><strong>I-specify ang version:</strong> "Next.js 14 App Router" — para alam ng AI na gumamit ng <code>app/</code> folder.</li>
+        <li><strong>I-define ang structure:</strong> "Gumawa ako ng products page, about page, at contact page."</li>
+        <li><strong>I-request ang layout:</strong> "Gawin mong may shared navbar at footer sa layout."</li>
+        <li><strong>I-request ang data fetching:</strong> "I-fetch ang products mula sa API."</li>
+      </ul>
+
+      <p>Halimbawa prompt:</p>
+      <blockquote>
+        "Generate a Next.js 14 project with App Router. Create pages for Home, About, and Products. Root layout should have a navbar with links to all pages at footer. Each page should have placeholder content. Use TypeScript."
+      </blockquote>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Sa Next.js App Router, saan mo ilalagay ang file para sa route <code>/products/1</code>?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> <code>app/products/1/page.tsx</code></label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> <code>app/products/[id]/page.tsx</code></label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> <code>pages/products/[id].tsx</code></label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Ano ang pagkakaiba ng layout.tsx at page.tsx sa App Router?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Pareho lang sila — interchangeable</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Ang layout.tsx ay nagwe-wrap ng pages sa ilalim ng folder at nagpe-preserve ng state; ang page.tsx ang content ng specific route</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Ang page.tsx lang ang puwedeng magkaroon ng children; ang layout.tsx ay para lang sa metadata</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Paano mo ginagawang Client Component ang isang file sa App Router?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Lagyan ng <code>'use client'</code> sa tuktok ng file</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> I-import ang ReactDOM sa file</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> I-rename ang file bilang <code>.client.tsx</code></label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: AI-Scaffolded Next.js App</h3>
+        <p>Gamit ang AI, i-scaffold ang isang Next.js 14 app na may:</p>
+        <ul>
+          <li><strong>Home page</strong> — welcome hero section na may heading at description</li>
+          <li><strong>About page</strong> — about the company/team</li>
+          <li><strong>Products page</strong> — list ng placeholder products</li>
+          <li><strong>Root layout</strong> — may navbar na naka-link sa lahat ng pages at footer</li>
+        </ul>
+        <p><em>Prompt tip: "Using Next.js 14 App Router with TypeScript, create pages for Home, About, and Products. Include a root layout with a navbar (links: Home, About, Products) and a footer. Each page should have appropriate content." I-run ang <code>npx create-next-app@latest</code> at ilagay ang generated files.</em></p>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang App Router ay gumagamit ng folder structure para mag-define ng URLs — <code>app/products/page.tsx</code> = <code>/products</code>.</li>
+        <li>Ang <code>page.tsx</code> ay content ng route; ang <code>layout.tsx</code> ay wrapper na nagpe-preserve ng state sa navigation.</li>
+        <li>Lahat ng components ay Server Components by default — mas mabilis at mas secure.</li>
+        <li>Gamitin ang <code>'use client'</code> para sa interactivity (hooks, events, browser APIs).</li>
+        <li>Puwede kang gumamit ng AI para mag-scaffold ng buong folder structure at pages.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Next.js Documentation</strong> — Official guide para sa App Router, routing, at layouts. <a href="https://nextjs.org/docs" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'a' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

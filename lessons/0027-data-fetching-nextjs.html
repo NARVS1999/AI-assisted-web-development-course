@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0027: Data Fetching in Next.js</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0027: Data Fetching sa Next.js</h1>
+      <p><em>Matutong mag-fetch ng data sa Next.js gamit ang Server Components at Client Components, at maintindihan ang Static vs Dynamic rendering.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makapag-fetch ng data mula sa API gamit ang server-side at client-side approaches, at malaman kung kailan gagamitin ang Static vs Dynamic rendering.
+      </div>
+
+      <!-- ======== Section 1: Server-Side Data Fetching (Server Components) ======== -->
+      <h2>Server-Side Data Fetching (Server Components)</h2>
+
+      <p>Sa Next.js App Router, ang <strong>Server Components</strong> ay puwedeng mag-fetch ng data nang direkta sa server — walang need na useEffect, walang loading spinners, at secure dahil hindi exposed ang API keys sa browser.</p>
+
+      <pre><code>// app/products/page.tsx — Server Component (default)
+async function getProducts() {
+  const res = await fetch('https://api.example.com/products');
+  if (!res.ok) throw new Error('Failed to fetch');
+  return res.json();
+}
+
+export default async function ProductsPage() {
+  const products = await getProducts();
+
+  return (
+    &lt;div className="grid grid-cols-1 md:grid-cols-3 gap-6"&gt;
+      {products.map((product: any) =&gt; (
+        &lt;div key={product.id} className="border rounded p-4"&gt;
+          &lt;h2&gt;{product.name}&lt;/h2&gt;
+          &lt;p&gt;&#8369;{product.price}&lt;/p&gt;
+        &lt;/div&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <blockquote>
+        "Sa Next.js, puwedeng sa server pa lang naka-fetch na ang data (server components) o sa browser (client components)."
+      </blockquote>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Ang <code>fetch</code> sa Server Components ay may built-in na caching at revalidation. Default ay <code>force-cache</code> — i-set ang <code>cache: 'no-store'</code> para laging fresh ang data.
+      </div>
+
+      <!-- ======== Section 2: Client-Side Data Fetching ======== -->
+      <h2>Client-Side Data Fetching</h2>
+
+      <p>Para sa interactive pages na nangangailangan ng real-time data o user-triggered requests, gamitin ang client-side fetching:</p>
+
+      <h3>Gamit ang useEffect + fetch</h3>
+      <pre><code>'use client';
+import { useState, useEffect } from 'react';
+
+export default function ClientProducts() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/products')
+      .then(res =&gt; {
+        if (!res.ok) throw new Error('Failed');
+        return res.json();
+      })
+      .then(data =&gt; { setProducts(data); setLoading(false); })
+      .catch(err =&gt; { setError(err.message); setLoading(false); });
+  }, []);
+
+  if (loading) return &lt;p&gt;Loading...&lt;/p&gt;;
+  if (error) return &lt;p&gt;Error: {error}&lt;/p&gt;;
+
+  return (
+    &lt;div&gt;
+      {products.map(p =&gt; &lt;div key={p.id}&gt;{p.name}&lt;/div&gt;)}
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <h3>Gamit ang SWR o React Query</h3>
+      <p>Para sa mas advanced na data fetching, gamitin ang SWR (by Vercel) o TanStack React Query — may built-in caching, revalidation, at pagination:</p>
+
+      <pre><code>'use client';
+import useSWR from 'swr';
+
+const fetcher = (url: string) =&gt; fetch(url).then(res =&gt; res.json());
+
+export default function Products() {
+  const { data, error, isLoading } = useSWR('/api/products', fetcher);
+
+  if (isLoading) return &lt;p&gt;Loading...&lt;/p&gt;;
+  if (error) return &lt;p&gt;Error loading products&lt;/p&gt;;
+
+  return data.map((p: any) =&gt; &lt;div key={p.id}&gt;{p.name}&lt;/div&gt;);
+}</code></pre>
+
+      <!-- ======== Section 3: Static vs Dynamic Rendering ======== -->
+      <h2>Static vs Dynamic Rendering</h2>
+
+      <p>Ang Next.js ay may dalawang rendering strategies:</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Strategy</th>
+            <th>Kailan ginagamit</th>
+            <th>Paano i-enable</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Static (SSG)</strong></td>
+            <td>Content na hindi madalas magbago (blog posts, docs)</td>
+            <td>Default sa Server Components with <code>fetch</code> at <code>cache: 'force-cache'</code></td>
+          </tr>
+          <tr>
+            <td><strong>Dynamic (SSR)</strong></td>
+            <td>User-specific o real-time data</td>
+            <td><code>cache: 'no-store'</code> o <code>export const dynamic = 'force-dynamic'</code></td>
+          </tr>
+          <tr>
+            <td><strong>ISR</strong></td>
+            <td>Content na nagbabago periodically</td>
+            <td><code>next: { revalidate: 3600 }</code> — revalidate every hour</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <pre><code>// Static (default) — fetched at build time
+const data = await fetch('https://api.example.com/posts');
+
+// Dynamic — fetched every request
+const data = await fetch('https://api.example.com/posts', { cache: 'no-store' });
+
+// ISR — revalidates every 60 seconds
+const data = await fetch('https://api.example.com/posts', { next: { revalidate: 60 } });</code></pre>
+
+      <!-- ======== Section 4: Using AI to Generate Data Fetching Logic ======== -->
+      <h2>Using AI para Mag-generate ng Data Fetching Logic</h2>
+
+      <p>Ang AI ay mahusay sa pag-generate ng data fetching code. Narito ang magandang prompt pattern:</p>
+
+      <ul>
+        <li>I-specify kung Server Component o Client Component.</li>
+        <li>Ibigay ang API endpoint at response structure.</li>
+        <li>I-request ang loading at error states.</li>
+        <li>I-request ang caching/rendering strategy.</li>
+      </ul>
+
+      <p>Halimbawa prompt:</p>
+      <blockquote>
+        "Create a Next.js 14 Server Component page for products that fetches from 'https://api.example.com/products'. Each product has id, name, price, and image. Display them in a responsive grid with Tailwind CSS. Use dynamic rendering (no-store cache)."
+      </blockquote>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Alin sa mga sumusunod ang <strong>hindi</strong> puwedeng gawin ng isang Server Component?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Mag-fetch ng data mula sa database</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Gumamit ng <code>useEffect</code> para mag-fetch ng data</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Mag-access ng environment variables</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Paano mo gagawing dynamic rendering ang isang Server Component page (laging fresh data)?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Gamit ang <code>cache: 'force-cache'</code></label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Gamit ang <code>cache: 'no-store'</code> o <code>export const dynamic = 'force-dynamic'</code></label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Gamit ang <code>'use client'</code> sa page</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Ano ang bentahe ng pag-fetch ng data sa Server Components kumpara sa Client Components?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Mas maganda ang animation sa server</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Walang loading state — data ay ready na sa pagdating ng HTML, at secure dahil hindi exposed ang API keys sa browser</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Mas madali mag-debug ang server-side code</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: Products Page with Server-Side Fetching</h3>
+        <p>Gumawa ng products page na nagfe-fetch mula sa isang external API (simulate a Laravel API):</p>
+        <ul>
+          <li>Gumamit ng Server Component na nagfa-fetch ng products list.</li>
+          <li>I-display ang products sa responsive grid (1 col mobile, 3 cols desktop).</li>
+          <li>Maglagay ng loading.tsx file para sa streaming.</li>
+          <li>I-handle ang error case (e.g., API down) gamit ang error.tsx.</li>
+        </ul>
+        <p><em>Prompt tip: "Create a Next.js 14 page that fetches products from 'https://fakestoreapi.com/products' using a Server Component. Display them in a responsive grid. Also create loading.tsx and error.tsx files. Use TypeScript and Tailwind CSS."</em></p>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang <strong>Server Components</strong> ay nagfa-fetch ng data sa server — walang loading state, secure, at mas mabilis.</li>
+        <li>Ang <strong>Client Components</strong> ay gumagamit ng <code>useEffect</code> + <code>fetch</code> o libraries tulad ng SWR/React Query.</li>
+        <li>Static rendering (<code>force-cache</code>) ay para sa content na bihirang magbago; Dynamic (<code>no-store</code>) para sa real-time data.</li>
+        <li>ISR (<code>revalidate</code>) ay combination ng static at dynamic — nagre-revalidate sa background.</li>
+        <li>Gamitin ang AI para mag-generate ng fetching logic — specify mo lang ang API, component type, at rendering strategy.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Next.js Documentation (Data Fetching)</strong> — Official guide para sa server-side at client-side data fetching. <a href="https://nextjs.org/docs/app/building-your-application/data-fetching" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

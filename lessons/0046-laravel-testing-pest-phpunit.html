@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0046: Laravel Testing (Pest/PHPUnit) with AI</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0046: Laravel Testing (Pest/PHPUnit) with AI</h1>
+      <p><em>Ang test ang safety net mo — kapag may binago ka, malalaman mo agad kung may nasira. Si AI na magsusulat ng boilerplate tests.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Matutunan ang pagkakaiba ng Unit at Feature tests sa Laravel, gamitin ang Pest PHP para sa modern testing, at gamitin si AI para mag-generate ng test cases.
+      </div>
+
+      <h2>Unit Tests vs Feature Tests</h2>
+      <p>Sa Laravel, may dalawang pangunahing uri ng tests:</p>
+      <ul>
+        <li><strong>Unit Test</strong> — Isang-sahig unit ng code ang tinatasa (isang method, isang class). Mabilis tumakbo pero hindi nakaka-interact sa database o HTTP.</li>
+        <li><strong>Feature Test</strong> — Sinusubukan ang buong feature flow: HTTP request, controller logic, database interaction. Mas mabagal pero mas comprehensive.</li>
+      </ul>
+      <p>Halimbawa: Unit test para sa isang <code>Product::calculatePrice()</code> method. Feature test para sa <code>POST /api/products</code> endpoint.</p>
+
+      <div class="tip">
+        <strong>Best Practice</strong>
+        Start with Feature tests para sa API endpoints. Add Unit tests para sa complex business logic. Gamitin si AI para mag-generate ng pareho.
+      </div>
+
+      <h2>Pest PHP: Modern Testing Framework</h2>
+      <p>Ang Pest ay isang modern testing framework na naka-wrapper sa PHPUnit. Mas malinis at mas readable ang syntax:</p>
+      <pre><code>// PHPUnit style
+class ProductTest extends TestCase
+{
+    public function test_products_can_be_created(): void
+    {
+        $response = $this->postJson('/api/products', [
+            'name' => 'Test Product',
+            'price' => 100
+        ]);
+        $response->assertStatus(201);
+    }
+}
+
+// Pest style (mas concise)
+it('can create a product', function () {
+    $response = $this->postJson('/api/products', [
+        'name' => 'Test Product',
+        'price' => 100
+    ]);
+    $response->assertStatus(201);
+});</code></pre>
+
+      <h2>Testing API Endpoints at Authentication</h2>
+      <p>Para ma-test ang protected endpoints, kailangan mo munang mag-authenticate:</p>
+      <pre><code>it('can list products for authenticated user', function () {
+    $user = User::factory()->create();
+    $token = $user->createToken('test-token')->plainTextToken;
+
+    $response = $this->withHeaders([
+        'Authorization' => 'Bearer ' . $token,
+    ])->getJson('/api/products');
+
+    $response->assertStatus(200);
+});</code></pre>
+      <p>Puwede ring gumamit ng <code>actingAs()</code> helper para mag-simulate ng authenticated user:</p>
+      <pre><code>it('can create product', function () {
+    $user = User::factory()->create();
+
+    actingAs($user)->postJson('/api/products', [
+        'name' => 'New Product',
+        'price' => 99.99
+    ])->assertStatus(201);
+});</code></pre>
+
+      <h2>Testing Database Interactions</h2>
+      <p>Gamit ang <code>RefreshDatabase</code> trait, nagre-reset ang database para sa bawat test:</p>
+      <pre><code>uses(RefreshDatabase::class);
+
+it('has many products', function () {
+    $user = User::factory()
+        ->has(Product::factory()->count(3))
+        ->create();
+
+    expect($user->products)->toHaveCount(3);
+});</code></pre>
+
+      <div class="info">
+        <strong>Key Insight</strong>
+        Huwag isulat manually ang lahat ng tests — hayaan si AI ang gumawa ng boilerplate. Sabihin lang: "Generate Pest tests for a Product CRUD API with authentication."
+      </div>
+
+      <h2>Using AI to Generate Test Cases</h2>
+      <p>I-prompt si AI para mag-generate ng tests. Halimbawang prompt:</p>
+      <blockquote>"Generate Pest PHP tests for a ProductController. Include tests for index, store, show, update, and destroy. Use RefreshDatabase and Factory. Assume Sanctum authentication. Write in Pest syntax."</blockquote>
+      <p>Laging i-review ang AI-generated tests. Check kung tama ang assertions at kung may edge cases na na-miss. Huwag magtiwala agad — AI can hallucinate.</p>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang pagkakaiba ng Unit Test at Feature Test sa Laravel?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Unit Test ay mas mabagal kaysa Feature Test</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Unit Test ay sumusubok ng isolated na code; Feature Test ay sumusubok ng buong flow kasama HTTP at database</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Pareho lang sila — magkaiba lang ang pangalan</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Anong Pest syntax ang ginagamit para mag-define ng test?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> function testName()</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> it('description', fn () =&gt; ...)</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> describe('test', function() {})</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Anong trait ang ginagamit para i-reset ang database sa bawat test?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> RefreshDatabase</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> ResetDatabase</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> FreshDatabase</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: AI-Generated Pest Tests para sa Product CRUD API</h3>
+        <p>Gamit ang AI, ipagawa ang kumpletong Pest tests para sa Product CRUD API. I-prompt si AI nang ganito:</p>
+        <blockquote>"Generate Pest PHP feature tests for a ProductController with the following endpoints: GET /api/products (index), POST /api/products (store), GET /api/products/{id} (show), PUT /api/products/{id} (update), DELETE /api/products/{id} (destroy). Use RefreshDatabase, ProductFactory, and Sanctum authentication. Write in Pest syntax with 'it()' functions."</blockquote>
+        <p>Pagkatapos, i-run ang <code>php artisan test</code> para makita kung pumasa lahat ng tests. I-edit kung may kailangang ayusin.</p>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Unit Test = isolated code; Feature Test = buong HTTP + database flow</li>
+        <li>Pest PHP ay modern testing framework na may mas malinis na syntax kaysa PHPUnit</li>
+        <li>Gamitin ang <code>RefreshDatabase</code> trait at <code>actingAs()</code> helper para sa tests</li>
+        <li>Si AI ang bahala mag-generate ng boilerplate test code — i-review mo lang</li>
+        <li>Ang tests ay safety net: kapag nagbago ang code, malalaman mo agad kung may nasira</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Pest PHP</strong> — Modern testing framework para sa PHP na may beautiful syntax. <a href="https://pestphp.com" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Laravel Documentation (Testing)</strong> — Official guide para sa testing sa Laravel. <a href="https://laravel.com/docs/testing" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'a' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

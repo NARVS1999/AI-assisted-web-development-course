@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0005: AI-Assisted Workflow Best Practices</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0005: AI-Assisted Workflow Best Practices</h1>
+      <p><em>Alamin ang tamang workflow para magamit ang AI nang responsable at epektibo.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Maunawaan ang Prompt → Review → Test → Refactor cycle at kung paano i-verify ang AI-generated code.
+      </div>
+
+      <!-- ======== Section 1: The Cycle ======== -->
+      <h2>Prompt → Review → Test → Refactor Cycle</h2>
+
+      <p>Ang epektibong AI-assisted workflow ay hindi lang basta pag-prompt at pag-copy-paste ng code. Ito ay isang cycle na dapat ulit-ulitin:</p>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>Prompt</strong> — Sumulat ng specific prompt na may tech stack, goal, at constraints.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>Review</strong> — Basahin at unawain ang bawat linya ng AI-generated code. Huwag magtiwala agad.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>Test</strong> — I-run ang code. I-test ang lahat ng scenarios: happy path at edge cases.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <p><strong>Refactor</strong> — Ayusin ang code. I-optimize kung kinakailangan. I-document kung importante.</p>
+        </div>
+      </div>
+
+      <blockquote>
+        "AI ang magsusulat ng unang draft, pero ikaw ang mag-iisip kung tama ba 'yun. Laging may human review."
+      </blockquote>
+
+      <div class="warning">
+        <strong>Warning</strong>
+        Huwag kailanman mag-deploy ng AI-generated code na hindi mo naiintindihan. Tandaan: ikaw ang responsible sa code, hindi ang AI.
+      </div>
+
+      <!-- ======== Section 2: Verifying AI-Generated Code ======== -->
+      <h2>Paano I-Verify ang AI-Generated Code</h2>
+
+      <p>Bago i-commit o i-deploy, suriin ang mga sumusunod:</p>
+
+      <ul>
+        <li><strong>Syntax at Logic</strong> — Tama ba ang syntax? May typo ba? Logical ba ang flow?</li>
+        <li><strong>Security</strong> — May SQL injection ba? Sanitized ba ang inputs? May authentication checks ba?</li>
+        <li><strong>Performance</strong> — May N+1 query ba? Efficient ba ang loops? May unnecessary queries ba?</li>
+        <li><strong>Best Practices</strong> — Follow ba ang framework conventions? PSR standards? DRY principle?</li>
+        <li><strong>Edge Cases</strong> — Ano ang mangyayari pag empty ang data? Pag may exception? Pag invalid ang input?</li>
+      </ul>
+
+      <p>Checklist para sa code review:</p>
+
+      <pre><code># AI Code Review Checklist
+## [ ] Correct syntax — walang typo o parse error
+## [ ] Security — naka-sanitize ang inputs, may auth checks
+## [ ] Performance — walang N+1 queries, efficient
+## [ ] Best practices — follow sa framework conventions
+## [ ] Edge cases — na-handle ang error scenarios
+## [ ] Tests — may kasamang tests o manually verified</code></pre>
+
+      <!-- ======== Section 3: Using AI for Debugging ======== -->
+      <h2>Using AI for Debugging at Error Explanation</h2>
+
+      <p>Ang AI ay magaling mag-explain ng errors at mag-suggest ng fixes. Narito ang effective na approach:</p>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>I-paste ang error message</strong> — Buong error message, kasama ang stack trace</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>I-provide ang relevant code</strong> — Yung code na nagca-cause ng error (i-minimize)</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>I-explain ang ginawa mo</strong> — "I was trying to...", "I expected... but got..."</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <p><strong>Hingi ng explanation</strong> — "Bakit nangyari 'to?" at "Ano ang fix?"</p>
+        </div>
+      </div>
+
+      <p>Halimbawa ng debugging prompt:</p>
+
+      <pre><code>I'm getting this error in Laravel:
+"SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'email' cannot be null"
+
+Here's my migration:
+Schema::create('users', function (Blueprint $table) {
+    $table->id();
+    $table->string('email')->unique();
+    $table->timestamps();
+});
+
+Why is this happening and how do I fix it?</code></pre>
+
+      <!-- ======== Section 4: Documenting AI-Assisted Code ======== -->
+      <h2>Documenting AI-Assisted Code</h2>
+
+      <p>Mahalaga ang documentation lalo na sa AI-generated code dahil minsan hindi halata kung ano ang ginagawa ng code. Best practices:</p>
+
+      <ul>
+        <li><strong>Comment kung bakit, hindi kung ano</strong> — I-explain ang reasoning, hindi ang obvious</li>
+        <li><strong>I-flag ang AI-generated code</strong> — Gamitin ang <code>// AI-generated: reviewed by [name]</code> para sa tracking</li>
+        <li><strong>I-document ang assumptions</strong> — Ano ang assumptions ng AI na maaaring hindi obvious</li>
+        <li><strong>I-update ang README</strong> — Kung may bagong features na galing sa AI</li>
+      </ul>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Gumamit ka rin ng AI para magsulat ng documentation! I-prompt ito: "Write documentation for this code including parameters, return values, and usage examples."
+      </div>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang tamang sequence ng AI-assisted workflow cycle?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Prompt → Review → Test → Refactor</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Prompt → Test → Review → Refactor</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Review → Prompt → Test → Refactor</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Bakit mahalaga ang human review sa AI-generated code?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Para ma-impress ang manager</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Dahil ikaw ang responsable sa code at kailangan mong i-verify ang security, logic, at performance</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Dahil maganda sa resume ang "AI code reviewer"</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Alin sa mga ito ang DAPAT mong i-verify sa AI-generated code?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Security vulnerabilities at SQL injection</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Performance issues tulad ng N+1 queries</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Lahat ng nabanggit</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: AI-Powered Debugging</h3>
+        <p>Narito ang isang buggy PHP code snippet. Gamitin ang AI para i-debug ito:</p>
+
+        <pre><code>&lt;?php
+function getUserPosts($userId) {
+    $db = new PDO("mysql:host=localhost;dbname=test", "root", "");
+    $stmt = $db->query("SELECT * FROM posts WHERE user_id = " . $userId);
+    return $stmt->fetchAll();
+}</code></pre>
+
+        <p>Gawin ang sumusunod:</p>
+        <ol>
+          <li>I-ask ang AI: "What are the security and performance issues in this code?"</li>
+          <li>I-prompt ang AI na i-fix ito gamit ang prepared statements</li>
+          <li>I-review ang fix — tama ba? May additional issues pa ba?</li>
+          <li>I-save ang original code, AI explanation, at AI fix sa <code>debugging-exercise.txt</code></li>
+        </ol>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang AI-assisted workflow ay Prompt → Review → Test → Refactor cycle.</li>
+        <li>Laging mag-human review ng AI-generated code bago i-deploy.</li>
+        <li>Gamitin ang AI para sa debugging — ibigay ang error message, relevant code, at konteksto.</li>
+        <li>I-document ang AI-generated code para sa future reference ng team.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Traversy Media YouTube Channel</strong> — Web development tutorials at crash courses. <a href="https://youtube.com/@TraversyMedia" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'a', q2: 'b', q3: 'c' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phase 4: API Integration Cheatsheet</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Phase 4: API Integration & Full-Stack Communication</h1>
+      <p><em>Cheatsheet para sa CORS, data fetching, CRUD, file uploads, WebSockets, at API response standardization.</em></p>
+
+      <!-- ========== CORS Configuration ========== -->
+      <h2>CORS Configuration Guide</h2>
+
+      <pre><code>// config/cors.php — Laravel 11
+return [
+    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'allowed_methods' => ['*'],
+    'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:3000')],
+    'allowed_headers' => ['*'],
+    'exposed_headers' => [],
+    'max_age' => 0,
+    'supports_credentials' => true,
+];</code></pre>
+
+      <table>
+        <tr><th>Setting</th><th>Value</th><th>Purpose</th></tr>
+        <tr><td><code>paths</code></td><td><code>['api/*']</code></td><td>Which routes need CORS</td></tr>
+        <tr><td><code>allowed_origins</code></td><td><code>env('FRONTEND_URL')</code></td><td>Frontend domain na allowed</td></tr>
+        <tr><td><code>supports_credentials</code></td><td><code>true</code></td><td>Para sa cookies/authorization headers</td></tr>
+        <tr><td><code>allowed_methods</code></td><td><code>['*']</code></td><td>Puwedeng methods (GET, POST, etc.)</td></tr>
+      </table>
+
+      <div class="warning">
+        <strong>Warning</strong>
+        Sa production, i-set ang <code>FRONTEND_URL</code> sa actual domain (e.g., <code>https://app.example.com</code>). Huwag gumamit ng <code>'*'</code>.
+      </div>
+
+      <!-- ========== Axios vs Fetch ========== -->
+      <h2>Axios vs Native Fetch Comparison</h2>
+
+      <table>
+        <tr><th>Use Case</th><th>Axios</th><th>Native Fetch</th></tr>
+        <tr><td>Basic GET request</td><td><code>axios.get(url)</code></td><td><code>fetch(url)</code></td></tr>
+        <tr><td>JSON parsing</td><td>Automatic</td><td><code>res.json()</code> manual</td></tr>
+        <tr><td>Error handling</td><td>Catches HTTP errors (4xx, 5xx)</td><td>Only network errors</td></tr>
+        <tr><td>Request/Response interceptors</td><td>&#10003;</td><td>&#10007;</td></tr>
+        <tr><td>Upload progress</td><td><code>onUploadProgress</code></td><td>Not built-in</td></tr>
+        <tr><td>Request cancellation</td><td><code>CancelToken</code></td><td><code>AbortController</code></td></tr>
+        <tr><td>Bundle size</td><td>~14KB</td><td>0KB (native)</td></tr>
+      </table>
+
+      <!-- ========== CRUD Workflow ========== -->
+      <h2>CRUD Workflow Diagram</h2>
+
+      <pre><code>┌──────────────┐     HTTP Request      ┌──────────────┐     Eloquent     ┌─────────┐
+│              │  ──────────────────→  │              │  ─────────────→  │         │
+│   Next.js    │                       │   Laravel    │                  │  MySQL  │
+│   Frontend   │  ←──────────────────  │   API        │  ←─────────────  │         │
+│              │     JSON Response      │              │     Result Set   │         │
+└──────────────┘                       └──────────────┘                  └─────────┘</code></pre>
+
+      <table>
+        <tr><th>Operation</th><th>HTTP Method</th><th>Route</th><th>Eloquent</th></tr>
+        <tr><td>Create</td><td>POST</td><td><code>/api/v1/products</code></td><td><code>Product::create()</code></td></tr>
+        <tr><td>Read (List)</td><td>GET</td><td><code>/api/v1/products</code></td><td><code>Product::all()</code></td></tr>
+        <tr><td>Read (Single)</td><td>GET</td><td><code>/api/v1/products/{id}</code></td><td><code>Product::findOrFail()</code></td></tr>
+        <tr><td>Update</td><td>PUT/PATCH</td><td><code>/api/v1/products/{id}</code></td><td><code>Product::update()</code></td></tr>
+        <tr><td>Delete</td><td>DELETE</td><td><code>/api/v1/products/{id}</code></td><td><code>Product::delete()</code></td></tr>
+      </table>
+
+      <!-- ========== File Upload Best Practices ========== -->
+      <h2>File Upload Best Practices</h2>
+
+      <h3>Frontend (Next.js)</h3>
+      <ul>
+        <li>Gamitin ang <code>FormData</code> — hindi pwedeng JSON ang file uploads</li>
+        <li>Magdagdag ng <strong>progress bar</strong> gamit ang Axios <code>onUploadProgress</code></li>
+        <li>Image preview gamit ang <code>URL.createObjectURL()</code></li>
+        <li>I-validate ang file type at size bago mag-upload</li>
+        <li>I-disable ang submit button habang nag-u-upload</li>
+      </ul>
+
+      <pre><code>const formData = new FormData();
+formData.append('avatar', file);
+
+await api.post('/upload/avatar', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' },
+  onUploadProgress: (e) => {
+    const pct = Math.round((e.loaded * 100) / e.total);
+    setProgress(pct);
+  },
+});</code></pre>
+
+      <h3>Backend (Laravel)</h3>
+      <ul>
+        <li>I-validate ang uploaded file: <code>mimes:jpeg,png</code>, <code>max:2048</code></li>
+        <li>Gamitin ang <code>Storage::put()</code> o <code>$file-&gt;store()</code></li>
+        <li>I-run ang <code>php artisan storage:link</code> para magkaroon ng public access</li>
+        <li>I-store ang file path sa database, hindi ang file mismo</li>
+        <li>Gumamit ng <code>Storage::url()</code> para i-generate ang public URL</li>
+      </ul>
+
+      <!-- ========== WebSocket vs REST ========== -->
+      <h2>WebSocket vs REST Comparison</h2>
+
+      <table>
+        <tr><th>Aspect</th><th>REST API</th><th>WebSocket (Reverb)</th></tr>
+        <tr><td>Connection</td><td>Short-lived (request-response)</td><td>Persistent (stays open)</td></tr>
+        <tr><td>Communication</td><td>Client → Server lang</td><td>Two-way (client ↔ server)</td></tr>
+        <tr><td>Real-time</td><td>Kailangan ng polling</td><td>Automatic push</td></tr>
+        <tr><td>Use cases</td><td>CRUD, data fetching</td><td>Chat, notifications, live feeds</td></tr>
+        <tr><td>Protocol</td><td>HTTP/HTTPS</td><td>WS/WSS</td></tr>
+        <tr><td>Laravel package</td><td>Built-in routes</td><td>Laravel Reverb</td></tr>
+        <tr><td>Scalability</td><td>Horizontal (stateless)</td><td>Need sticky sessions</td></tr>
+      </table>
+
+      <!-- ========== API Response Format ========== -->
+      <h2>API Response Format Template</h2>
+
+      <pre><code>// ==== SUCCESS ====
+// 200 GET, PUT, PATCH
+// 201 POST
+{
+    "success": true,
+    "message": "Products retrieved successfully",
+    "data": {
+        "id": 1,
+        "name": "Sample Product",
+        "price": 199.99
+    },
+    "errors": null
+}
+
+// ==== WITH PAGINATION ====
+{
+    "success": true,
+    "message": "Products retrieved",
+    "data": [ ... ],
+    "errors": null,
+    "meta": {
+        "current_page": 1,
+        "last_page": 5,
+        "per_page": 15,
+        "total": 72
+    }
+}
+
+// ==== ERROR ====
+// 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found
+{
+    "success": false,
+    "message": "Product not found",
+    "data": null,
+    "errors": null
+}
+
+// ==== VALIDATION ERROR (422) ====
+{
+    "success": false,
+    "message": "Validation failed",
+    "data": null,
+    "errors": {
+        "name": ["The name field is required."],
+        "price": ["The price must be a number."]
+    }
+}</code></pre>
+
+      <h2>Quick AI Prompts for Phase 4</h2>
+
+      <table>
+        <tr><th>Task</th><th>Prompt</th></tr>
+        <tr>
+          <td>CORS config</td>
+          <td><em>"Generate CORS configuration for Laravel 11 allowing requests from http://localhost:3000 with credentials support."</em></td>
+        </tr>
+        <tr>
+          <td>API service</td>
+          <td><em>"Generate an Axios API service file for Next.js with CRUD functions and TypeScript types."</em></td>
+        </tr>
+        <tr>
+          <td>CRUD page</td>
+          <td><em>"Create a Next.js product management page with full CRUD, toast notifications, and optimistic updates."</em></td>
+        </tr>
+        <tr>
+          <td>File upload</td>
+          <td><em>"Generate a Next.js profile page with avatar upload, progress bar, and image preview."</em></td>
+        </tr>
+        <tr>
+          <td>WebSocket</td>
+          <td><em>"Set up Laravel Reverb with a real-time notification system for new orders."</em></td>
+        </tr>
+        <tr>
+          <td>API response helper</td>
+          <td><em>"Create a Laravel ApiResponse helper class with standardized success/error methods."</em></td>
+        </tr>
+      </table>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

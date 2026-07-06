@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0052: Preparing for Production (AI Checklist)</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0052: Preparing for Production (AI Checklist)</h1>
+      <p><em>Alamin ang mga kailangan bago ilunsad ang iyong app sa production — at paano gamitin ang AI para hindi makalimot.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makagawa ng kumpletong pre-deployment checklist gamit ang AI at matutunan ang environment configuration, asset compilation, at migration strategy para sa production.
+      </div>
+
+      <!-- ======== Section 1: Environment Configuration ======== -->
+      <h2>Environment Configuration (.env para sa Production)</h2>
+
+      <p>Sa local development, gumagamit tayo ng <code>.env</code> file. Sa production, iba ang settings — dapat naka-lock down ang sensitive data.</p>
+
+      <table>
+        <tr>
+          <th>Setting</th>
+          <th>Local</th>
+          <th>Production</th>
+        </tr>
+        <tr>
+          <td><code>APP_ENV</code></td>
+          <td>local</td>
+          <td>production</td>
+        </tr>
+        <tr>
+          <td><code>APP_DEBUG</code></td>
+          <td>true</td>
+          <td>false</td>
+        </tr>
+        <tr>
+          <td><code>DB_HOST</code></td>
+          <td>127.0.0.1</td>
+          <td>production-db.example.com</td>
+        </tr>
+        <tr>
+          <td><code>DB_SSL</code></td>
+          <td>false</td>
+          <td>true</td>
+        </tr>
+      </table>
+
+      <div class="warning">
+        <strong>Warning</strong>
+        Huwag gawing <code>true</code> ang <code>APP_DEBUG</code> sa production — maglalabas ito ng sensitive error details sa users. Gamitin ang AI para i-review ang iyong .env settings.
+      </div>
+
+      <p><strong>Taglish Tip:</strong> Sabihin mo kay AI: "Gumawa ka ng pre-deployment checklist para sa Laravel + Next.js app." Makakakuha ka ng comprehensive list ng dapat gawin bago mag-go-live.</p>
+
+      <!-- ======== Section 2: Asset Compilation & Minification ======== -->
+      <h2>Asset Compilation at Minification</h2>
+
+      <p>Ang iyong CSS at JavaScript files ay kailangang i-compile at i-minify para sa production. Mas mabigat ang unminified assets at makakabagal ng page load.</p>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>Laravel (Vite):</strong> Patakbuhin ang <code>npm run build</code> para i-compile at i-version ang assets.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>Next.js:</strong> Automatic ang minification kapag nag-run ka ng <code>next build</code>. Pero i-check ang <code>next.config.js</code> para sa mga optimization options.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>I-verify:</strong> Gamitin ang Lighthouse o PageSpeed Insights para i-check kung naka-minify ang assets.</p>
+        </div>
+      </div>
+
+      <pre><code># Laravel — compile assets for production
+npm run build
+
+# Next.js — production build
+npm run build
+
+# I-optimize pa gamit ang AI prompt:
+# "I-optimize ang Laravel Vite config para sa production"</code></pre>
+
+      <!-- ======== Section 3: Database Migration Strategy ======== -->
+      <h2>Database Migration Strategy para sa Production</h2>
+
+      <p>Ang pag-run ng migrations sa production ay delikado kung hindi planado. Narito ang best practices:</p>
+
+      <ul>
+        <li><strong>Test muna sa staging:</strong> Huwag mag-run ng migration sa production nang hindi muna na-test sa staging environment.</li>
+        <li><strong>Backup bago mag-migrate:</strong> I-backup ang database bago magpatakbo ng anumang migration.</li>
+        <li><strong>Zero-downtime migrations:</strong> Iwasan ang <code>ALTER TABLE</code> na magla-lock ng buong table. Gamitin ang <code>pt-online-schema-change</code> o Laravel's built-in squashing.</li>
+        <li><strong>Rollback plan:</strong> Laging may <code>rollback</code> strategy kung mag-fail ang migration.</li>
+      </ul>
+
+      <pre><code># Backup muna bago mag-migrate
+mysqldump -u user -p database_name > backup.sql
+
+# Run migrations
+php artisan migrate --force
+
+# Rollback kung may problema
+php artisan migrate:rollback --step=1 --force</code></pre>
+
+      <blockquote>
+        <p>"Ang pagde-deploy nang walang checklist ay parang sumisid sa dagat nang walang life vest — posibleng malunod sa bugs at downtime."</p>
+      </blockquote>
+
+      <!-- ======== Section 4: Using AI to Generate Deployment Checklist ======== -->
+      <h2>Using AI para sa Deployment Checklist</h2>
+
+      <p>Ang AI ay makakatulong na hindi ka makalimot sa mahahalagang steps. Subukan ang prompt na ito:</p>
+
+      <pre><code>Prompt para kay AI:
+"Gumawa ka ng pre-deployment checklist para sa isang Laravel + Next.js full-stack application.
+Isama ang:
+- Environment configuration
+- Database migration
+- Asset compilation
+- Security checks
+- SSL/TLS setup
+- Backup strategy
+- Monitoring setup
+Ilista sa format na pwedeng i-print o i-tick."</code></pre>
+
+      <p>I-review ang checklist na ibibigay ng AI. Pwedeng may idagdag o baguhin batay sa iyong specific na project.</p>
+
+      <!-- ======== Quiz ======== -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang dapat na value ng <code>APP_DEBUG</code> sa production?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> true</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> false</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> null</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Aling command ang ginagamit para mag-compile ng assets sa Laravel gamit ang Vite?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> npm run dev</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> npm run build</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> php artisan build</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Bakit kailangang mag-backup ng database bago mag-run ng migration sa production?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Para mas mabilis ang migration</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Para may ma-restore kung mag-fail ang migration</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Para hindi ma-detect ng monitoring tools</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- ======== Project ======== -->
+      <div class="project">
+        <h3>Mini-Project: AI-Generated Pre-Deployment Checklist</h3>
+        <p>Gamit ang iyong paboritong AI tool (ChatGPT, Claude, o Gemini), i-prompt ang sumusunod:</p>
+        <p><em>"Gumawa ka ng kumpletong pre-deployment checklist para sa Laravel + Next.js app. Isama ang environment setup, security, database, assets, at monitoring."</em></p>
+        <p>I-review ang checklist na ibinigay ng AI. Magdagdag ng 3 items na sa tingin mo ay importante pero hindi nasama. I-save ang final checklist sa isang file na <code>deployment-checklist.md</code>.</p>
+        <p><strong>Challenge:</strong> I-prompt si AI na i-convert ang checklist into isang bash script na nagve-verify ng bawat item.</p>
+      </div>
+
+      <!-- ======== Summary ======== -->
+      <h2>Summary</h2>
+      <ul>
+        <li>I-set ang <code>APP_ENV=production</code> at <code>APP_DEBUG=false</code> sa production.</li>
+        <li>I-compile at i-minify ang assets gamit ang <code>npm run build</code>.</li>
+        <li>Laging mag-backup ng database bago mag-migration sa production.</li>
+        <li>Magkaroon ng rollback plan para sa database migrations.</li>
+        <li>Gamitin ang AI para gumawa at mag-review ng pre-deployment checklist.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation (Deployment)</strong> — Official guide para sa production-ready Laravel setup. <a href="https://laravel.com/docs/deployment" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <!-- Prev / Next — auto-populated by lesson-nav.js -->
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Scripts — order matters -->
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

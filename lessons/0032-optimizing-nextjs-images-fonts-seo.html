@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0032: Optimizing Next.js (Images, Fonts, SEO)</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0032: Pag-o-optimize ng Next.js (Images, Fonts, SEO)</h1>
+      <p><em>Alamin kung paano i-optimize ang iyong Next.js app gamit ang next/image, next/font, at Metadata API para sa SEO.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Makapag-optimize ng images, fonts, at SEO metadata sa Next.js gamit ang built-in components at AI assistance.
+      </div>
+
+      <!-- Section 1: next/image -->
+      <h2>next/image — Image Optimization</h2>
+
+      <blockquote>
+        "Si next/image automatic na nag-o-optimize ng images — lazy loading, resizing, at modern formats."
+      </blockquote>
+
+      <p>Ang <code>next/image</code> ay isang extension ng HTML <code>&lt;img&gt;</code> element na may built-in optimization:</p>
+
+      <ul>
+        <li><strong>Lazy loading</strong> — images lang na nasa viewport ang lino-load</li>
+        <li><strong>Automatic resizing</strong> — nagge-generate ng tamang size based sa device</li>
+        <li><strong>Modern formats</strong> — automatic na nagco-convert sa WebP o AVIF</li>
+        <li><strong>Blur placeholder</strong> — nagpapakita ng blurry version habang naglo-load</li>
+      </ul>
+
+      <pre><code>import Image from 'next/image';
+import profilePic from '@/public/me.jpg';
+
+export default function Profile() {
+  return (
+    &lt;Image
+      src={profilePic}
+      alt="Profile picture"
+      width={400}
+      height={400}
+      priority
+      className="rounded-full"
+    /&gt;
+  );
+}</code></pre>
+
+      <p>Para sa external images (mula sa remote URL), kailangan mong i-configure ang <code>next.config.js</code>:</p>
+
+      <pre><code>// next.config.ts
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+      },
+    ],
+  },
+};
+export default nextConfig;</code></pre>
+
+      <pre><code>import Image from 'next/image';
+
+export default function RemoteImage() {
+  return (
+    &lt;Image
+      src="https://images.unsplash.com/photo-xxx"
+      alt="Description"
+      fill
+      className="object-cover"
+      sizes="(max-width: 768px) 100vw, 50vw"
+    /&gt;
+  );
+}</code></pre>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Gamitin ang <code>priority</code> sa hero image o above-the-fold images para ma-priority ang pag-load. Iwasan ang <code>fill</code> kung alam mo ang exact dimensions — <code>width</code> at <code>height</code> ay mas efficient.
+      </div>
+
+      <!-- Section 2: next/font -->
+      <h2>next/font — Font Optimization</h2>
+
+      <p>Ang <code>next/font</code> ay automatic na nag-o-optimize ng web fonts — nagho-host ng font files sa iyong server para walang external requests:</p>
+
+      <pre><code>// app/layout.tsx
+import { Inter, Roboto_Mono } from 'next/font/google';
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+});
+
+const robotoMono = Roboto_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-roboto-mono',
+});
+
+export default function RootLayout({ children }) {
+  return (
+    &lt;html lang="en" className={`${inter.variable} ${robotoMono.variable}`}&gt;
+      &lt;body&gt;{children}&lt;/body&gt;
+    &lt;/html&gt;
+  );
+}</code></pre>
+
+      <p>Gamitin ang CSS variables sa iyong styles:</p>
+
+      <pre><code>body { font-family: var(--font-inter); }
+code { font-family: var(--font-roboto-mono); }</code></pre>
+
+      <p>Para sa custom fonts (local files):</p>
+
+      <pre><code>import localFont from 'next/font/local';
+
+const myFont = localFont({
+  src: './fonts/my-font.woff2',
+  display: 'swap',
+  variable: '--font-my-font',
+});
+
+export default myFont;</code></pre>
+
+      <!-- Section 3: Metadata API -->
+      <h2>Metadata API para sa SEO</h2>
+
+      <p>Ang Next.js ay may built-in na <strong>Metadata API</strong> para mag-set ng SEO metadata (title, description, Open Graph):</p>
+
+      <pre><code>// app/layout.tsx — static metadata
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: {
+    default: 'My E-Commerce Store',
+    template: '%s | My E-Commerce Store',
+  },
+  description: 'Buy the best products online at affordable prices.',
+  openGraph: {
+    title: 'My E-Commerce Store',
+    description: 'Buy the best products online.',
+    url: 'https://mystore.com',
+    siteName: 'MyStore',
+    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'My E-Commerce Store',
+    description: 'Buy the best products online.',
+  },
+};</code></pre>
+
+      <p>Para sa dynamic na metadata (per page):</p>
+
+      <pre><code>// app/products/[id]/page.tsx
+import type { Metadata } from 'next';
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise&lt;Metadata&gt; {
+  const product = await getProduct(params.id);
+
+  return {
+    title: product.name,
+    description: product.description,
+    openGraph: {
+      title: product.name,
+      description: product.description,
+      images: [{ url: product.image }],
+    },
+  };
+}</code></pre>
+
+      <!-- Section 4: Using AI -->
+      <h2>Using AI para Mag-generate ng Metadata at Mag-optimize</h2>
+
+      <p>Ang AI ay mahusay sa pag-generate ng metadata at optimization code:</p>
+
+      <blockquote>
+        "Generate SEO metadata for a Next.js e-commerce site. Include title template (using %s), description, Open Graph tags with image, Twitter card, and favicon setup. Also create a layout that loads Inter font via next/font and configures next/image for remote images from Unsplash."
+      </blockquote>
+
+      <!-- Quiz -->
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Anong prop ng next/image ang ginagamit para ma-priority ang pag-load ng above-the-fold image?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> <code>fill</code></label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> <code>priority</code></label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> <code>loading="eager"</code></label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Paano mo ginagamit ang next/font para mag-load ng Google Font?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Maglagay ng <code>&lt;link&gt;</code> tag sa head</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> I-import ang font mula sa <code>next/font/google</code> at i-invoke bilang function</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Mag-download ng font file at ilagay sa public folder</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Ano ang function na ginagamit para mag-generate ng dynamic SEO metadata per page?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> <code>getMetadata</code></label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> <code>generateMetadata</code></label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> <code>useMetadata</code></label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <!-- Project -->
+      <div class="project">
+        <h3>Mini-Project: Optimized Product Page</h3>
+        <p>Gamit ang AI, i-optimize ang isang product page gamit ang:</p>
+        <ul>
+          <li><strong>next/image</strong> — gamitin ang Image component na may proper sizing at priority para sa hero image. I-configure ang remotePatterns para sa image CDN.</li>
+          <li><strong>next/font</strong> — mag-load ng Inter o custom font gamit ang next/font at gamitin bilang CSS variable.</li>
+          <li><strong>Metadata API</strong> — mag-set ng static metadata sa layout at dynamic generateMetadata sa product page.</li>
+        </ul>
+        <p><em>Prompt tip: "Optimize a Next.js 14 product page. Use next/image with remotePatterns for images.unsplash.com, load Inter font via next/font/google with CSS variable, and add SEO metadata (static in layout, dynamic generateMetadata in product page). Use TypeScript and Tailwind CSS."</em></p>
+      </div>
+
+      <!-- Summary -->
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang <strong>next/image</strong> ay automatic na nag-o-optimize ng images — lazy loading, resizing, at WebP/AVIF conversion.</li>
+        <li>Ang <strong>next/font</strong> ay nagho-host ng font files sa iyong server para sa mas mabilis na loading.</li>
+        <li>Ang <strong>Metadata API</strong> ay built-in na paraan para mag-set ng SEO tags — static (export metadata) o dynamic (generateMetadata).</li>
+        <li>Gamitin ang <code>priority</code> para sa above-the-fold images at <code>remotePatterns</code> para sa external image sources.</li>
+        <li>Ang AI ay mahusay sa pag-generate ng optimization code — specify ang image sources, fonts, at metadata requirements.</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Next.js Documentation (Optimizing)</strong> — Official guide para sa image optimization, fonts, at SEO. <a href="https://nextjs.org/docs/app/building-your-application/optimizing" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

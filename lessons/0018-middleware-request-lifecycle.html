@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0018: Middleware & Request Lifecycle</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0018: Middleware & Request Lifecycle</h1>
+      <p><em>Middleware ay parang checkpoints — bago makarating ang request sa controller, dumadaan muna sa mga filters.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Maunawaan ang request lifecycle sa Laravel at kung paano gumamit at gumawa ng middleware.
+      </div>
+
+      <h2>What is Middleware?</h2>
+      <p>Ang middleware ay isang filter na dumadaan ang HTTP request bago makarating sa controller. Parang security checkpoint — kung hindi pumasa, hindi papasukin.</p>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        "Middleware ay parang checkpoints — bago makarating ang request sa controller, dumadaan muna sa mga filters."
+      </div>
+
+      <h2>Request Lifecycle</h2>
+      <pre><code>Request → Middleware (auth, throttle, etc.) → Controller → Response</code></pre>
+      <p>Ang request ay dumadaan sa isang stack ng middleware bago maabot ang controller. Puwede ring mag-process ang middleware ng response pagbalik nito.</p>
+
+      <h2>Built-in Middleware</h2>
+      <table>
+        <tr><th>Middleware</th><th>Purpose</th></tr>
+        <tr><td>auth</td><td>I-check kung naka-login ang user</td></tr>
+        <tr><td>throttle</td><td>Limitahan ang number ng requests (rate limiting)</td></tr>
+        <tr><td>cors</td><td>Handle Cross-Origin Resource Sharing</td></tr>
+        <tr><td>guest</td><td>I-redirect ang naka-login na users</td></tr>
+        <tr><td>verified</td><td>I-check kung verified ang email</td></tr>
+      </table>
+
+      <h2>Using Middleware in Routes</h2>
+      <pre><code>Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware('auth');
+
+Route::middleware('throttle:60,1')->group(function () {
+    Route::apiResource('products', ProductController::class);
+});</code></pre>
+
+      <h2>Creating Custom Middleware</h2>
+      <pre><code>php artisan make:middleware LogRequests</code></pre>
+
+      <p>Ang generated na file ay nasa <code>app/Http/Middleware/LogRequests.php</code>:</p>
+      <pre><code>class LogRequests
+{
+    public function handle(Request $request, Closure $next)
+    {
+        Log::info('Request:', [
+            'url' => $request->fullUrl(),
+            'method' => $request->method(),
+        ]);
+
+        return $next($request);
+    }
+}</code></pre>
+
+      <p>I-register ang middleware sa <code>app/Http/Kernel.php</code>:</p>
+      <pre><code>protected $middlewareAliases = [
+    'log.requests' => \App\Http\Middleware\LogRequests::class,
+];</code></pre>
+
+      <h2>Using AI to Create Middleware</h2>
+      <p>I-prompt si AI: "Create a LogRequests middleware in Laravel that logs the URL, method, and IP address of every request. Include registration instructions."</p>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang middleware sa Laravel?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Isang database connection filter</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Isang filter na dumadaan ang request bago makarating sa controller</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Isang template engine para sa views</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Anong built-in middleware ang ginagamit para mag-limit ng requests?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> auth</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> throttle</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> cors</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Saan mo nirerehistro ang custom middleware?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Sa routes/api.php</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Sa app/Http/Kernel.php</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Sa config/app.php</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: LogRequests Middleware</h3>
+        <p>Gamit ang AI, ipagawa ang isang <code>LogRequests</code> middleware na nagla-log ng URL, HTTP method, at IP address ng bawat request sa Laravel. I-prompt si AI ng ganito: "Create a LogRequests middleware that logs the URL, method, and IP of every request. Show how to register it in Kernel.php."</p>
+        <p>Pagkatapos, i-apply ito sa isang route group at i-verify na nagla-log ito sa <code>storage/logs/laravel.log</code>.</p>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang middleware ay parang checkpoints ng HTTP request</li>
+        <li>Ang request lifecycle ay: Request → Middleware → Controller → Response</li>
+        <li>Ang built-in middleware ay auth, throttle, cors, at iba pa</li>
+        <li>Gamitin ang <code>php artisan make:middleware</code> para gumawa ng custom middleware</li>
+        <li>I-register ang custom middleware sa <code>app/Http/Kernel.php</code></li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation (Middleware)</strong> — Official guide para sa middleware at request lifecycle. <a href="https://laravel.com/docs/middleware" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

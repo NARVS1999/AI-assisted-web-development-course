@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0041: Role-Based Access Control (RBAC)</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0041: Role-Based Access Control (RBAC)</h1>
+      <p><em>Hindi lahat ng user dapat may access sa admin panel — mag-check ng role bago mag-render.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Ma-design ang user roles (admin, editor, user), makagawa ng role-checking middleware sa Laravel, at ma-implement ang conditional rendering sa frontend batay sa role.
+      </div>
+
+      <h2>Pag-design ng User Roles</h2>
+      <p>Ang RBAC ay nangangahulugang ang access ng user ay nakabatay sa kanilang <strong>role</strong>. Common roles:</p>
+      <ul>
+        <li><strong>Admin</strong> — full access, puwedeng mag-delete ng users, mag-edit ng settings</li>
+        <li><strong>Editor</strong> — puwedeng mag-create at mag-edit ng content, pero hindi mag-delete ng users</li>
+        <li><strong>User</strong> — limited access, sariling profile lang ang puwedeng i-edit</li>
+      </ul>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        "Isipin mo ang roles parang susi ng bahay. Ang admin ay may master key, ang editor ay may room key lang."
+      </div>
+
+      <h2>Database Setup: Roles Table</h2>
+      <p>Magdagdag ng <code>role_id</code> o <code>role</code> column sa <code>users</code> table. Mas maganda kung separate <code>roles</code> table para scalable.</p>
+      <pre><code>// Migration
+Schema::create('roles', function (Blueprint $table) {
+    $table->id();
+    $table->string('name'); // admin, editor, user
+    $table->timestamps();
+});
+
+// Sa users table
+Schema::table('users', function (Blueprint $table) {
+    $table->foreignId('role_id')->default(3)->constrained();
+});</code></pre>
+
+      <h2>Laravel Middleware para sa Role Checking</h2>
+      <pre><code>// app/Http/Middleware/CheckRole.php
+class CheckRole
+{
+    public function handle(Request $request, Closure $next, ...$roles)
+    {
+        if (! $request->user() || ! in_array($request->user()->role->name, $roles)) {
+            abort(403, 'Unauthorized');
+        }
+        return $next($request);
+    }
+}</code></pre>
+      <p>I-register ang middleware at gamitin sa routes:</p>
+      <pre><code>// routes/api.php
+Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+    Route::apiResource('/users', UserController::class);
+});
+
+Route::middleware(['auth:sanctum', 'role:admin,editor'])->group(function () {
+    Route::apiResource('/posts', PostController::class);
+});</code></pre>
+
+      <h2>Frontend: Conditional Rendering base sa Role</h2>
+      <p>Sa Next.js, i-check ang role ng user bago mag-render ng UI elements:</p>
+      <pre><code>// Sa isang React component
+const { data: session } = useSession();
+const role = session?.user?.role;
+
+return (
+  <div>
+    {role === 'admin' && &lt;AdminPanel /&gt;}
+    {role === 'editor' && &lt;EditorDashboard /&gt;}
+    &lt;UserProfile /&gt;
+  </div>
+);</code></pre>
+
+      <h2>Pag-generate ng RBAC Logic gamit ang AI</h2>
+      <p>I-prompt si AI para gumawa ng kumpletong RBAC system:</p>
+      <blockquote>"Gumawa ka ng role-based access control system sa Laravel. May roles table, User model na may role relationship, at CheckRole middleware. Dapat may admin, editor, at user roles."</blockquote>
+
+      <div class="info">
+        <strong>Key Insight</strong>
+        Huwag mag-hardcode ng role checks sa controllers. Gumamit ng middleware para consistent at reusable ang authorization logic.
+      </div>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang ginagawa ng CheckRole middleware?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Nagche-check kung naka-login ang user</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Nagche-check kung ang user ay may tamang role para ma-access ang route</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Nagche-check kung valid ang CSRF token</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Anong HTTP status code ang ibinabalik kapag walang permission ang user?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> 401 Unauthorized</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> 403 Forbidden</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> 404 Not Found</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Sa frontend, paano mo ie-edit ang admin panel para sa admin lang?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Gumamit ng conditional rendering: {role === 'admin' && &lt;AdminPanel /&gt;}</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Itago ang component gamit ang CSS display:none</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Mag-redirect sa homepage kung hindi admin</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: RBAC System with AI</h3>
+        <p>Gamit ang AI, gumawa ng role-checking middleware sa Laravel at isang protected admin dashboard sa Next.js. I-prompt si AI: "Create a Laravel CheckRole middleware with admin, editor, and user roles. Also create a simple admin dashboard component in Next.js that only renders for admin users."</p>
+        <p>I-test na ang admin ay makakakita ng admin panel, habang ang regular user ay makakakita lang ng "Access Denied."</p>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang RBAC ay nagre-restrict ng access base sa role ng user</li>
+        <li>Gumamit ng middleware sa Laravel para sa centralized role checking</li>
+        <li>Ang 403 Forbidden ay ang tamang status code para sa walang permission</li>
+        <li>Sa frontend, gumamit ng conditional rendering para itago/ipakita ang UI batay sa role</li>
+        <li>Gamitin si AI para mag-generate ng kumpletong RBAC system</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation (Authorization)</strong> — Official guide para sa gates, policies, at role-based access control. <a href="https://laravel.com/docs/authorization" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'b', q3: 'a' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0047: Next.js Testing (Jest + React Testing Library)</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0047: Next.js Testing (Jest + React Testing Library)</h1>
+      <p><em>Test kung nagre-render nang tama ang components, kung gumagana ang forms, at kung tama ang navigation.</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Matutunan ang component testing, integration testing, at E2E testing para sa Next.js gamit ang Jest, React Testing Library, at Playwright.
+      </div>
+
+      <h2>Component Testing</h2>
+      <p>Ang component testing ay sumusubok kung nagre-render nang tama ang isang React component. Gamit ang Jest at React Testing Library (RTL):</p>
+      <pre><code>// ProductCard.test.jsx
+import { render, screen } from '@testing-library/react';
+import ProductCard from '@/components/ProductCard';
+
+describe('ProductCard', () => {
+  it('renders product name and price', () => {
+    render(&lt;ProductCard name="Laptop" price={49999} /&gt;);
+
+    expect(screen.getByText('Laptop')).toBeInTheDocument();
+    expect(screen.getByText('49999')).toBeInTheDocument();
+  });
+});</code></pre>
+
+      <div class="tip">
+        <strong>Key Principle</strong>
+        Test behavior, not implementation. Huwag i-test ang internal state — i-test kung ano ang nakikita ng user.
+      </div>
+
+      <h2>Integration Testing</h2>
+      <p>Sumusubok ng interaction ng user sa component — pag-click, pag-type, pag-submit ng forms:</p>
+      <pre><code>it('shows success message after form submission', async () => {
+    render(&lt;ContactForm /&gt;);
+
+    await userEvent.type(screen.getByLabelText('Name'), 'Juan');
+    await userEvent.type(screen.getByLabelText('Email'), 'juan@test.com');
+    await userEvent.click(screen.getByRole('button', { name: /submit/i }));
+
+    expect(await screen.findByText('Success!')).toBeInTheDocument();
+});</code></pre>
+
+      <h2>End-to-End Testing with Playwright</h2>
+      <p>Ang E2E testing ay sumusubok ng buong user flow sa actual browser. I-install ang Playwright:</p>
+      <pre><code>npm install -D @playwright/test
+npx playwright install</code></pre>
+      <p>Halimbawang E2E test:</p>
+      <pre><code>// tests/e2e/product.spec.js
+import { test, expect } from '@playwright/test';
+
+test('user can view product details', async ({ page }) => {
+  await page.goto('/products');
+  await page.click('text=View Details');
+
+  await expect(page).toHaveURL(/\/products\/\d+/);
+  await expect(page.locator('h1')).toContainText('Laptop');
+});</code></pre>
+
+      <div class="info">
+        <strong>Key Insight</strong>
+        Component tests = mabilis pero mababaw. E2E tests = mabagal pero comprehensive. Gamitin ang tamang ratio: maraming component tests, konting E2E tests.
+      </div>
+
+      <h2>Using AI to Generate Frontend Tests</h2>
+      <p>I-prompt si AI para mag-generate ng tests. Halimbawa:</p>
+      <blockquote>"Generate Jest + React Testing Library tests for a ProductCard component that displays name, price, and an 'Add to Cart' button. Include tests for rendering and button click. Use userEvent for interactions."</blockquote>
+      <p>Puwede ring humingi ng Playwright tests:</p>
+      <blockquote>"Generate a Playwright E2E test that visits the products page, clicks a product, and verifies the product detail page loads correctly."</blockquote>
+
+      <div class="warning">
+        <strong>Warning</strong>
+        Laging i-run ang tests bago at pagkatapos mag-edit ng code. Huwag basta-basta magtiwala na "okay lang" ang changes mo.
+      </div>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang tamang paraan para i-test kung may text na "Laptop" sa screen gamit ang RTL?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> screen.getByText('Laptop')</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> document.querySelector('Laptop')</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> findElementByText('Laptop')</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Ano ang pinakamagandang gamitin para i-test ang user interaction tulad ng pag-type at pag-click?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> fireEvent mula sa React Testing Library</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> userEvent mula sa @testing-library/user-event</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> direct DOM manipulation</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Para saan ginagamit ang Playwright sa Next.js testing?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Unit testing ng mga utility functions</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> End-to-end testing sa actual browser</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Styling at CSS testing</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: AI-Generated Tests para sa ProductCard Component</h3>
+        <p>Gamit ang AI, ipagawa ang Jest + RTL tests para sa isang ProductCard component. I-prompt si AI nang ganito:</p>
+        <blockquote>"Generate Jest + React Testing Library tests for a React component called ProductCard. It accepts props: name (string), price (number), and onAddToCart (function). It displays the name, price with currency format, and an 'Add to Cart' button. When clicked, it calls onAddToCart with the product name. Write tests for: 1) rendering the product name and price, 2) calling onAddToCart when button is clicked. Use @testing-library/react and userEvent."</blockquote>
+        <p>I-run ang tests gamit ang <code>npm test</code> o <code>npx jest</code>. I-edit kung may kailangang ayusin.</p>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Component testing = render at behavior ng indibidwal na components</li>
+        <li>React Testing Library + Jest ang standard para sa Next.js component tests</li>
+        <li>Gamitin ang <code>userEvent</code> para sa realistic user interactions</li>
+        <li>Playwright para sa E2E testing sa actual browser</li>
+        <li>Si AI ay magaling mag-generate ng test boilerplate — pero i-review pa rin</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Jest Documentation</strong> — JavaScript testing framework. <a href="https://jestjs.io" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>React Testing Library</strong> — Utility para sa testing React components. <a href="https://testing-library.com/react" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'a', q2: 'b', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

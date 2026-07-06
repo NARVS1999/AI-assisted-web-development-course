@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0048: AI-Assisted Debugging Techniques</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0048: AI-Assisted Debugging Techniques</h1>
+      <p><em>I-paste mo lang ang error message kay AI: "Bakit nagkakaganito ang error na 'to? Paano i-fix?"</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Matutunan kung paano gamitin si AI para mag-analyze ng error messages, stack traces, at mag-suggest ng fixes.
+      </div>
+
+      <h2>Using AI to Explain Error Messages</h2>
+      <p>Sa halip na i-Google ang error message, i-paste mo na lang kay AI. Halimbawa:</p>
+      <blockquote>"I'm getting this error in Laravel: 'Target class [ProductController] does not exist.' What does it mean and how do I fix it?"</blockquote>
+      <p>Sasagot si AI ng:
+        <ul>
+          <li>Explanation kung bakit nangyayari ang error (missing import, typo sa route, hindi na-register ang controller)</li>
+          <li>Step-by-step fix (import ang controller, check ang route definition, o i-register sa service provider)</li>
+        </ul>
+      </p>
+
+      <div class="tip">
+        <strong>Tip</strong>
+        Magbigay ng context sa AI: anong framework, anong file, anong line. Kung mas maraming context, mas accurate ang diagnosis.
+      </div>
+
+      <h2>"Rubber Duck Debugging" with AI</h2>
+      <p>Ang rubber duck debugging ay ang pag-explain ng code sa isang rubber duck (o kahit kanino) para makita ang problema. Ngayon, si AI na ang rubber duck mo:</p>
+      <blockquote>"I'm trying to fetch products from my Laravel API in Next.js. Here's my code. Hindi nagwo-work ang fetch — laging network error. Ano kaya ang problema?"</blockquote>
+      <p>Sa pag-explain mo ng problema kay AI, madalas ay mare-realize mo na ang solution habang nagta-type ka pa lang — at kung hindi, si AI na ang bahala.</p>
+
+      <h2>Stack Trace Analysis at AI-Suggested Fixes</h2>
+      <p>Kapag may exception ka, i-paste ang buong stack trace kay AI kasama ang context:</p>
+      <pre><code>// I-paste kay AI ang stack trace
+SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'email' cannot be null
+  at ...
+  at ...
+  in file app/Http/Controllers/UserController.php:45</code></pre>
+      <p>I-prompt si AI:</p>
+      <blockquote>"This is the stack trace from my Laravel app. The error is an integrity constraint violation on the email column. Here's the code at line 45. What's causing this and how should I fix it?"</blockquote>
+
+      <div class="info">
+        <strong>Key Insight</strong>
+        Huwag mag-panic sa error messages. I-copy ang error, i-paste kay AI, at intindihin ang explanation. Ang errors ay opportunities para matuto.
+      </div>
+
+      <h2>AI Debugging Best Practices</h2>
+      <ul>
+        <li><strong>Provide full context:</strong> Framework version, file name, line number, surrounding code</li>
+        <li><strong>Include the actual error:</strong> I-copy ang exact error message at stack trace</li>
+        <li><strong>Tell AI what you tried:</strong> "I already checked the database and the column exists..."</li>
+        <li><strong>Ask specific questions:</strong> "Is the problem in my validation or in the database schema?"</li>
+        <li><strong>Don't blindly apply fixes:</strong> Intindihin ang suggestion ni AI bago i-implement</li>
+      </ul>
+
+      <div class="warning">
+        <strong>Warning</strong>
+        Huwag mag-paste ng sensitive information (passwords, API keys, database credentials) kay AI. I-mask o i-redact muna.
+      </div>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang tamang paraan para gamitin si AI sa debugging?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> I-paste ang error message lang, walang context</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> I-paste ang error kasama ang stack trace, code context, at kung ano ang ginawa mo</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> I-search na lang sa Google</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Ano ang "rubber duck debugging" sa konteksto ng AI?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> Pag-explain ng problema kay AI habang nagti-type, at si AI ang tutulong</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> Paggamit ng rubber duck sa keyboard</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> Pag-delete ng code at magsimula ulit</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Ano ang DAPAT mong gawin bago mag-paste ng code kay AI para sa debugging?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> I-encrypt ang buong code</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> I-remove o i-redact ang sensitive information tulad ng passwords at API keys</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Maglagay ng watermark</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Mini-Project: Debug an Actual Error with AI</h3>
+        <p>Maghanap ng actual error mula sa iyong project (o gumawa ng intentional error), i-paste kay AI, at i-apply ang fix:</p>
+        <ol>
+          <li>Gumawa ng intentional error sa iyong Laravel o Next.js project (halimbawa: mag-access ng undefined variable o mag-call ng non-existent method)</li>
+          <li>I-copy ang error message at stack trace</li>
+          <li>I-paste kay AI kasama ang prompt: "I'm getting this error in [framework]. Here's the stack trace and the relevant code. What's causing it and how do I fix it?"</li>
+          <li>I-analyze ang response ni AI at i-apply ang suggested fix</li>
+          <li>I-document kung ano ang error, ano ang sinabi ni AI, at kung paano mo ito na-fix</li>
+        </ol>
+        <p>Ang goal ay hindi lang ma-fix ang error — kundi maintindihan kung <em>bakit</em> ito nangyari.</p>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>I-paste ang error messages + stack traces + code context kay AI para sa mabilis na diagnosis</li>
+        <li>Rubber duck debugging with AI = i-explain ang problema, si AI ang tutulong mag-solve</li>
+        <li>Magbigay ng context: framework version, file, line number, at kung ano na ang sinubukan mo</li>
+        <li>Huwag blindly apply fixes — intindihin muna ang suggestion ni AI</li>
+        <li>Wag mag-paste ng sensitive information (passwords, API keys, tokens)</li>
+      </ul>
+
+      <div class="info">
+        <strong>Questions?</strong>
+        Review the material or ask for clarification.
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>Laravel Documentation (Debugging)</strong> — Official guide para sa debugging at error handling sa Laravel. <a href="https://laravel.com/docs/errors" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'b', q2: 'a', q3: 'b' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

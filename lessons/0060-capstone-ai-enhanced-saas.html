@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 0060: Capstone Project 4: AI-Enhanced SaaS Application</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Lesson 0060: Capstone Project 4: AI-Enhanced SaaS Application</h1>
+      <p><em>Ito na ang pinaka-advanced — gagawa ka ng SaaS na may AI features. Dito mo pagsasamahin lahat: backend, frontend, database, AI tools, deployment. After nito, ready ka na sa kahit anong web dev challenge. Congrats!</em></p>
+
+      <div class="info">
+        <strong>Lesson Goal</strong>
+        Maplano at ma-scaffold ang isang multi-tenant SaaS application na may AI feature integration (OpenAI/Claude), billing system, at deployment-ready architecture.
+      </div>
+
+      <h2>Ano ang gagawin natin?</h2>
+      <p>Ito ang final capstone project — ang pinaka-advanced sa lahat. Gagawa ka ng sarili mong SaaS idea na may AI integration. Puwede itong AI content generator, AI analytics tool, o kahit anong idea na gusto mo. Dito mo pagsasamahin lahat ng natutunan mo: backend, frontend, database, AI tools, at deployment.</p>
+
+      <h2>Features Overview</h2>
+      <ul>
+        <li><strong>Multi-Tenancy</strong> — Isang codebase, maraming tenants (companies/users)</li>
+        <li><strong>AI Integration</strong> — OpenAI o Claude API para sa AI features</li>
+        <li><strong>Billing System</strong> — Subscription plans, recurring payments</li>
+        <li><strong>User Management</strong> — Team members, roles, invitations</li>
+        <li><strong>Analytics Dashboard</strong> — Usage statistics, AI token consumption</li>
+        <li><strong>API Rate Limiting</strong> — Per-tenant rate limits para sa AI features</li>
+      </ul>
+
+      <h2>Tech Stack</h2>
+      <table>
+        <tr><th>Layer</th><th>Technology</th></tr>
+        <tr><td>Backend API</td><td>Laravel 11 (RESTful API)</td></tr>
+        <tr><td>Frontend</td><td>Next.js 14 (App Router)</td></tr>
+        <tr><td>Database</td><td>MySQL</td></tr>
+        <tr><td>Caching</td><td>Redis</td></tr>
+        <tr><td>AI API</td><td>OpenAI API / Claude API</td></tr>
+        <tr><td>Billing</td><td>Stripe / PayMongo (recurring subscriptions)</td></tr>
+        <tr><td>Auth</td><td>Laravel Sanctum</td></tr>
+        <tr><td>Queue</td><td>Laravel Queues (AI processing, emails)</td></tr>
+      </table>
+
+      <h2>AI Role: AI Feature Integration, Billing System, Multi-Tenancy</h2>
+      <p>Sa SaaS project na ito, si AI ang tutulong sa:</p>
+      <ul>
+        <li><strong>AI Feature Integration</strong> — Magpagawa kay AI ng service classes para sa OpenAI at Claude API calls</li>
+        <li><strong>Billing System</strong> — I-prompt si AI para gumawa ng subscription management gamit ang Stripe</li>
+        <li><strong>Multi-Tenancy</strong> — Magpagawa kay AI ng tenancy system na may database isolation o row-level scoping</li>
+      </ul>
+
+      <div class="warning">
+        <strong>Important</strong>
+        Ang multi-tenancy ay isang advanced concept. May dalawang approach: <strong>Database per tenant</strong> (separate database) o <strong>Single database with tenant_id</strong> (row-level). Para sa project na ito, recommended ang single database with tenant_id para mas simple.
+      </div>
+
+      <h2>Multi-Tenancy Patterns</h2>
+      <pre><code>// Single Database with tenant_id (recommended for this project)
+tenants table: id, name, domain, plan, settings
+users table: id, tenant_id, name, email, role
+ai_requests table: id, tenant_id, user_id, prompt, response, tokens_used
+
+// Global scope para automatic na ma-filter by tenant
+class TenantScope implements Scope {
+  public function apply(Builder $builder, Model $model) {
+    $builder->where('tenant_id', auth()->user()->tenant_id);
+  }
+}</code></pre>
+
+      <h2>AI API Integration Guide</h2>
+      <pre><code>// OpenAI Service
+class OpenAIService {
+  public function generate($prompt) {
+    $response = Http::withToken(config('services.openai.key'))
+      ->post('https://api.openai.com/v1/chat/completions', [
+        'model' => 'gpt-4',
+        'messages' => [['role' => 'user', 'content' => $prompt]],
+      ]);
+    return $response->json()['choices'][0]['message']['content'];
+  }
+}
+
+// Claude Service
+class ClaudeService {
+  public function generate($prompt) {
+    $response = Http::withToken(config('services.claude.key'))
+      ->withHeader('anthropic-version', '2023-06-01')
+      ->post('https://api.anthropic.com/v1/messages', [
+        'model' => 'claude-3-opus-20240229',
+        'max_tokens' => 1024,
+        'messages' => [['role' => 'user', 'content' => $prompt]],
+      ]);
+    return $response->json()['content'][0]['text'];
+  }
+}</code></pre>
+
+      <h2>Billing System Architecture</h2>
+      <ul>
+        <li><strong>Plans</strong> — Free, Pro, Enterprise (with different AI token limits)</li>
+        <li><strong>Subscriptions</strong> — Stripe subscriptions linked to tenants</li>
+        <li><strong>Usage Tracking</strong> — Track AI token consumption per tenant</li>
+        <li><strong>Rate Limiting</strong> — Limit API calls based on plan</li>
+        <li><strong>Webhooks</strong> — Stripe webhooks para sa subscription events</li>
+      </ul>
+
+      <h2>Step-by-Step: AI Prompts</h2>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <p><strong>Multi-Tenancy Setup</strong></p>
+          <p>Prompt AI: <em>"Generate a Laravel multi-tenancy system using a single database with tenant_id scoping. Include a Tenant model, TenantScope global scope, and middleware that sets the current tenant based on subdomain."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <p><strong>User & Team Management</strong></p>
+          <p>Prompt AI: <em>"Create user management with team invitations, roles (owner, admin, member), and registration that creates a new tenant or joins existing via invite code."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <p><strong>AI Service Integration</strong></p>
+          <p>Prompt AI: <em>"Generate OpenAIService and ClaudeService classes that make API calls to generate content. Include error handling, retry logic, and token usage tracking per tenant."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <p><strong>Billing & Subscriptions</strong></p>
+          <p>Prompt AI: <em>"Create a subscription system with Stripe: Plan model, Subscription model, billing portal, webhook handling for subscription created/updated/cancelled, and usage-based billing for AI tokens."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">5</div>
+        <div class="step-content">
+          <p><strong>Rate Limiting & Usage Analytics</strong></p>
+          <p>Prompt AI: <em>"Implement per-tenant rate limiting for AI API calls based on subscription plan. Create an analytics dashboard showing token usage, API call counts, and cost per tenant."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">6</div>
+        <div class="step-content">
+          <p><strong>Next.js Frontend</strong></p>
+          <p>Prompt AI: <em>"Generate a Next.js 14 SaaS frontend with: landing page, tenant registration, login, AI feature interface, usage dashboard, billing page with plan selection, and admin panel."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">7</div>
+        <div class="step-content">
+          <p><strong>Queue-based AI Processing</strong></p>
+          <p>Prompt AI: <em>"Create a queued job for processing AI requests asynchronously. Include progress tracking, webhook for completion, and retry logic for failed AI API calls."</em></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">8</div>
+        <div class="step-content">
+          <p><strong>Deployment Prep & Testing</strong></p>
+          <p>Prompt AI: <em>"Generate a deployment checklist for a Laravel + Next.js SaaS app: environment configs, queue worker setup, cron jobs, SSL, domain configuration, and monitoring setup."</em></p>
+        </div>
+      </div>
+
+      <h2>Quick Quiz</h2>
+
+      <div class="quiz-item">
+        <div class="quiz-question">1. Ano ang multi-tenancy sa konteksto ng SaaS?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q1" value="a"> Maraming servers na nagse-serve ng isang application</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="b"> Isang codebase na may maraming user interfaces</label>
+          <label class="quiz-option"><input type="radio" name="q1" value="c"> Isang instance ng application na nagse-serve ng maraming tenants/customers na may data isolation</label>
+        </div>
+        <div class="quiz-feedback" id="feedback1"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">2. Paano mo i-integrate ang OpenAI API sa Laravel nang secure?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q2" value="a"> I-store ang API key sa database at i-access directly sa controllers</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="b"> I-store ang API key sa .env file, gumamit ng Service class para sa API calls, at implement rate limiting</label>
+          <label class="quiz-option"><input type="radio" name="q2" value="c"> I-hardcode ang API key sa source code</label>
+        </div>
+        <div class="quiz-feedback" id="feedback2"></div>
+      </div>
+
+      <div class="quiz-item">
+        <div class="quiz-question">3. Alin sa mga sumusunod ang pinaka-appropriate na approach para sa billing system ng SaaS?</div>
+        <div class="quiz-options">
+          <label class="quiz-option"><input type="radio" name="q3" value="a"> Gumamit ng Stripe subscriptions na may webhook integration para sa recurring billing at plan management</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="b"> Manual invoicing gamit ang Excel</label>
+          <label class="quiz-option"><input type="radio" name="q3" value="c"> Cash on delivery</label>
+        </div>
+        <div class="quiz-feedback" id="feedback3"></div>
+      </div>
+
+      <button class="quiz-submit" onclick="checkQuiz()">Check Answers</button>
+
+      <div class="project">
+        <h3>Capstone Project 4: AI-Enhanced SaaS Application</h3>
+        <p>Pumili ng sarili mong SaaS idea at i-scaffold ito gamit ang AI prompts sa itaas. Siguraduhing kasama ang multi-tenancy, AI integration (OpenAI/Claude), at billing system.</p>
+        <p><strong>Suggested SaaS Ideas:</strong></p>
+        <ul>
+          <li><strong>AI Content Generator</strong> — Generate blog posts, social media content, marketing copy</li>
+          <li><strong>AI Analytics Dashboard</strong> — Natural language queries sa data</li>
+          <li><strong>AI Code Reviewer</strong> — Automated code review gamit ang AI</li>
+          <li><strong>AI Chatbot Builder</strong> — Create and deploy AI chatbots</li>
+          <li><strong>Your Own Idea</strong> — Any SaaS na may AI integration</li>
+        </ul>
+        <p><strong>Deliverables:</strong></p>
+        <ul>
+          <li>Working multi-tenant SaaS application</li>
+          <li>AI API integration (OpenAI or Claude)</li>
+          <li>Billing system with subscription plans</li>
+          <li>Deployment-ready configuration</li>
+          <li>Tests for critical paths (auth, billing, AI service)</li>
+        </ul>
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Ang AI-Enhanced SaaS ay ang pinaka-advanced na capstone — may multi-tenancy, AI integration, at billing</li>
+        <li>Tech stack: Laravel + Next.js + MySQL + OpenAI/Claude + Stripe</li>
+        <li>Multi-tenancy ay isang instance na nagse-serve ng maraming customers na may data isolation</li>
+        <li>AI API integration ay dapat nasa Service classes na may proper error handling at rate limiting</li>
+        <li>Billing system ay dapat automated gamit ang Stripe subscriptions at webhooks</li>
+        <li>Pagkatapos ng project na ito, ready ka na sa kahit anong web development challenge!</li>
+      </ul>
+
+      <div class="info">
+        <strong>Congratulations!</strong>
+        Natapos mo ang lahat ng lessons ng AI-Assisted Web Development Course. Ready ka na sa real-world projects. Keep building and keep using AI!
+      </div>
+
+      <!-- ======== Recommended Resource ======== -->
+      <h2>Recommended Resource</h2>
+      <p><em>Palalimin ang iyong pagkaunawa sa lesson na ito:</em></p>
+      <ul>
+        <li><strong>OpenAI API Documentation</strong> — Official guide para sa AI integration gamit ang OpenAI. <a href="https://platform.openai.com/docs" target="_blank" rel="noopener">Bisitahin</a></li>
+        <li><strong>Claude API Documentation</strong> — Official guide para sa AI integration gamit ang Anthropic Claude. <a href="https://docs.anthropic.com/en/docs" target="_blank" rel="noopener">Bisitahin</a></li>
+      </ul>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  function checkQuiz() {
+    var answers = { q1: 'c', q2: 'b', q3: 'a' };
+    for (var key in answers) {
+      var sel = document.querySelector('input[name="' + key + '"]:checked');
+      var fb = document.getElementById('feedback' + key.slice(1));
+      if (!sel) {
+        fb.textContent = 'Please select an answer.';
+        fb.className = 'quiz-feedback incorrect';
+        continue;
+      }
+      if (sel.value === answers[key]) {
+        fb.textContent = '\u2705 Correct! Well done.';
+        fb.className = 'quiz-feedback correct';
+      } else {
+        fb.textContent = '\u274C Incorrect. Review the material and try again.';
+        fb.className = 'quiz-feedback incorrect';
+      }
+    }
+  }
+</script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>

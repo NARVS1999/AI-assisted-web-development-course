@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phase 5: Security Cheatsheet</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9788;</button>
+<div class="lesson-layout">
+  <aside class="lesson-sidebar" id="lesson-sidebar"></aside>
+  <main class="lesson-main">
+    <div class="lesson-container">
+
+      <h1>Phase 5: Authentication, Authorization & Security — Cheatsheet</h1>
+      <p><em>Mabilisang reference para sa Sanctum, NextAuth.js, RBAC, at security best practices.</em></p>
+
+      <h2>Laravel Sanctum Setup</h2>
+      <pre><code>composer require laravel/sanctum
+php artisan install:api
+php artisan migrate
+
+# I-set ang .env
+SESSION_DRIVER=cookie
+SANCTUM_STATEFUL_DOMAINS=localhost:3000</code></pre>
+      <p>I-configure ang <code>config/sanctum.php</code> — i-set ang <code>stateful</code> array kasama ang frontend URL.</p>
+      <p>Sa <code>app/Http/Kernel.php</code>, i-add ang <code>EnsureFrontendRequestsAreStateful</code> middleware sa <code>api</code> group.</p>
+
+      <h3>SPA Auth Flow</h3>
+      <ol>
+        <li><code>GET /sanctum/csrf-cookie</code> — kumuha ng CSRF token</li>
+        <li><code>POST /login</code> — mag-submit ng credentials</li>
+        <li>Kasunod na requests — automatic na naka-authenticate gamit ang session cookie</li>
+        <li><code>POST /logout</code> — i-terminate ang session</li>
+      </ol>
+
+      <h2>NextAuth.js Configuration</h2>
+      <pre><code>// app/api/auth/[...nextauth]/route.ts
+import NextAuth from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+
+const handler = NextAuth({
+  providers: [
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        const res = await fetch("http://localhost:8000/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(credentials)
+        });
+        const user = await res.json();
+        if (res.ok && user) return user;
+        return null;
+      }
+    }),
+  ],
+  session: { strategy: "jwt" },
+  pages: { signIn: "/auth/login" },
+  callbacks: {
+    async jwt({ token, user }) { return { ...token, ...user }; },
+    async session({ session, token }) { session.user = token; return session; }
+  }
+});
+
+export { handler as GET, handler as POST };</code></pre>
+
+      <h3>OAuth Providers</h3>
+      <pre><code>// .env
+GOOGLE_CLIENT_ID=xxx
+GOOGLE_CLIENT_SECRET=xxx
+GITHUB_CLIENT_ID=xxx
+GITHUB_CLIENT_SECRET=xxx</code></pre>
+
+      <h2>RBAC Implementation Pattern</h2>
+      <h3>Database</h3>
+      <pre><code>roles: id, name (admin|editor|user)
+users: ..., role_id FK -> roles.id</code></pre>
+
+      <h3>Middleware</h3>
+      <pre><code>// app/Http/Middleware/CheckRole.php
+public function handle(Request $request, Closure $next, ...$roles)
+{
+    if (!$request->user() || !in_array($request->user()->role->name, $roles)) {
+        abort(403);
+    }
+    return $next($request);
+}</code></pre>
+
+      <h3>Routes</h3>
+      <pre><code>Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+    // Admin-only routes
+});
+Route::middleware(['auth:sanctum', 'role:admin,editor'])->group(function () {
+    // Admin + Editor routes
+});</code></pre>
+
+      <h3>Frontend Conditional Rendering</h3>
+      <pre><code>{role === 'admin' && &lt;AdminPanel /&gt;}
+{role === 'editor' && &lt;EditorDashboard /&gt;}</code></pre>
+
+      <h2>OWASP Top 10 Quick Reference</h2>
+      <table>
+        <tr><th>#</th><th>Vulnerability</th><th>Prevention</th></tr>
+        <tr><td>1</td><td>Broken Access Control</td><td>Middleware, role checking, authorization gates</td></tr>
+        <tr><td>2</td><td>Cryptographic Failures</td><td>HTTPS, bcrypt, AES-256 encryption</td></tr>
+        <tr><td>3</td><td>Injection (SQL, NoSQL)</td><td>Eloquent ORM, parameterized queries, validation</td></tr>
+        <tr><td>4</td><td>Insecure Design</td><td>Security review, threat modeling, AI audit</td></tr>
+        <tr><td>5</td><td>Security Misconfiguration</td><td>Environment-specific config, disable debug mode</td></tr>
+        <tr><td>6</td><td>Vulnerable Components</td><td><code>composer update</code>, <code>npm audit</code>, keep dependencies fresh</td></tr>
+        <tr><td>7</td><td>Auth Failures</td><td>Rate limiting, strong password rules, 2FA</td></tr>
+        <tr><td>8</td><td>Integrity Failures</td><td>Code signing, subresource integrity (SRI)</td></tr>
+        <tr><td>9</td><td>Logging Failures</td><td>Centralized logging, alerting on anomalies</td></tr>
+        <tr><td>10</td><td>SSRF</td><td>Validate URLs, block internal networks</td></tr>
+      </table>
+
+      <h2>Password Hashing Algorithms</h2>
+      <table>
+        <tr><th>Algorithm</th><th>Status</th><th>Notes</th></tr>
+        <tr><td>bcrypt</td><td>Recommended</td><td>Default sa Laravel. Slow, adaptive, may salt.</td></tr>
+        <tr><td>Argon2id</td><td>Better</td><td>Mas secure sa bcrypt, memory-hard. Available sa PHP 7.2+.</td></tr>
+        <tr><td>scrypt</td><td>Good</td><td>CPU at memory-hard. Ginagamit sa cryptocurrencies.</td></tr>
+        <tr><td>SHA-256</td><td>Not for passwords</td><td>Masyadong mabilis — madaling i-brute force.</td></tr>
+        <tr><td>MD5</td><td>Never use</td><td>Completely broken. Collisions ay trivial.</td></tr>
+      </table>
+
+      <h2>Token Storage Comparison</h2>
+      <table>
+        <tr><th>Storage</th><th>Accessible by JS</th><th>XSS Risk</th><th>Use Case</th></tr>
+        <tr><td>httpOnly Cookie</td><td>No</td><td>Low</td><td>SPA authentication (Sanctum)</td></tr>
+        <tr><td>localStorage</td><td>Yes</td><td>High</td><td>Avoid if possible; use short TTL</td></tr>
+        <tr><td>sessionStorage</td><td>Yes</td><td>High</td><td>Temporary data, not for tokens</td></tr>
+        <tr><td>Memory (JS var)</td><td>Yes</td><td>Medium</td><td>Most secure but lost on refresh</td></tr>
+      </table>
+
+      <h2>Security Headers</h2>
+      <table>
+        <tr><th>Header</th><th>Purpose</th><th>Example Value</th></tr>
+        <tr><td>Content-Security-Policy (CSP)</td><td>Pumipigil sa XSS at data injection</td><td><code>default-src 'self'</code></td></tr>
+        <tr><td>Strict-Transport-Security (HSTS)</td><td>I-force ang HTTPS</td><td><code>max-age=31536000; includeSubDomains</code></td></tr>
+        <tr><td>X-Frame-Options</td><td>Pumipigil sa clickjacking (iframe)</td><td><code>DENY</code></td></tr>
+        <tr><td>X-Content-Type-Options</td><td>Pumipigil sa MIME sniffing</td><td><code>nosniff</code></td></tr>
+        <tr><td>X-XSS-Protection</td><td>XSS filter sa browser</td><td><code>1; mode=block</code></td></tr>
+        <tr><td>Referrer-Policy</td><td>Kontrol kung ano ang ipinapadala sa referrer header</td><td><code>strict-origin-when-cross-origin</code></td></tr>
+        <tr><td>Permissions-Policy</td><td>I-limit ang browser features (camera, mic)</td><td><code>camera=(), microphone=()</code></td></tr>
+      </table>
+
+      <div class="info">
+        <strong>AI Prompt Templates</strong>
+        <ul>
+          <li><em>"I-audit mo ang security ng Laravel API routes ko at mag-suggest ng improvements."</em></li>
+          <li><em>"Scan this Laravel code for SQL injection and XSS vulnerabilities."</em></li>
+          <li><em>"Generate a CheckRole middleware for admin, editor, and user roles."</em></li>
+          <li><em>"Set up NextAuth.js with Credentials provider connected to a Laravel backend."</em></li>
+        </ul>
+      </div>
+
+      <div class="lesson-nav"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/lessons-data.js"></script>
+<script src="../assets/sidebar.js"></script>
+<script src="../assets/lesson-nav.js"></script>
+<script>
+  (function() {
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          html.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>
